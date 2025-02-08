@@ -1,0 +1,110 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutExterno.cshtml";
+}
+<div class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-dark navbar-extend p-2" style="background-color: #291410;">
+        <div class="container-fluid">
+            <a class="navbar-brand fs-4 fw-bold" th:href="">
+                <i class="fa fa-heart mx-2"></i> Donde tu belleza encuentra su mejor versión.
+            </a>
+        </div>
+    </nav>
+    <section class="container-fluid d-flex flex-grow-1 px-0">
+        <div class="col">
+            <img src="https://images.pexels.com/photos/3993123/pexels-photo-3993123.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="img-fluid" style="object-fit: cover; height: 100%">
+        </div>
+        <div class="col d-flex align-items-center">
+            <div class="container-fluid d-flex flex-column">
+                <form class="pb-4 border-bottom px-5" th:action="" method="POST">
+                    <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
+                    <h2 class="mb-5 text-center" style="color: #321914;">Registrarse</h2>
+
+                    <div class="row g-4 pb-3">
+                        <div class="col-12">
+                            <div class="form-group form-floating">
+                                <input type="text" class="form-control" placeholder="Cédula" name="Cédula" id="Cédula"/>
+                                <label class="form-label">Cédula</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 pb-3">
+                        <div class="col-md-5">
+                            <div class="form-group form-floating">
+                                <input type="text" class="form-control" placeholder="Nombre" name="Nombre" id="Nombre" readonly />
+                                <label class="form-label">Nombre</label>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-group form-floating">
+                                <input type="text" class="form-control" placeholder="Apellidos" name="Apellidos" id="Apellidos" readonly />
+                                <label class="form-label">Apellidos</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 pb-3">
+                        <div class="col-md-6">
+                            <div class="form-group form-floating">
+                                <select class="form-select" name="Genero" id="Genero" aria-label="Género">
+                                    <option selected disabled>Seleccione su género</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                    <option value="Prefiero no decir">Prefiero no decir</option>
+                                </select>
+                                <label class="form-label">Género</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-floating">
+                                <input type="text" class="form-control" placeholder="Número Telefónico" name="Telefono" id="Telefono" />
+                                <label class="form-label">Número Telefónico</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group form-floating">
+                                <input type="email" class="form-control" placeholder="Correo Electrónico" name="Email" id="Email" />
+                                <label class="form-label">Correo Electrónico</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-floating">
+                                <input type="password" class="form-control" placeholder="Contraseña" name="password" id="password" />
+                                <label class="form-label">Contraseña</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center mt-4">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary w-100 btn-lg" style="background-color:#321914; border-color: #321914;">
+                            Registrarse
+                        </a>
+                        <div class="pt-2">
+                            <p style=" color: #321914;">Puedes crear una cuenta con:</p>
+                        </div>
+                        <div class="btn w-75 pb-2" style="background-color:#FAF9F6; border-color: #1F283E;">
+                            <a href="@Url.Action("Index", "Home")" class="text-secondary text-decoration-none">
+                                <i>
+                                    <img src="https://png.pngtree.com/png-vector/20230817/ourmid/pngtree-google-internet-icon-vector-png-image_9183287.png"
+                                         width="30" />
+                                </i>
+                                Google
+                            </a>
+                        </div>
+                        <div class=" btn w-75 shadow mt-2" style="background-color:#1178f2; border-color: #1F283E;">
+                            <a href="@Url.Action("Index", "Home")" class="text-white text-decoration-none">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/768px-Facebook_Logo_%282019%29.png" width="30" class="pb-1" />
+                                Facebook
+                            </a>
+                        </div>
+                    </div>
+                </form>
+                <a href="@Url.Action("Login", "Autenticacion")" class="mt-4 text-center under">¿Ya tenés una cuenta? <br> ¡Inicia sesión aquí!</a>
+            </div>
+        </div>
+    </section>
+</div>

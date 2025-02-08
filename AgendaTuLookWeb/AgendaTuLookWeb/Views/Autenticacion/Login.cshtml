@@ -1,0 +1,61 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutExterno.cshtml";
+}
+<div class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-dark navbar-extend p-2" style="background-color: #291410;">
+        <div class="container-fluid">
+            <a class="navbar-brand fs-4 fw-bold">
+                <i class="fa fa-heart mx-2"></i> Donde tu belleza encuentra su mejor versión.
+            </a>
+        </div>
+    </nav>
+    <section class="container-fluid d-flex flex-grow-1 px-0">
+        <div class="col">
+            <img src="https://images.pexels.com/photos/8467976/pexels-photo-8467976.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="img-fluid" style="object-fit: cover; height: 100%">
+        </div>
+        <div class="col d-flex align-items-center">
+            <div class="container-fluid d-flex flex-column">
+                <form class="pb-5 border-bottom px-5" method="POST">
+                    <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
+                    <h2 class="mb-5 text-center" style="color: #321914;">Ingresar</h2>
+                    <div class="form-group form-floating pb-3">
+                        <input type="text" class="form-control" placeholder="Cédula" name="Cédula" id="Cédula" />
+                        <label class="form-label">Cédula</label>
+                    </div>
+                    <div class="form-group form-floating pb-3">
+                        <input type="password" class="form-control" placeholder="Contraseña" name="password" id="password" />
+                        <label class="form-label">Contraseña</label>
+                    </div>
+                    <div class="form-group text-center">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-lg btn-primary w-100" style="background-color:#321914; border-color: #1F283E;">
+                            Iniciar Sesión
+                        </a>
+                        <div class="mt-3">
+                            <p style=" color: #321914;">O inicia con: </p>
+                        </div>
+                        <div class="btn w-75 pb-2" style="background-color:#FAF9F6; border-color: #1F283E;">
+                            <a href="@Url.Action("Index", "Home")" class="text-secondary text-decoration-none">
+                                <i>
+                                    <img src="https://png.pngtree.com/png-vector/20230817/ourmid/pngtree-google-internet-icon-vector-png-image_9183287.png"
+                                         width="30" />
+                                </i>
+                                Google
+                            </a>
+                        </div>
+                        <div class=" btn w-75 shadow mt-2" style="background-color:#1178f2; border-color: #1F283E;">
+                            <a href="@Url.Action("Index", "Home")" class="text-white text-decoration-none">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/768px-Facebook_Logo_%282019%29.png" width="30" class="pb-1" />
+                                Facebook
+                            </a>
+                        </div>
+                        
+                    </div>
+                </form>
+                <div class="mt-3 text-center">
+                    <a href="@Url.Action("RecuperarContrasennia", "Autenticacion")" class="mt-5 text-center under">¿Olvidó su contraseña?</a>
+                </div>
+                <a href="@Url.Action("Registro", "Autenticacion")" class="mt-4 text-center under">¿No tenés Cuenta? <br> ¡Crea una ya! </a>
+            </div>
+        </div>
+    </section>
+</div>
