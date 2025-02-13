@@ -1,4 +1,6 @@
-﻿@{
+﻿@model UsuarioModel;
+
+@{
     Layout = "~/Views/Shared/_LayoutExterno.cshtml";
 }
 <div class="d-flex flex-column min-vh-100">
@@ -15,72 +17,51 @@
         </div>
         <div class="col d-flex align-items-center">
             <div class="container-fluid d-flex flex-column">
-                <form class="pb-4 border-bottom px-5" th:action="" method="POST">
+                <form asp-controller="Autenticacion" asp-action="Registro" class="pb-4 border-bottom px-5" th:action="" method="POST">
                     <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
                     <h2 class="mb-5 text-center" style="color: #321914;">Registrarse</h2>
 
                     <div class="row g-4 pb-3">
                         <div class="col-12">
                             <div class="form-group form-floating">
-                                <input type="text" class="form-control" placeholder="Cédula" name="Cédula" id="Cédula"/>
-                                <label class="form-label">Cédula</label>
+                                <input asp-for="Identificacion" type="text" class="form-control" placeholder="Identificacion" name="Identificacion" id="Identificacion" onkeyup="consultarNombreUsuario()" required />
+                                <label class="form-label">Identificación</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="row g-4 pb-3">
-                        <div class="col-md-5">
+                        <div class="col-md-7">
                             <div class="form-group form-floating">
-                                <input type="text" class="form-control" placeholder="Nombre" name="Nombre" id="Nombre" readonly />
+                                <input asp-for="Nombre" type="text" class="form-control" placeholder="Nombre" name="Nombre" id="Nombre" readonly required/>
                                 <label class="form-label">Nombre</label>
                             </div>
                         </div>
-                        <div class="col-md-7">
+                        <div class="col-md-5">
                             <div class="form-group form-floating">
-                                <input type="text" class="form-control" placeholder="Apellidos" name="Apellidos" id="Apellidos" readonly />
-                                <label class="form-label">Apellidos</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-4 pb-3">
-                        <div class="col-md-6">
-                            <div class="form-group form-floating">
-                                <select class="form-select" name="Genero" id="Genero" aria-label="Género">
-                                    <option selected disabled>Seleccione su género</option>
-                                    <option value="Masculino">Masculino</option>
-                                    <option value="Femenino">Femenino</option>
-                                    <option value="Otro">Otro</option>
-                                    <option value="Prefiero no decir">Prefiero no decir</option>
-                                </select>
-                                <label class="form-label">Género</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group form-floating">
-                                <input type="text" class="form-control" placeholder="Número Telefónico" name="Telefono" id="Telefono" />
+                                <input asp-for="Telefono" type="text" class="form-control" placeholder="Número Telefónico" name="Telefono" id="Telefono" required />
                                 <label class="form-label">Número Telefónico</label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row g-4">
-                        <div class="col-md-6">
+                    <div class="row g-3">
+                        <div class="col-md-12">
                             <div class="form-group form-floating">
-                                <input type="email" class="form-control" placeholder="Correo Electrónico" name="Email" id="Email" />
+                                <input asp-for="Correo" type="email" class="form-control" placeholder="Correo Electrónico" name="Correo" id="Correo" required />
                                 <label class="form-label">Correo Electrónico</label>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="form-group form-floating">
-                                <input type="password" class="form-control" placeholder="Contraseña" name="password" id="password" />
+                                <input asp-for="Contrasennia" type="password" class="form-control" placeholder="Contraseña" name="Contrasennia" id="Contrasennia" required/>
                                 <label class="form-label">Contraseña</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group text-center mt-4">
-                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary w-100 btn-lg" style="background-color:#321914; border-color: #321914;">
+                        <input type="submit" class="btn btn-primary w-100 btn-lg" style="background-color:#321914; border-color: #321914;" value="Registrarse" />
                             Registrarse
                         </a>
                         <div class="pt-2">
@@ -95,12 +76,6 @@
                                 Google
                             </a>
                         </div>
-                        <div class=" btn w-75 shadow mt-2" style="background-color:#1178f2; border-color: #1F283E;">
-                            <a href="@Url.Action("Index", "Home")" class="text-white text-decoration-none">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/768px-Facebook_Logo_%282019%29.png" width="30" class="pb-1" />
-                                Facebook
-                            </a>
-                        </div>
                     </div>
                 </form>
                 <a href="@Url.Action("Login", "Autenticacion")" class="mt-4 text-center under">¿Ya tenés una cuenta? <br> ¡Inicia sesión aquí!</a>
@@ -108,3 +83,4 @@
         </div>
     </section>
 </div>
+<script src="~/js/ConsultaNombre.js"></script>
