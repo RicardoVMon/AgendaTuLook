@@ -20,6 +20,14 @@
                 <form asp-controller="Autenticacion" asp-action="Login" class="pb-5 border-bottom px-5" method="POST">
                     <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
                     <h2 class="mb-5 text-center" style="color: #321914;">Ingresar</h2>
+
+                    @if (TempData["Mensaje"] != null)
+                    {
+                        <div class="alert alert-warning text-center">
+                            @TempData["Mensaje"]
+                        </div>
+                    }
+
                     <div class="form-group form-floating pb-3">
                         <input asp-for="Correo" type="email" class="form-control" placeholder="Correo Electrónico" name="Correo" id="Correo" required />
                         <label class="form-label">Correo Electrónico</label>

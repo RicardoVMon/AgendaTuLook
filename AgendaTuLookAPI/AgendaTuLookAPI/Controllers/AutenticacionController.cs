@@ -70,10 +70,21 @@ namespace AgendaTuLookAPI.Controllers
 		{
 			using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
 			{
-				var result = context.QueryFirstOrDefault<UsuarioModel>("Login",
-					new { model.Correo, model.Contrasennia });
 
 				var respuesta = new RespuestaModel();
+
+				// Validar si el usuario es de google
+				var resultProveedor = context.QueryFirstOrDefault("ObtenerProveedorAuthConCorreo", new { model.Correo });
+
+				if (resultProveedor!.Nombre == "Google" && resultProveedor.TieneContrasennia == 0)
+				{
+					respuesta.Indicador = false;
+					respuesta.Mensaje = "Te registraste previamente con google? Intenta iniciando sesión con google o restablece tu contraseña para continuar por este método";
+					return Ok(respuesta);
+				}
+
+				var result = context.QueryFirstOrDefault<UsuarioModel>("Login",
+					new { model.Correo, model.Contrasennia });
 
 				if (result != null)
 				{

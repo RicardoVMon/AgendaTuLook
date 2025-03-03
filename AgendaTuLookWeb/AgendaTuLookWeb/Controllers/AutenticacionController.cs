@@ -54,9 +54,11 @@ namespace AgendaTuLookWeb.Controllers
 						HttpContext.Session.SetString("Nombre", datosResult!.Nombre!.ToString());
 						return RedirectToAction("Index", "Home");
 					}
+
+					TempData["Mensaje"] = result!.Mensaje;
+					return View(model);
 				}
 			}
-
 			return View();
 		}
 
@@ -80,7 +82,7 @@ namespace AgendaTuLookWeb.Controllers
 				{
 					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
 
-					if (!result.Indicador)
+					if (!result!.Indicador)
 					{
 						TempData["Mensaje"] = result.Mensaje;
 						return View(model);
