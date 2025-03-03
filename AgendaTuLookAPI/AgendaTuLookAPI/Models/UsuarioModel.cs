@@ -8,8 +8,10 @@
 		public string? Contrasennia { get; set; }
 		public string? GoogleId { get; set; }
 		public string? Telefono { get; set; }
+		public string? ProveedorAuth { get; set; }
 		public DateTime? FechaRegistro { get; set; }
 		public long? RolId { get; set; }
+		public string? Token { get; set; }
 
 	}
 }

@@ -21,19 +21,17 @@
                     <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
                     <h2 class="mb-5 text-center" style="color: #321914;">Registrarse</h2>
 
-                    <div class="row g-4 pb-3">
-                        <div class="col-12">
-                            <div class="form-group form-floating">
-                                <input asp-for="Identificacion" type="text" class="form-control" placeholder="Identificacion" name="Identificacion" id="Identificacion" onkeyup="consultarNombreUsuario()" required />
-                                <label class="form-label">Identificación</label>
-                            </div>
+                    @if (TempData["Mensaje"] != null)
+                    {
+                        <div class="alert alert-warning text-center">
+                            @TempData["Mensaje"]
                         </div>
-                    </div>
+                    }
 
                     <div class="row g-4 pb-3">
                         <div class="col-md-7">
                             <div class="form-group form-floating">
-                                <input asp-for="Nombre" type="text" class="form-control" placeholder="Nombre" name="Nombre" id="Nombre" readonly required/>
+                                <input asp-for="Nombre" type="text" class="form-control" placeholder="Nombre" name="Nombre" id="Nombre" required/>
                                 <label class="form-label">Nombre</label>
                             </div>
                         </div>
@@ -62,20 +60,18 @@
 
                     <div class="form-group text-center mt-4">
                         <input type="submit" class="btn btn-primary w-100 btn-lg" style="background-color:#321914; border-color: #321914;" value="Registrarse" />
-                            Registrarse
-                        </a>
-                        <div class="pt-2">
-                            <p style=" color: #321914;">Puedes crear una cuenta con:</p>
+                        <div class="pt-3">
+                            <p style=" color: #321914;">O Continúa con:</p>
                         </div>
-                        <div class="btn w-75 pb-2" style="background-color:#FAF9F6; border-color: #1F283E;">
-                            <a href="@Url.Action("Index", "Home")" class="text-secondary text-decoration-none">
+                        <a asp-controller="Autenticacion" asp-action="LoginGoogle" class="btn w-75 pb-2" style="background-color:#FAF9F6; border-color: #1F283E;">
+                            <div class="text-secondary text-decoration-none">
                                 <i>
                                     <img src="https://png.pngtree.com/png-vector/20230817/ourmid/pngtree-google-internet-icon-vector-png-image_9183287.png"
                                          width="30" />
                                 </i>
                                 Google
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     </div>
                 </form>
                 <a href="@Url.Action("Login", "Autenticacion")" class="mt-4 text-center under">¿Ya tenés una cuenta? <br> ¡Inicia sesión aquí!</a>
