@@ -138,6 +138,16 @@ namespace AgendaTuLookAPI.Controllers
 				}
 				else
 				{
+
+					// Validar si el usuario ya existe, es de email y no se ha logeado con google antes
+					var resultProveedor = context.QueryFirstOrDefault("ObtenerProveedorAuthConCorreo", new { model.Correo });
+
+					if (resultProveedor!.Nombre == "Email" && resultProveedor.TieneGoogleId == 0)
+					{
+						// Vinculamos la cuenta
+						var resultUpdateGoogleId = context.QueryFirstOrDefault("ActualizarGoogleId", new { model.GoogleId, model.Correo });
+					}
+
 					var usuarioId = context.QueryFirstOrDefault<int>("ObtenerIdUsuarioConCorreo", new { Correo = model.Correo });
 					model.UsuarioId = usuarioId;
 					model.Token = GenerarToken(usuarioId, model.Correo!, model.Nombre!);
