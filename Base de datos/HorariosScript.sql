@@ -3,7 +3,7 @@ USE AgendaTuLook;
 
 GO
 -- TABLA horario fecha:3/3/2025
-CREATE TABLE tHorarios(
+CREATE TABLE dbo.tHorarios(
 	HorariosId bigint primary key identity(1,1),
 	HoraEntrada varchar(5) not null,
 	HoraSalida varchar(5) not null,
@@ -71,11 +71,12 @@ CREATE PROCEDURE dbo.ActualizarHorario
 	END
 GO
 CREATE PROCEDURE dbo.MostrarHorarios
+	@Estado varchar(20)
 AS
 BEGIN
-	SELECT HoraEntrada, HoraSalida
+	SELECT HoraEntrada, HoraSalida, dia, Estado
 	FROM tHorarios
-	WHERE Estado = 'ACTIVO'
+	WHERE Estado = @Estado
 END
 
 --pruebas-------
@@ -110,7 +111,7 @@ GO
 
 GO
 	EXEC dbo.EliminarHorario
-	@HorariosId = 1
+	@HorariosId = 2
 
 GO
 	EXEC dbo.ActualizarHorario
@@ -122,4 +123,4 @@ GO
 
 GO
 	EXEC dbo.MostrarHorarios
-	
+	@Estado = Activo
