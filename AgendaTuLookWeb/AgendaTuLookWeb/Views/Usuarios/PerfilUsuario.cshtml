@@ -1,0 +1,62 @@
+﻿@model UsuarioModel
+<section style="background-color: #F0F2FA;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-4 d-flex">
+                <div class="card mb-4 w-100">
+                    <div class="card-body text-center shadow-lg" style="background-color: #f9f9f9; border-left: 5px solid #443627; border-radius: 10px;">
+                        <img src="https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8=" alt="avatar"
+                             class="rounded-circle img-fluid" style="width: 150px;">
+                        <h5 class="my-3">@Model.Nombre</h5>
+                        <p class="text-muted mb-1">@Model.Telefono</p>
+                        <a href="@Url.Action("EditarPerfilUsuario", "Usuarios", new { id = Model.UsuarioId })" class="btn btn-primary">
+                            <i data-feather="settings" aria-hidden="true"></i> Configurar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8 d-flex align-items-center" style="background-color: #f9f9f9; border-left: 5px solid #443627; border-radius: 10px;">
+                <div class="card mb-4 w-100">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Nombre</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">@Model.Nombre</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Teléfono</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">@Model.Telefono</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Correo Electrónico</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">@Model.Correo</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Contraseña</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">••••••••</p>
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

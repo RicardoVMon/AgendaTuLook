@@ -1,0 +1,135 @@
+﻿@model UsuarioModel
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
+    var contrasennia = HttpContextAccessor.HttpContext.Session.GetString("Contrasennia");
+}
+<section style="background-color: #F0F2FA;">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" style="background-color: #f9f9f9; border-left: 5px solid #443627; border-radius: 10px;">
+                <div class="card mb-4 w-100 border-0">
+                    <div class="card-header bg-transparent border-0">
+                        <h4 class="mb-0">Editar Perfil de Usuario</h4>
+                    </div>
+                    <div class="card-body">
+                        @if (TempData["ErrorMessage"] != null)
+                        {
+                            <div class="alert alert-danger">
+                                @TempData["ErrorMessage"]
+                            </div>
+                        }
+
+                        <form method="post" asp-action="EditarPerfilUsuario" asp-controller="Usuarios">
+                            <!-- Campo oculto para el ID -->
+                            @* <input type="hidden" asp-for="UsuarioId" value="@Model.UsuarioId" /> *@
+                            <input type="hidden" name="UsuarioId" value="@usuarioId" />
+                            <!-- Campo oculto para la contraseña, que se obtiene de la sesión -->
+                            <input type="hidden" name="Contrasennia" value="@contrasennia" />
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <label asp-for="Nombre" class="form-label">Nombre</label>
+                                </div>
+                                <div class="col-sm-9">
+                                    <input type="text" asp-for="Nombre" class="form-control" value="@Model.Nombre" required />
+                                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <label asp-for="Telefono" class="form-label">Teléfono</label>
+                                </div>
+                                <div class="col-sm-9">
+                                    <input type="text" asp-for="Telefono" class="form-control" value="@Model.Telefono" required />
+                                    <span asp-validation-for="Telefono" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <label asp-for="Correo" class="form-label">Correo Electrónico</label>
+                                </div>
+                                <div class="col-sm-9">
+                                    <input type="email" asp-for="Correo" class="form-control" value="@Model.Correo" required />
+                                    <span asp-validation-for="Correo" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <label asp-for="Contrasennia" class="form-label">Contraseña</label>
+                                </div>
+                                <div class="col-sm-9">
+                                    <input type="password" asp-for="Contrasennia" class="form-control" placeholder="Nueva Contraseña (opcional)" />
+                                    <span asp-validation-for="Contrasennia" class="text-danger"></span>
+                                    <small class="form-text text-muted">Dejar en blanco para mantener la contraseña actual</small>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <label for="ConfirmarContrasennia" class="form-label">Confirmar Contraseña</label>
+                                </div>
+                                <div class="col-sm-9">
+                                    <input type="password" id="ConfirmarContrasennia" name="ConfirmarContrasennia" class="form-control" placeholder="Confirme su nueva contraseña" />
+                                    <div id="passwordError" class="text-danger d-none">Las contraseñas no coinciden</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 d-flex justify-content-end gap-2">
+                                    <a href="@Url.Action("PerfilUsuario", "Usuarios")" class="btn btn-secondary">
+                                        <i data-feather="x-circle" aria-hidden="true"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                        <i data-feather="check-circle" aria-hidden="true"></i> Guardar Cambios
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+            const passwordInput = document.querySelector("#Contrasennia");
+            const confirmInput = document.querySelector("#ConfirmarContrasennia");
+            const passwordError = document.querySelector("#passwordError");
+
+            form.addEventListener("submit", function (e) {
+                // Validación de contraseña solo si se está cambiando
+                if (passwordInput.value !== '') {
+                    if (passwordInput.value !== confirmInput.value) {
+                        e.preventDefault();
+                        passwordError.classList.remove("d-none");
+                        return false;
+                    } else {
+                        passwordError.classList.add("d-none");
+                    }
+                }
+                return true;
+            });
+
+            // Verificación en tiempo real
+            confirmInput.addEventListener("input", function () {
+                if (passwordInput.value !== '' && passwordInput.value !== confirmInput.value) {
+                    passwordError.classList.remove("d-none");
+                } else {
+                    passwordError.classList.add("d-none");
+                }
+            });
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
