@@ -1,6 +1,9 @@
 ﻿using AgendaTuLookWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AgendaTuLookWeb.Controllers
 {
@@ -77,18 +80,19 @@ namespace AgendaTuLookWeb.Controllers
         }
 
 		[HttpPost]
-		public async Task<IActionResult> EditarPerfilUsuario(UsuarioModel usuario)
+		public async Task<IActionResult> EditarPerfilUsuario(UsuarioModel model)
 		{
 			if (!ModelState.IsValid)
 			{
-				return View(usuario);
+				return View(model);
 			}
-
-			using (var http = _httpClient.CreateClient())
+            // Encriptar la nueva contraseña antes de enviarla al API
+            model.NuevaContrasennia = Encrypt(model.NuevaContrasennia!);
+            using (var http = _httpClient.CreateClient())
 			{
 				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Usuarios/EditarPerfilUsuario";
 
-				var response = await http.PostAsJsonAsync(url, usuario);
+				var response = await http.PostAsJsonAsync(url, model);
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -99,12 +103,39 @@ namespace AgendaTuLookWeb.Controllers
 				{
 					var errorMessage = await response.Content.ReadAsStringAsync();
 					ModelState.AddModelError("", $"Error al actualizar el perfil: {errorMessage}");
-					return View(usuario);
+					return View(model);
 				}
 			}
 		}
 
 
+        private string Encrypt(string texto)
+        {
+            byte[] iv = new byte[16];
+            byte[] array;
 
-	}
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(_configuration.GetSection("Variables:llaveCifrado").Value!);
+                aes.IV = iv;
+
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
+                        {
+                            streamWriter.Write(texto);
+                        }
+
+                        array = memoryStream.ToArray();
+                    }
+                }
+            }
+            return Convert.ToBase64String(array);
+        }
+
+    }
 }

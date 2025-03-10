@@ -63,8 +63,7 @@
                                     <label asp-for="Contrasennia" class="form-label">Contraseña</label>
                                 </div>
                                 <div class="col-sm-9">
-                                    <input type="password" asp-for="Contrasennia" class="form-control" placeholder="Nueva Contraseña (opcional)" />
-                                    <span asp-validation-for="Contrasennia" class="text-danger"></span>
+                                    <input asp-for="NuevaContrasennia" type="password" class="form-control" placeholder="Nueva Contraseña" name="NuevaContrasennia" id="NuevaContrasennia" required />
                                     <small class="form-text text-muted">Dejar en blanco para mantener la contraseña actual</small>
                                 </div>
                             </div>
@@ -74,7 +73,7 @@
                                     <label for="ConfirmarContrasennia" class="form-label">Confirmar Contraseña</label>
                                 </div>
                                 <div class="col-sm-9">
-                                    <input type="password" id="ConfirmarContrasennia" name="ConfirmarContrasennia" class="form-control" placeholder="Confirme su nueva contraseña" />
+                                    <input asp-for="ConfirmarContrasennia" type="password" class="form-control" placeholder="Confirmar Contraseña" name="ConfirmarContrasennia" id="ConfirmarContrasennia" required />
                                     <div id="passwordError" class="text-danger d-none">Las contraseñas no coinciden</div>
                                 </div>
                             </div>
@@ -101,7 +100,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const form = document.querySelector("form");
-            const passwordInput = document.querySelector("#Contrasennia");
+            const passwordInput = document.querySelector("#NuevaContrasennia");
             const confirmInput = document.querySelector("#ConfirmarContrasennia");
             const passwordError = document.querySelector("#passwordError");
 
