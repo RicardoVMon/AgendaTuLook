@@ -214,7 +214,6 @@ namespace AgendaTuLookAPI.Controllers
             {
                 var respuesta = new RespuestaModel();
 
-                // Verificar si el correo existe
                 var usuario = context.QueryFirstOrDefault<UsuarioModel>("ObtenerIdUsuarioConCorreo", new { Correo = model.Correo });
 
                 if (usuario == null)
@@ -224,7 +223,6 @@ namespace AgendaTuLookAPI.Controllers
                     return Ok(respuesta);
                 }
 
-                // Verificar si el usuario se registró con Google y no tiene contraseña
                 if (usuario.ProveedorAuth == "Google" && string.IsNullOrEmpty(usuario.Contrasennia))
                 {
                     respuesta.Indicador = false;
@@ -233,13 +231,12 @@ namespace AgendaTuLookAPI.Controllers
                 }
 
                 var contrasennaTemp = GenerarContrasennaTemporal();
-                var contrasennaTempEncriptada = Encrypt(contrasennaTemp); // Usa el mismo método de encriptación
+                var contrasennaTempEncriptada = Encrypt(contrasennaTemp);
 
                 var fechaVencimiento = DateTime.Now.AddMinutes(30);
                 context.Execute("ActualizarContrasennaTemp", new { UsuarioId = usuario.UsuarioId, ContrasennaTemp = contrasennaTempEncriptada, TieneContrasennaTemp = true, FechaVencimientoTemp = fechaVencimiento
                 });
 
-                // Enviar el código por correo
                 EnviarCorreoRecuperacion(usuario.Correo, contrasennaTemp, fechaVencimiento);
 
                 respuesta.Indicador = true;
@@ -294,13 +291,6 @@ namespace AgendaTuLookAPI.Controllers
 
         private string GenerarContenidoCorreo(string contrasenna, DateTime fechaVencimiento)
         {
-            //string contenido = $"<h1>Recuperación de Contraseña</h1>" +
-            //                  $"<p>Hola,</p>" +
-            //                  $"<p>Tu contraseña temporal es: <strong>{contrasenna}</strong></p>" +
-            //                  $"<p>Esta contraseña expira el: {fechaVencimiento.ToString("dd/MM/yyyy hh:mm tt")}</p>" +
-            //                  $"<p>Por favor, cambia tu contraseña lo antes posible. Para proceder ingresa la contraseña temporal brindada en el inicio de sesión.</p>";
-
-            //return contenido;
 
             string contenido = $@"
                 <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;'>
@@ -328,7 +318,6 @@ namespace AgendaTuLookAPI.Controllers
             {
                 var respuesta = new RespuestaModel();
 
-                // Verificar que las contraseñas coincidan
                 if (model.NuevaContrasennia != model.ConfirmarContrasennia)
                 {
                     respuesta.Indicador = false;
@@ -338,7 +327,6 @@ namespace AgendaTuLookAPI.Controllers
 
                 var contrasennia = model.NuevaContrasennia;
 
-                // Actualizar la contraseña en la base de datos
                 context.Execute("CambiarContrasennaTemp", new { model.Correo, NuevaContrasenna = contrasennia });
 
                 respuesta.Indicador = true;
@@ -347,7 +335,7 @@ namespace AgendaTuLookAPI.Controllers
             }
         }
 
-        private string Encrypt(string texto) //yo se que no es ideal tenerlo aqui pero es para encriptar la contra temp :(
+        private string Encrypt(string texto) //para poder encriptar la contra temp tambien
         {
             byte[] iv = new byte[16];
             byte[] array;
