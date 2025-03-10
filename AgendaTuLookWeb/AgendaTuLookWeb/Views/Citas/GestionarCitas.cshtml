@@ -1,0 +1,145 @@
+﻿<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h3>Gestionar citas</h3>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" class="form-control" id="buscarTratamiento" placeholder="Buscar por nombre...">
+                <button class="btn btn-outline-secondary" type="button" id="btnBuscar">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-outline-primary" id="btnOrdenar">
+                <i class="fas fa-sort-alpha-down"></i> Ordenar A-Z
+            </button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center" id="tablaTratamientos">
+            <thead style="background-color: #3F4F44; color: white;">
+                <tr>
+                    <th>#</th>
+                    <th>Nombre del Tratamiento</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Corte de pelo </td>
+                    <td><span class="badge bg-warning">Pendiente</span></td>
+                    <td>09/03/2025</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" title="Ver detalles">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning ms-1" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger ms-1" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>  
+</div>
+
+<script>
+    // Funcionalidad básica
+    document.addEventListener('DOMContentLoaded', function () {
+        // Eliminar registro
+        const btnEliminar = document.querySelector('.btn-danger');
+        if (btnEliminar) {
+            btnEliminar.addEventListener('click', function () {
+                if (confirm('¿Está seguro de que desea eliminar este tratamiento?')) {
+                    const fila = this.closest('tr');
+                    fila.remove();
+                }
+            });
+        }
+
+        // Editar registro
+        const btnEditar = document.querySelector('.btn-warning');
+        if (btnEditar) {
+            btnEditar.addEventListener('click', function () {
+                alert('Editando tratamiento: ');
+            });
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Función de búsqueda
+        const inputBuscar = document.getElementById('buscarTratamiento');
+        const btnBuscar = document.getElementById('btnBuscar');
+
+        function buscarTratamiento() {
+            const textoBusqueda = inputBuscar.value.toLowerCase();
+            const filas = document.querySelectorAll('#tablaTratamientos tbody tr');
+
+            filas.forEach(fila => {
+                const nombreTratamiento = fila.cells[1].textContent.toLowerCase();
+                if (nombreTratamiento.includes(textoBusqueda)) {
+                    fila.style.display = '';
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        }
+
+        btnBuscar.addEventListener('click', buscarTratamiento);
+        inputBuscar.addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') {
+                buscarTratamiento();
+            }
+        });
+
+        // Función de ordenamiento A-Z
+        const btnOrdenar = document.getElementById('btnOrdenar');
+        let ordenAscendente = true;
+
+        btnOrdenar.addEventListener('click', function () {
+            const tabla = document.getElementById('tablaTratamientos');
+            const filas = Array.from(tabla.querySelectorAll('tbody tr'));
+
+            // Ordenar las filas
+            filas.sort((a, b) => {
+                const textoA = a.cells[1].textContent.toLowerCase();
+                const textoB = b.cells[1].textContent.toLowerCase();
+
+                return ordenAscendente
+                    ? textoA.localeCompare(textoB)
+                    : textoB.localeCompare(textoA);
+            });
+
+            // Cambiar el sentido del ordenamiento para el siguiente clic
+            ordenAscendente = !ordenAscendente;
+
+            // Actualizar el ícono del botón
+            if (ordenAscendente) {
+                this.innerHTML = '<i class="fas fa-sort-alpha-down"></i> Ordenar A-Z';
+            } else {
+                this.innerHTML = '<i class="fas fa-sort-alpha-up"></i> Ordenar Z-A';
+            }
+
+            // Eliminar las filas existentes
+            const tbody = tabla.querySelector('tbody');
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+
+            // Añadir las filas ordenadas
+            filas.forEach(fila => tbody.appendChild(fila));
+        });
+    });
+</script>
