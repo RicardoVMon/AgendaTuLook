@@ -3,6 +3,7 @@
 @{
     Layout = "~/Views/Shared/_LayoutExterno.cshtml";
 }
+
 <div class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-dark navbar-expand p-2" style="background-color: #291410;">
         <div class="container-fluid">
@@ -17,26 +18,33 @@
         </div>
         <div class="col d-flex align-items-center">
             <div class="container-fluid d-flex flex-column">
-                <form class="pb-5 border-bottom px-5" asp-action="RecuperarContrasennia" method="post">
+                <form class="pb-5 border-bottom px-5" asp-action="CambiarContrasennia" method="post">
                     <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
-                    <h2 class="mb-3 text-center" style="color: #321914;">Recuperación de Contraseña</h2>
-                    <p class="mb-4 text-center">Ingresá tu correo electrónico asociado a tu cuenta para iniciar el proceso de recuperación.</p>
-                    
+                    <h2 class="mb-3 text-center" style="color: #321914;">Actualizar Contraseña</h2>
+                    <p class="mb-4 text-center">Por favor actualice su contraseña.</p>
+
                     @if (TempData["Mensaje"] != null)
                     {
                         <div class="alert alert-warning text-center">
                             @TempData["Mensaje"]
                         </div>
                     }
-                    
+
                     <div class="form-group form-floating mb-4">
                         <input asp-for="Correo" type="email" class="form-control" placeholder="Correo Electrónico" name="Correo" id="Correo" required />
-                        <label class="form-label">Correo Electrónico</label>
+                        <label for="Correo">Correo Electrónico</label>
                     </div>
-
+                    <div class="form-group form-floating mb-4">
+                        <input asp-for="NuevaContrasennia" type="password" class="form-control" placeholder="Nueva Contraseña" name="NuevaContrasennia" id="NuevaContrasennia" required />
+                        <label for="NuevaContrasennia">Nueva Contraseña</label>
+                    </div>
+                    <div class="form-group form-floating mb-4">
+                        <input asp-for="ConfirmarContrasennia" type="password" class="form-control" placeholder="Confirmar Contraseña" name="ConfirmarContrasennia" id="ConfirmarContrasennia" required />
+                        <label for="ConfirmarContrasennia">Confirmar Contraseña</label>
+                    </div>
                     <div class="form-group text-center">
                         <button type="submit" class="btn btn-primary btn-lg" style="background-color:#321914; border-color: #321914;">
-                            Recuperar
+                            Actualizar
                         </button>
                     </div>
                 </form>
