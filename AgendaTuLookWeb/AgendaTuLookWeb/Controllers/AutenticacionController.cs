@@ -44,25 +44,35 @@ namespace AgendaTuLookWeb.Controllers
 				{
 					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
 
-					if (result != null && result.Indicador)
-					{
-						var datosResult = JsonSerializer.Deserialize<UsuarioModel>((JsonElement)result.Datos!);
+                    if (result != null)
+                    {
+                        if (result.Indicador)
+                        {
+                            var datosResult = JsonSerializer.Deserialize<UsuarioModel>((JsonElement)result.Datos!);
 
-						HttpContext.Session.SetString("Token", datosResult!.Token!);
-						HttpContext.Session.SetString("UsuarioId", datosResult!.UsuarioId.ToString()!);
-						HttpContext.Session.SetString("Correo", datosResult!.Correo!.ToString()!);
-						HttpContext.Session.SetString("Nombre", datosResult!.Nombre!.ToString());
-						return RedirectToAction("Index", "Home");
-					}
+                            HttpContext.Session.SetString("Token", datosResult!.Token!);
+                            HttpContext.Session.SetString("UsuarioId", datosResult.UsuarioId.ToString()!);
+                            HttpContext.Session.SetString("Correo", datosResult.Correo!.ToString()!);
+                            HttpContext.Session.SetString("Nombre", datosResult.Nombre!.ToString());
+                            return RedirectToAction("Index", "Home");
+                        }
+                        else if (result.Mensaje == "Debe actualizar su contraseña antes de ingresar.")
+                        {
+                            TempData["Mensaje"] = result.Mensaje;
+                            return RedirectToAction("CambiarContrasennia", "Autenticacion");
+                        }
 
-					TempData["Mensaje"] = result!.Mensaje;
+                        TempData["Mensaje"] = result.Mensaje;
+                    }
+
+                    TempData["Mensaje"] = result!.Mensaje;
 					return View(model);
 				}
 			}
 			return View();
 		}
 
-		[HttpGet]
+        [HttpGet]
 		public IActionResult Registro()
 		{
 			return View();
@@ -116,9 +126,77 @@ namespace AgendaTuLookWeb.Controllers
 			return View();
 		}
 
-		#region Google
+        [HttpPost]
+        public async Task<IActionResult> RecuperarContrasennia(UsuarioModel model)
+        {
+            using (var http = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Autenticacion/RecuperarContrasennia";
+                var response = await http.PostAsJsonAsync(url, model);
 
-		[HttpGet]
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+
+                    if (result!.Indicador)
+                    {
+                        TempData["Mensaje"] = result.Mensaje;
+                        return RedirectToAction("Login", "Autenticacion");
+                    }
+                    else
+                    {
+                        TempData["Mensaje"] = result.Mensaje;
+                        return View();
+                    }
+                }
+            }
+
+            TempData["Mensaje"] = "Hubo un error al procesar la solicitud.";
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult CambiarContrasennia()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CambiarContrasennia(UsuarioModel model)
+        {
+            // Encriptar la nueva contraseña antes de enviarla al API
+            model.NuevaContrasennia = Encrypt(model.NuevaContrasennia!);
+            model.ConfirmarContrasennia = Encrypt(model.ConfirmarContrasennia!);
+
+            using (var http = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Autenticacion/CambiarContrasennaTemp";
+                var response = await http.PostAsJsonAsync(url, model);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+
+                    if (result!.Indicador)
+                    {
+                        TempData["Mensaje"] = result.Mensaje;
+                        return RedirectToAction("Login", "Autenticacion");
+                    }
+                    else
+                    {
+                        TempData["Mensaje"] = result.Mensaje;
+                        return View();
+                    }
+                }
+            }
+
+            TempData["Mensaje"] = "Hubo un error al procesar la solicitud.";
+            return View();
+        }
+
+        #region Google
+
+        [HttpGet]
 		public async Task<IActionResult> GoogleCallback()
 		{
 			var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
