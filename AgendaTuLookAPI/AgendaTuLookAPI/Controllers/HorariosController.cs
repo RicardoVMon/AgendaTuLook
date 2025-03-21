@@ -19,15 +19,13 @@ namespace AgendaTuLookAPI.Controllers
 
         [HttpGet]
         [Route("MostrarHorarios")]
-        public IActionResult MostrarHorarios(string Estado)
+        public IActionResult MostrarHorarios(Boolean Estado)
         {
             try
             {
                 using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
                     //Se llama al procediminto almacenado para mostrar los horarios activos
-                    //Estado debe ser solo "Activo" o "Inactivo"
-                    //que hacer: validaciones a estado
                     var result = context.Query<HorariosModel>("MostrarHorarios", new {Estado});
 
                     if (result != null)
@@ -59,15 +57,10 @@ namespace AgendaTuLookAPI.Controllers
             {
                 using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
-                    /*Se ejecuta el procedimiento Registrar Horario
-                     *  que hacer: validar que el dia que se ponga sea valido (Lunes-domingo)
-                     * validar que la hora siga un formado(HH: MM)
-                     *
-                     * 
-                     */
+                    //Se ejecuta el procedimiento Registrar Horario
 
                     var result = context.Execute("RegistrarHorario",
-                    new { model.HoraEntrada, model.HoraSalida, model.dia});
+                    new { model.StartDate, model.EndDate});
                     var respuesta = new RespuestaModel();
 
                     if (result > 0)
@@ -102,12 +95,8 @@ namespace AgendaTuLookAPI.Controllers
                 using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
                     //Se ejecuta el procedimiento Actualizar Horario
-                    /*que hacer: Validar estado que sea (Activo/Inactivo)
-                     * validar que la hora siga un formado(HH: MM)
-                     * validar que el dia que se ponga sea valido (Lunes-domingo)
-                    */
                     var result = context.Execute("ActualizarHorario",
-                    new {model.HorariosId, model.HoraEntrada, model.HoraSalida, model.dia, model.Estado});
+                    new {model.HorariosId, model.StartDate, model.EndDate, model.Estado});
                     var respuesta = new RespuestaModel();
 
                     if (result > 0)
@@ -142,8 +131,7 @@ namespace AgendaTuLookAPI.Controllers
                 using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
                     //Se ejecuta el procedimiento Elimnar Horario
-                    /*que hacer: 
-                    */
+
                     var result = context.Execute("EliminarHorario",
                     new { HorariosId });
                     var respuesta = new RespuestaModel();
