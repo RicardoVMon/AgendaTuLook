@@ -25,16 +25,23 @@ namespace AgendaTuLookAPI.Controllers
             {
                 using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
+                    var respuesta = new RespuestaModel();
                     //Se llama al procediminto almacenado para mostrar los horarios activos
                     var result = context.Query<HorariosModel>("MostrarHorarios", new {Estado});
 
                     if (result != null)
                     {
-                        //Devuelve el resultado del query como una lista de horarios
-                        return Ok(result);
+                        respuesta.Indicador = true;
+                        respuesta.Datos = result;
+                        return Ok(respuesta);
                     }
-                    //en cualquier caso si falla la request devuelve nulo
-                    return NotFound(null);
+                    else
+                    {
+                        respuesta.Indicador = false;
+                        respuesta.Mensaje = "Su información no se ha validado correctamente";
+                    }
+
+                    return Ok(respuesta);
 
                 }
             }
@@ -145,6 +152,45 @@ namespace AgendaTuLookAPI.Controllers
                     }
 
                     return Ok(respuesta);
+                }
+            }
+            catch (SqlException ex)
+            {
+                return NotFound("Algo sucedio en el servidor: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+
+
+        }
+
+        [HttpGet]
+        [Route("MostrarHorario")]
+        public IActionResult MostrarHorario(long HorariosId)
+        {
+            try
+            {
+                using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
+                {
+                    var respuesta = new RespuestaModel();
+                    //Se llama al procediminto almacenado para mostrar los horarios activos
+                    var result = context.QuerySingle<HorariosModel>("MostrarHorario", new { HorariosId });
+                    if (result != null)
+                    {
+                        respuesta.Indicador = true;
+                        respuesta.Datos = result;
+                        return Ok(respuesta);
+                    }
+                    else
+                    {
+                        respuesta.Indicador = false;
+                        respuesta.Mensaje = "Su información no se ha validado correctamente";
+                    }
+
+                    return Ok(respuesta);
+
                 }
             }
             catch (SqlException ex)
