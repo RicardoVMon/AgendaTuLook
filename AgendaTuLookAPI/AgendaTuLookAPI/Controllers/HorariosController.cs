@@ -176,7 +176,7 @@ namespace AgendaTuLookAPI.Controllers
                 {
                     var respuesta = new RespuestaModel();
                     //Se llama al procediminto almacenado para mostrar los horarios activos
-                    var result = context.QuerySingle<HorariosModel>("MostrarHorario", new { HorariosId });
+                    var result = context.QueryFirstOrDefault<HorariosModel>("MostrarHorario", new { HorariosId });
                     if (result != null)
                     {
                         respuesta.Indicador = true;
