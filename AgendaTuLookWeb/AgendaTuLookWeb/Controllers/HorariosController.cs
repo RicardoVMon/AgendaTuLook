@@ -14,11 +14,15 @@ namespace AgendaTuLookWeb.Controllers
             _httpClient = httpClient;
             _configuration = configuration;
         }
+        /*
+         * fecha: 22/3/2025
+         * Accion: muestra los horarios segun el estado
+        */
         public IActionResult Index(Boolean Estado)
         {
-            Console.WriteLine("Este es el estado " + Estado);
             using (var http = _httpClient.CreateClient())
             {
+                //url de la api para mostrar los horarios segun el estado
                 var url = _configuration.GetSection("Variables:urlWebApi").Value + "Horarios/MostrarHorarios?Estado=" + Estado;
                 var response = http.GetAsync(url).Result;
                 if (response.IsSuccessStatusCode)
@@ -26,9 +30,9 @@ namespace AgendaTuLookWeb.Controllers
                     var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
                     if(result != null && result.Indicador)
                     {
-                        Console.WriteLine(result.Datos);
+                        //se transforma el json del api a una lista de horarios model
                         var datosHorarios = JsonSerializer.Deserialize<List<HorariosModel>>((JsonElement)result.Datos!);
-                        
+                        //se muestra en la vista
                         return View(datosHorarios); 
                     }
                    
@@ -38,7 +42,10 @@ namespace AgendaTuLookWeb.Controllers
             }
         }
 
-
+        /*
+         * fecha: 22/3/2025
+         * Accion: muestra un horario dependiendo del id
+        */
         public IActionResult VerHorario(long id)
         {
             using (var http = _httpClient.CreateClient())
@@ -60,12 +67,20 @@ namespace AgendaTuLookWeb.Controllers
 
             }
         }
+        /*
+         * fecha: 22/3/2025
+         * Accion: muestra la vista con el formulario para crear el horario
+        */
 
         public IActionResult CrearHorario()
         {
             return View();
         }
 
+        /*
+         * fecha: 22/3/2025
+         * Accion: registra en la base de datos el horario creado en el metodo anterior llamando al api
+        */
         public IActionResult RegistrarHorario(HorariosModel model)
         {
             using (var http = _httpClient.CreateClient())
@@ -78,7 +93,10 @@ namespace AgendaTuLookWeb.Controllers
             }
         }
 
-
+        /*
+         * fecha: 22/3/2025
+         * Accion: Edita en base de datos el horario pasado por parametro
+        */
         public IActionResult EditarHorario(HorariosModel model)
         {
             using (var http = _httpClient.CreateClient())
@@ -90,6 +108,10 @@ namespace AgendaTuLookWeb.Controllers
 
             }
         }
+        /*
+         * fecha: 22/3/2025
+         * Accion: no elimina literalmente un horario solo cambia el estado del horario 
+        */
 
         public IActionResult EliminarHorario(long id)
         {
