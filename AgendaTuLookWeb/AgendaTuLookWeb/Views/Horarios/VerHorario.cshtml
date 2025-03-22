@@ -1,0 +1,34 @@
+﻿@model HorariosModel
+
+@if(Model == null){
+    <p>no hay nada para mostrar</p>
+}else{
+    <form asp-controller="Horarios" asp-action="EditarHorario">
+        <div class="row">
+
+            <h2 class="text-center">Ver y editar horario</h2>
+            <div class="form-group col-md-12 mb-4">
+                <input type="datetime" required class="form-control input-lg" asp-for="StartDate" placeholder="fecha de inicio">
+            </div>
+            <div class="form-group col-md-12 mb-4">
+                <input type="datetime" class="form-control  input-lg" asp-for="EndDate" placeholder="Fecha de finalización">
+                
+            </div>
+            <div class="form-group col-md-12 mb-4 form-check">
+                <input class="form-check-input" type="checkbox" asp-for="Estado" id="flexCheckDefault">
+                <label class="form-check-label" for="flexCheckDefault">
+                    Estado
+                </label>
+            <input type="hidden" asp-for="HorariosId" />
+
+            <div class="col-md-12">
+
+                <button type="submit" class="btn btn-primary btn-pill mb-4">editar</button>
+
+
+            </div>
+        </div>
+        </div>
+    </form>
+
+}

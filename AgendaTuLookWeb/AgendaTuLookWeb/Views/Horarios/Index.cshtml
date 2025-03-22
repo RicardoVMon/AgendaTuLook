@@ -1,0 +1,53 @@
+﻿@model List<HorariosModel>
+@if(Model.Count == 0 || Model == null){
+	<p>No hay horarios para mostrar</p>
+    <a class="btn btn-success " href="@Url.Action("Index","Horarios", new { Estado = false })">ver horarios eliminados</a>
+}else{
+    <div>
+        <h2>Consulta de horarios</h2>
+    </div>
+    <a class="btn btn-success " asp-area="" asp-controller="Horarios"  asp-action="CrearHorario"> Crear Horario </a>
+    <div class="pt-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha inicio</th>
+                    <th>Fecha final</th>
+                    <th>Estado</th>
+                    <th></th>
+
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var Horarios in Model)
+                {
+                    <tr>
+                        <td>@Horarios.StartDate</td>
+                        <td>@Horarios.EndDate</td>
+                        <td>
+                            @if (Horarios.Estado == true)
+                            {
+                                <p>Activo</p>
+                            }
+                            else
+                            {
+                                <p>Inactivo</p>
+                            }
+                        </td>
+                        <td>
+
+                            <a class="btn btn-success " href="@Url.Action("VerHorario","Horarios", new { Id = @Horarios.HorariosId })">Editar horario</a>
+                            <a class="btn btn-warning" href="@Url.Action("EliminarHorario","Horarios", new { Id = @Horarios.HorariosId })">Eliminar horario</a>
+                        </td>
+
+
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <a class="btn btn-success " href="@Url.Action("Index","Horarios", new { Estado = false })">ver horarios eliminados</a>
+    </div>
+    
+}
