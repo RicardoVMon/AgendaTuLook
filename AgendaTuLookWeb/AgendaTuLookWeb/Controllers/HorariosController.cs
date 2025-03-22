@@ -61,6 +61,23 @@ namespace AgendaTuLookWeb.Controllers
             }
         }
 
+        public IActionResult CrearHorario()
+        {
+            return View();
+        }
+
+        public IActionResult RegistrarHorario(HorariosModel model)
+        {
+            using (var http = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Horarios/RegistrarHorario";
+                var response = http.PostAsJsonAsync(url, model).Result;
+
+                return RedirectToAction("Index", new { Estado = true });
+
+            }
+        }
+
 
         public IActionResult EditarHorario(HorariosModel model)
         {
