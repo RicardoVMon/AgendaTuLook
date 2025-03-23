@@ -18,5 +18,9 @@ namespace AgendaTuLookWeb.Controllers
 		{
 			return View();
 		}
+		public IActionResult SolicitarCita()
+		{
+			return View();
+		}
 	}
 }

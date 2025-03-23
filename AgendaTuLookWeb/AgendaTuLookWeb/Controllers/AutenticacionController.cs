@@ -9,19 +9,24 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Security.Claims;
+using System.Net.Http.Headers;
+using AgendaTuLookWeb.Servicios;
 
 namespace AgendaTuLookWeb.Controllers
 {
-    public class AutenticacionController : Controller
+	[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+	public class AutenticacionController : Controller
     {
 
 		private readonly IHttpClientFactory _httpClient;
 		private readonly IConfiguration _configuration;
+		private readonly ISeguridad _seguridad;
 
-		public AutenticacionController(IHttpClientFactory httpClient, IConfiguration configuration)
+		public AutenticacionController(IHttpClientFactory httpClient, IConfiguration configuration, ISeguridad seguridad)
 		{
             _httpClient = httpClient;
 			_configuration = configuration;
+			_seguridad = seguridad;
 		}
 
 		[HttpGet]
@@ -33,7 +38,7 @@ namespace AgendaTuLookWeb.Controllers
 		[HttpPost]
 		public IActionResult Login(UsuarioModel model)
 		{
-			model.Contrasennia = Encrypt(model.Contrasennia!);
+			model.Contrasennia = _seguridad.Encrypt(model.Contrasennia!);
 
 			using (var http = _httpClient.CreateClient())
 			{
@@ -56,13 +61,6 @@ namespace AgendaTuLookWeb.Controllers
                             HttpContext.Session.SetString("Nombre", datosResult.Nombre!.ToString());
                             return RedirectToAction("Index", "Home");
                         }
-                        else if (result.Mensaje == "Debe actualizar su contraseña antes de ingresar.")
-                        {
-                            TempData["Mensaje"] = result.Mensaje;
-                            return RedirectToAction("CambiarContrasennia", "Autenticacion");
-                        }
-
-                        TempData["Mensaje"] = result.Mensaje;
                     }
 
                     TempData["Mensaje"] = result!.Mensaje;
@@ -81,7 +79,7 @@ namespace AgendaTuLookWeb.Controllers
 		[HttpPost]
 		public IActionResult Registro(UsuarioModel model)
 		{
-			model.Contrasennia = Encrypt(model.Contrasennia!);
+			model.Contrasennia = _seguridad.Encrypt(model.Contrasennia!);
 
 			using (var http = _httpClient.CreateClient())
 			{
@@ -106,19 +104,15 @@ namespace AgendaTuLookWeb.Controllers
 			return View();
 		}
 
-		[HttpPost]
-		public IActionResult Logout()
+		[HttpGet]
+		public async Task<IActionResult> Logout()
 		{
-			using (var http = _httpClient.CreateClient())
-			{
-				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Autenticacion/Logout";
-				var response = http.GetAsync(url).Result;
-
-				if (response.IsSuccessStatusCode)
-					return RedirectToAction("Login", "Autenticacion");
-			}
-			return View();
+			HttpContext.Session.Clear();
+			await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+			return RedirectToAction("Login", "Autenticacion");
 		}
+
+		#region Cambio Contraseña
 
 		[HttpGet]
 		public IActionResult RecuperarContrasennia()
@@ -141,7 +135,9 @@ namespace AgendaTuLookWeb.Controllers
                     if (result!.Indicador)
                     {
                         TempData["Mensaje"] = result.Mensaje;
-                        return RedirectToAction("Login", "Autenticacion");
+						HttpContext.Session.Clear();
+						HttpContext.Session.SetString("CorreoVerificacion", model.Correo!);
+						return RedirectToAction("CodigoVerificacion", "Autenticacion");
                     }
                     else
                     {
@@ -155,22 +151,75 @@ namespace AgendaTuLookWeb.Controllers
             return View();
         }
 
-        [HttpGet]
+		[HttpGet]
+		public IActionResult CodigoVerificacion()
+		{
+			if (HttpContext.Session.GetString("CorreoVerificacion") == null)
+			{
+				return RedirectToAction("RecuperarContrasennia", "Autenticacion");
+			}
+			return View();
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> CodigoVerificacion(UsuarioModel model)
+		{
+			using (var http = _httpClient.CreateClient())
+			{
+				model.Correo = HttpContext.Session.GetString("CorreoVerificacion");
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Autenticacion/CodigoVerificacion";
+				var response = await http.PostAsJsonAsync(url, model);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+
+					if (result!.Indicador)
+					{
+						HttpContext.Session.SetString("CodigoValido", "true");
+						TempData["Mensaje"] = result.Mensaje;
+
+						return RedirectToAction("CambiarContrasennia", "Autenticacion");
+					}
+					else
+					{
+						TempData["Mensaje"] = result.Mensaje;
+						return View();
+					}
+				}
+			}
+
+			TempData["Mensaje"] = "Hubo un error al procesar la solicitud.";
+			return View();
+		}
+
+		[HttpGet]
         public IActionResult CambiarContrasennia()
         {
-            return View();
+			if (HttpContext.Session.GetString("CorreoVerificacion") == null || HttpContext.Session.GetString("CodigoValido") == null)
+			{
+				return RedirectToAction(HttpContext.Session.GetString("CorreoVerificacion") == null ? "RecuperarContrasennia" : "CodigoVerificacion", "Autenticacion");
+			}
+			return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> CambiarContrasennia(UsuarioModel model)
         {
-            // Encriptar la nueva contraseña antes de enviarla al API
-            model.NuevaContrasennia = Encrypt(model.NuevaContrasennia!);
-            model.ConfirmarContrasennia = Encrypt(model.ConfirmarContrasennia!);
+
+			if (model.NuevaContrasennia != model.ConfirmarContrasennia)
+			{
+				TempData["Mensaje"] = "Las contraseñas no coinciden.";
+				return View();
+			}
+
+			// Encriptar la nueva contraseña antes de enviarla al API
+			model.Correo = HttpContext.Session.GetString("CorreoVerificacion");
+			model.NuevaContrasennia = _seguridad.Encrypt(model.NuevaContrasennia!);
 
             using (var http = _httpClient.CreateClient())
             {
-                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Autenticacion/CambiarContrasennaTemp";
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Autenticacion/CambiarContrasenna";
                 var response = await http.PostAsJsonAsync(url, model);
 
                 if (response.IsSuccessStatusCode)
@@ -180,6 +229,7 @@ namespace AgendaTuLookWeb.Controllers
                     if (result!.Indicador)
                     {
                         TempData["Mensaje"] = result.Mensaje;
+						HttpContext.Session.Clear();
                         return RedirectToAction("Login", "Autenticacion");
                     }
                     else
@@ -194,9 +244,11 @@ namespace AgendaTuLookWeb.Controllers
             return View();
         }
 
-        #region Google
+		#endregion Cambio Contraseña
 
-        [HttpGet]
+		#region Google
+
+		[HttpGet]
 		public async Task<IActionResult> GoogleCallback()
 		{
 			var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -233,6 +285,7 @@ namespace AgendaTuLookWeb.Controllers
 						HttpContext.Session.SetString("Token", datosResult!.Token!);
 						HttpContext.Session.SetString("UsuarioId", datosResult!.UsuarioId.ToString()!);
 						HttpContext.Session.SetString("Correo", datosResult!.Correo!);
+						HttpContext.Session.SetString("ProveedorAuth", datosResult!.ProveedorAuth!);
 						HttpContext.Session.SetString("Nombre", datosResult!.Nombre!);
 
 						return RedirectToAction("Index", "Home");
@@ -253,35 +306,32 @@ namespace AgendaTuLookWeb.Controllers
 			return Challenge(properties, GoogleDefaults.AuthenticationScheme);
 		}
 
-		#endregion Google
-
-		private string Encrypt(string texto)
+		[HttpGet]
+		public async Task<IActionResult> DesvincularGoogle(String correo)
 		{
-			byte[] iv = new byte[16];
-			byte[] array;
-
-			using (Aes aes = Aes.Create())
+			using (var http = _httpClient.CreateClient())
 			{
-				aes.Key = Encoding.UTF8.GetBytes(_configuration.GetSection("Variables:llaveCifrado").Value!);
-				aes.IV = iv;
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Autenticacion/DesvincularGoogle?correo=" + correo;
+				var response = await http.GetAsync(url);
 
-				ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-				using (MemoryStream memoryStream = new MemoryStream())
+				if (response.IsSuccessStatusCode)
 				{
-					using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-					{
-						using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
-						{
-							streamWriter.Write(texto);
-						}
+					var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
 
-						array = memoryStream.ToArray();
+					if (result!.Indicador)
+					{
+						TempData["successMessage"] = result.Mensaje;
+						HttpContext.Session.SetString("ProveedorAuth", "Email");
+						return RedirectToAction("EditarPerfilUsuario", "Usuarios", new { Id = HttpContext.Session.GetString("UsuarioId") });
 					}
+					TempData["errorMessage"] = result.Mensaje;
+					return RedirectToAction("EditarPerfilUsuario", "Usuarios", new { Id = HttpContext.Session.GetString("UsuarioId") });
 				}
+				return View();
 			}
-			return Convert.ToBase64String(array);
 		}
 
+		#endregion Google
 	}
 }

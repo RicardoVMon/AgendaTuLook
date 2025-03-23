@@ -3,9 +3,16 @@
         <div class="col-12">
             <div class="row">
                 <div class="col-6">
-                    <div class="display-3 px-0">Historial de Citas</div>
-                    <div class="text-muted px-0">Seleccione una cita ocurrida para poder administrar su información</div>
+                    <div class="display-3 px-0">Gestión de Servicios</div>
+                    <div class="text-muted px-0">Seleccione una servicio para gestionar su información</div>
                 </div>
+            </div>
+            <div class="row mt-3 mb-2">
+                <a href="#"
+                   class="btn btn-success btn-xl custom-position m-4 rounded-circle z-3 d-flex align-items-center justify-content-center"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Añadir un nuevo servicio" id="AgregarNuevoServicio">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
             </div>
 
             <!-- Tabla de Pacientes Activos -->
@@ -56,6 +63,8 @@
         </div>
     </div>
 </section>
+<script src="~/js/botontooltip.js"></script>
+<link href="~/css/botontooltip.css" rel="stylesheet" />
 
 <script>
     $(document).ready(function () {

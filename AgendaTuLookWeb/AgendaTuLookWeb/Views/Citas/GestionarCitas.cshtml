@@ -1,42 +1,76 @@
-﻿<div class="card card-default">
-    <div class="card-header">
-        <h2>Gestionar Citas</h2>
+﻿<section>
+    <div class="row px-5">
+        <div class="col-12">
+            <div class="row">
+                <div class="col-6">
+                    <div class="display-3 px-0">Gestión de Citas</div>
+                    <div class="text-muted px-0">Seleccione una cita para gestionar su información</div>
+                </div>
+            </div>
+            <div class="row mt-3 mb-2">
+                <a href="#"
+                   class="btn btn-success btn-xl custom-position m-4 rounded-circle z-3 d-flex align-items-center justify-content-center"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Añadir una nueva cita" id="AgregarNuevaCita">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+            </div>
 
-        <div style="text-align:right;">
-            <a class="btn btn-primary" href="#">
-                <i class="fa fa-plus"></i> Agregar Cita
-            </a>
+            <!-- Tabla de Pacientes Activos -->
+            <div class="row">
+                <div class="col-12 px-0">
+                    <div class="table-responsive">
+                        <table id="tablaGestionCitas" class="table table-bordered table-hover bg-white">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col">Hora de Atención</th>
+                                    <th scope="col">Nombre Servicio</th>
+                                    <th scope="col">Cliente</th>
+                                    <th scope="col">Estado</th>
+                                    <th scope="col">Acciones</th>
+                                    <th scope="col">Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-03-19</td>
+                                    <td>15:00</td>
+                                    <td>Servicio de Ejemplo</td>
+                                    <td class="text-center">Sergio Ramírez</td>
+                                    <td>Activo</td>
+                                    <td>Acciones de Ejemplo</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-outline-primary rounded" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-alt"></i> Opción</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit"></i> Editar</a></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#">
+                                                        <i class="fa-solid fa-ban"></i> Desactivar
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</section>
+<script src="~/js/botontooltip.js"></script>
+<link href="~/css/botontooltip.css" rel="stylesheet" />
 
-    <div class="card-body">
-        <table id="gestionarCitas" class="table table-bordered">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Nombre Servicio</th>
-                    <th scope="col">Fecha</th>
-                    <th scope="col">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>Corte cabello</td>
-                    <td>15:00 2025-03-19</td>
-                    <td>
-                        <a href="#"><i class="fa fa-edit"></i></a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<script src="~/js/app.js"></script>
 <script>
     $(document).ready(function () {
-        var table = new DataTable('#gestionarCitas', {
+        var table = new DataTable('#tablaGestionCitas', {
             responsive: true, // Habilita el modo responsive
             language: {
                 url: '//cdn.datatables.net/plug-ins/2.2.2/i18n/es-ES.json',

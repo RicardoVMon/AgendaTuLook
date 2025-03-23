@@ -13,14 +13,14 @@
     </nav>
     <section class="container-fluid d-flex flex-grow-1 px-0">
         <div class="col">
-            <img src="https://images.pexels.com/photos/29141596/pexels-photo-29141596/free-photo-of-retrato-creativo-con-afro-azul-y-unas-artisticas.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="img-fluid" style="object-fit: cover; height: 100%;" />
+            <img src="https://www.peluker.com/blog/wp-content/uploads/2024/07/image84mobiliario-de-barberia-rustico-anade-calidez-a-tu-barbershop.jpg" class="img-fluid" style="object-fit: cover; height: 100%;" />
         </div>
         <div class="col d-flex align-items-center">
             <div class="container-fluid d-flex flex-column">
-                <form class="pb-5 border-bottom px-5" asp-action="RecuperarContrasennia" method="post">
+                <form class="pb-5 border-bottom px-5" asp-action="RecuperarContrasennia" asp-controller="Autenticacion" method="post">
                     <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
                     <h2 class="mb-3 text-center" style="color: #321914;">Recuperación de Contraseña</h2>
-                    <p class="mb-4 text-center">Ingresá tu correo electrónico asociado a tu cuenta para iniciar el proceso de recuperación.</p>
+                    <p class="mb-4 text-center">Ingresá tu correo electrónico asociado a tu cuenta para obtener un código de recuperación.</p>
                     
                     @if (TempData["Mensaje"] != null)
                     {

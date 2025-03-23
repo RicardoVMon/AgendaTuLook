@@ -4,138 +4,136 @@ using Microsoft.AspNetCore.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Net.Http.Headers;
+using AgendaTuLookWeb.Servicios;
 
 namespace AgendaTuLookWeb.Controllers
 {
+    [FiltroSesion]
+	[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 	public class UsuariosController : Controller
 	{
 		private readonly IHttpClientFactory _httpClient;
 		private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
+		private readonly ISeguridad _seguridad;
 
-        public UsuariosController(IHttpClientFactory httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+		public UsuariosController(IHttpClientFactory httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ISeguridad seguridad)
         {
             _httpClient = httpClient;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
-        }
-
-
+			_seguridad = seguridad;
+		}
+		// Este metodo y el de abajo se podrían meter en una interfaz
         [HttpGet]
-        public async Task<IActionResult> PerfilUsuario()
+        public async Task<IActionResult> PerfilUsuario(long Id)
         {
             using (var http = _httpClient.CreateClient())
             {
-                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Usuarios/PerfilUsuario";
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Usuarios/PerfilUsuario?Id=" + Id;
 
-                // Obtener el ID del usuario desde la sesión
-                var usuarioId = HttpContext.Session.GetString("UsuarioId");
-
-                if (string.IsNullOrEmpty(usuarioId))
-                {
-                    return RedirectToAction("Login", "Autenticacion");
-                }
-
-                
-                var response = await http.GetAsync($"{url}?UsuarioId={usuarioId}");
+                var response = await http.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var usuario = await response.Content.ReadFromJsonAsync<UsuarioModel>();
-                    return View(usuario);
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+					if (result != null && result.Indicador)
+					{
+                        var usuario = JsonSerializer.Deserialize<UsuarioModel>((JsonElement)result.Datos!)!;
+						return View(usuario);
+					}
                 }
             }
 
-            TempData["Mensaje"] = "No se pudo obtener la información del usuario.";
+            TempData["ErrorMessage"] = "No se pudo obtener la información del usuario.";
             return RedirectToAction("Index", "Home");
         }
 
-
-
-
         [HttpGet]
-        public async Task<IActionResult> EditarPerfilUsuario()
+        public async Task<IActionResult> EditarPerfilUsuario(long Id)
         {
             using (var http = _httpClient.CreateClient())
             {
-                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Usuarios/PerfilUsuario";
 
-                var usuarioId = HttpContext.Session.GetString("UsuarioId");
-                if (string.IsNullOrEmpty(usuarioId))
-                {
-                    return RedirectToAction("Login", "Autenticacion");
-                }
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Usuarios/PerfilUsuario?Id=" + Id;
 
-                var response = await http.GetAsync($"{url}?UsuarioId={usuarioId}");
+                var response = await http.GetAsync(url);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var usuario = await response.Content.ReadFromJsonAsync<UsuarioModel>();
-                    return View(usuario);  // Retorna la vista con los datos del usuario
-                }
-            }
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
 
-            TempData["Mensaje"] = "No se pudo cargar la información del usuario.";
+					if (result != null && result.Indicador)
+					{
+						var usuario = JsonSerializer.Deserialize<UsuarioModel>((JsonElement)result.Datos!)!;
+						return View(usuario);
+					}
+				}
+			}
+            TempData["ErrorMessage"] = "No se pudo cargar la información del usuario.";
             return RedirectToAction("PerfilUsuario");
         }
 
 		[HttpPost]
 		public async Task<IActionResult> EditarPerfilUsuario(UsuarioModel model)
 		{
-			if (!ModelState.IsValid)
-			{
-				return View(model);
-			}
-            // Encriptar la nueva contraseña antes de enviarla al API
-            model.NuevaContrasennia = Encrypt(model.NuevaContrasennia!);
             using (var http = _httpClient.CreateClient())
 			{
+
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
 				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Usuarios/EditarPerfilUsuario";
 
-				var response = await http.PostAsJsonAsync(url, model);
+				var response = await http.PutAsJsonAsync(url, model);
 
 				if (response.IsSuccessStatusCode)
 				{
+
+					HttpContext.Session.SetString("Nombre", model.Nombre!);
 					TempData["SuccessMessage"] = "Perfil actualizado con éxito";
-					return RedirectToAction("PerfilUsuario");
+					return RedirectToAction("PerfilUsuario", "Usuarios", new { Id = model.UsuarioId});
 				}
-				else
-				{
-					var errorMessage = await response.Content.ReadAsStringAsync();
-					ModelState.AddModelError("", $"Error al actualizar el perfil: {errorMessage}");
-					return View(model);
-				}
+				TempData["ErrorMessage"] = "No se pudo actualizar el perfil";
+				return View(model);
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> EditarContrasenniaUsuario(UsuarioModel model)
+		{
+			using (var http = _httpClient.CreateClient())
+			{
 
-        private string Encrypt(string texto)
-        {
-            byte[] iv = new byte[16];
-            byte[] array;
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Usuarios/EditarContrasenniaUsuario";
 
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = Encoding.UTF8.GetBytes(_configuration.GetSection("Variables:llaveCifrado").Value!);
-                aes.IV = iv;
+				model.Contrasennia = _seguridad.Encrypt(model.Contrasennia!);
+				model.NuevaContrasennia = _seguridad.Encrypt(model.NuevaContrasennia!);
+				model.ConfirmarContrasennia = _seguridad.Encrypt(model.ConfirmarContrasennia!);
 
-                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+				var response = await http.PutAsJsonAsync(url, model);
 
-                using (MemoryStream memoryStream = new MemoryStream())
-                {
-                    using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
-                        {
-                            streamWriter.Write(texto);
-                        }
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
 
-                        array = memoryStream.ToArray();
-                    }
-                }
-            }
-            return Convert.ToBase64String(array);
-        }
+					if (result != null && !result.Indicador)
+					{
+						TempData["ErrorMessage"] = result.Mensaje;
+						return RedirectToAction("EditarPerfilUsuario", "Usuarios", new { Id = model.UsuarioId });
+					}
 
+					TempData["SuccessMessage"] = "Contraseña actualizada con éxito";
+					return RedirectToAction("PerfilUsuario", "Usuarios", new { Id = model.UsuarioId });
+				}
+
+				TempData["ErrorMessage"] = "No se pudo actualizar el perfil";
+				return RedirectToAction("EditarPerfilUsuario", "Usuarios", new { Id = model.UsuarioId });
+			}
+		}
     }
 }

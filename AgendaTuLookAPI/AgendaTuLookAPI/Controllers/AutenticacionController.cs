@@ -13,6 +13,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Net.Http;
 using System.Net.Mail;
+using Microsoft.AspNetCore.Authorization;
+using AgendaTuLookAPI.Servicios;
 
 namespace AgendaTuLookAPI.Controllers
 {
@@ -21,12 +23,14 @@ namespace AgendaTuLookAPI.Controllers
 	public class AutenticacionController : Controller
 	{
 
+		private readonly ICorreos _correos;
 		private readonly IConfiguration _configuration;
 		private readonly IHttpClientFactory _httpClient;
-		public AutenticacionController(IConfiguration configuration, IHttpClientFactory httpClient)
+		public AutenticacionController(IConfiguration configuration, IHttpClientFactory httpClient, ICorreos correos)
 		{
 			_httpClient = httpClient;
 			_configuration = configuration;
+			_correos = correos;
 		}
 
 		[HttpPost]
@@ -89,23 +93,6 @@ namespace AgendaTuLookAPI.Controllers
 
 				if (result != null)
 				{
-
-                    if (result.TieneContrasennaTemp == true)
-                    {
-                        if (result.FechaVencimientoTemp < DateTime.Now)
-                        {
-                            respuesta.Indicador = false;
-                            respuesta.Mensaje = "Su contraseña temporal ha expirado. Por favor, recupere su contraseña.";
-                            return Ok(respuesta);
-                        }
-                        else
-                        {
-                            respuesta.Indicador = false;
-                            respuesta.Mensaje = "Debe actualizar su contraseña antes de ingresar.";
-                            return Ok(respuesta);
-                        }
-                    }
-
                     result.Token = GenerarToken(result.UsuarioId, result.Correo!, result.Nombre!);
 
 					respuesta.Indicador = true;
@@ -130,16 +117,16 @@ namespace AgendaTuLookAPI.Controllers
 			using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
 			{
 				var existeCorreo = context.QueryFirstOrDefault<int>("ExisteCorreo", new { Correo = model.Correo });
+				model.ProveedorAuth = "Google";
 
 				// Si no existe el usuario
 				if (existeCorreo == 0)
 				{
-					string proveedorAuth = "Google";
 					string? contrasennia = null;
 					string? telefono = null;
 
 					var resultRegistro = context.QueryFirstOrDefault<int>("RegistroUsuario",
-						new { model.Nombre, Correo = model.Correo, contrasennia, googleId = model.GoogleId, telefono, proveedorAuth });
+						new { model.Nombre, Correo = model.Correo, contrasennia, googleId = model.GoogleId, telefono, model.ProveedorAuth });
 
 					if (resultRegistro > 0)
 					{
@@ -156,19 +143,19 @@ namespace AgendaTuLookAPI.Controllers
 				}
 				else
 				{
-
 					// Validar si el usuario ya existe, es de email y no se ha logeado con google antes
 					var resultProveedor = context.QueryFirstOrDefault("ObtenerProveedorAuthConCorreo", new { model.Correo });
 
 					if (resultProveedor!.Nombre == "Email" && resultProveedor.TieneGoogleId == 0)
 					{
-						// Vinculamos la cuenta
-						var resultUpdateGoogleId = context.QueryFirstOrDefault("ActualizarGoogleId", new { model.GoogleId, model.Correo });
+						// Vinculamos la cuenta, esto actualiza el proveedor y agrega el google id
+						var resultUpdateGoogleId = context.QueryFirstOrDefault("VincularGoogleId", new { model.GoogleId, model.Correo });
 					}
 
-					var usuarioId = context.QueryFirstOrDefault<int>("ObtenerIdUsuarioConCorreo", new { Correo = model.Correo });
-					model.UsuarioId = usuarioId;
-					model.Token = GenerarToken(usuarioId, model.Correo!, model.Nombre!);
+					var result = context.QueryFirstOrDefault("ObtenerIdUsuarioConCorreo", new { Correo = model.Correo });
+					model.UsuarioId = result!.UsuarioId;
+                    model.Nombre = result.Nombre;
+					model.Token = GenerarToken(result.UsuarioId, model.Correo!, model.Nombre!);
 					respuesta.Indicador = true;
 					respuesta.Datos = model;
 				}
@@ -177,13 +164,27 @@ namespace AgendaTuLookAPI.Controllers
 			return Ok(respuesta);
 		}
 
+		[Authorize]
 		[HttpGet]
-		[ApiExplorerSettings(IgnoreApi = true)]
-		[Route("Logout")]
-		public async Task<IActionResult> Logout()
+		[Route("DesvincularGoogle")]
+		public IActionResult DesvincularGoogle(String correo)
 		{
-			await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-			return Ok();
+			using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
+			{
+				var respuesta = new RespuestaModel();
+				var result = context.Execute("DesvincularGoogleId", new { correo });
+				if (result > 0)
+				{
+					respuesta.Indicador = true;
+					respuesta.Mensaje = "Cuenta desvinculada correctamente";
+				}
+				else
+				{
+					respuesta.Indicador = false;
+					respuesta.Mensaje = "No se pudo desvincular la cuenta, verifique que tiene una contraseña asociada antes de eliminar este método de login";
+				}
+				return Ok(respuesta);
+			}
 		}
 
 		private string GenerarToken(long? Id, string Correo, string Nombre)
@@ -213,122 +214,79 @@ namespace AgendaTuLookAPI.Controllers
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new RespuestaModel();
-
-                var usuario = context.QueryFirstOrDefault<UsuarioModel>("ObtenerIdUsuarioConCorreo", new { Correo = model.Correo });
+				respuesta.Mensaje = "Se ha enviado un código de verificación a al correo proporcionado. Use este código para continuar con el proceso de recuperación de contraseña.";
+				var usuario = context.QueryFirstOrDefault<UsuarioModel>("ObtenerIdUsuarioConCorreo", new { Correo = model.Correo });
 
                 if (usuario == null)
                 {
                     respuesta.Indicador = false;
-                    respuesta.Mensaje = "El correo no está registrado.";
+                    
                     return Ok(respuesta);
                 }
 
-                if (usuario.ProveedorAuth == "Google" && string.IsNullOrEmpty(usuario.Contrasennia))
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "El correo electrónico ingresado no es válido para este proceso.";
-                    return Ok(respuesta);
-                }
+				var codigoVerificacion = _correos.GenerarCodigoVerificacion();
+				var fechaVencimiento = DateTime.Now.AddMinutes(30);
 
-                var contrasennaTemp = GenerarContrasennaTemporal();
-                var contrasennaTempEncriptada = Encrypt(contrasennaTemp);
+				context.Execute("GuardarCodigoVerificacion", new
+				{
+					UsuarioId = usuario.UsuarioId,
+					CodigoVerificacion = codigoVerificacion,
+					FechaVencimiento = fechaVencimiento
+				});
 
-                var fechaVencimiento = DateTime.Now.AddMinutes(30);
-                context.Execute("ActualizarContrasennaTemp", new { UsuarioId = usuario.UsuarioId, ContrasennaTemp = contrasennaTempEncriptada, TieneContrasennaTemp = true, FechaVencimientoTemp = fechaVencimiento
-                });
+				// Verificar el timeout cuando el correo es inválido
+				_correos.EnviarCorreoCodigoVerificacion(model.Correo, codigoVerificacion, fechaVencimiento);
 
-                EnviarCorreoRecuperacion(usuario.Correo, contrasennaTemp, fechaVencimiento);
-
-                respuesta.Indicador = true;
-                respuesta.Mensaje = "Se ha enviado una contraseña temporal a su correo. Use esta contraseña a continuación para proceder con el cambio de contraseña.";
-                return Ok(respuesta);
-            }
+				respuesta.Indicador = true;
+				respuesta.Mensaje = "Se ha enviado un código de verificación a al correo proporcionado. Use este código para continuar con el proceso de recuperación de contraseña.";
+				return Ok(respuesta);
+			}
         }
 
-        private string GenerarContrasennaTemporal()
-        {
-            const int longitudMin = 8;
-            const string mayusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            const string minusculas = "abcdefghijklmnopqrstuvwxyz";
-            const string numeros = "0123456789";
-            const string caracteresEspeciales = "!@#$%^&*";
-            const string res = mayusculas + minusculas + numeros + caracteresEspeciales;
+		[HttpPost]
+		[Route("CodigoVerificacion")]
+		public IActionResult CodigoVerificacion(UsuarioModel model)
+		{
+			using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
+			{
+				var respuesta = new RespuestaModel();
 
-            StringBuilder contrasenna = new StringBuilder();
-            Random rnd = new Random();
+				var verificacion = context.QueryFirstOrDefault<UsuarioModel>(
+					"VerificarCodigoRecuperacion",
+					new { Correo = model.Correo, Codigo = model.CodigoVerificacion }
+				);
 
-            contrasenna.Append(mayusculas[rnd.Next(mayusculas.Length)]);
-            contrasenna.Append(minusculas[rnd.Next(minusculas.Length)]);
-            contrasenna.Append(numeros[rnd.Next(numeros.Length)]);
-            contrasenna.Append(caracteresEspeciales[rnd.Next(caracteresEspeciales.Length)]);
+				if (verificacion == null)
+				{
+					respuesta.Indicador = false;
+					respuesta.Mensaje = "El código de verificación es inválido.";
+					return Ok(respuesta);
+				}
 
-            for (int i = contrasenna.Length; i < longitudMin; i++)
-            {
-                contrasenna.Append(res[rnd.Next(res.Length)]);
-            }
+				if (DateTime.Now > verificacion.FechaVencimientoVerificacion)
+				{
+					respuesta.Indicador = false;
+					respuesta.Mensaje = "El código de verificación ha expirado.";
+					return Ok(respuesta);
+				}
 
-            return new string(contrasenna.ToString().OrderBy(_ => rnd.Next()).ToArray());
-        }
+				respuesta.Indicador = true;
+				respuesta.Mensaje = "Código verificado correctamente.";
+				//respuesta.Datos = new { Token = GenerarTokenRecuperacion(model.Correo) };
+				return Ok(respuesta);
+			}
+		}
 
-        private void EnviarCorreoRecuperacion(string correo, string contrasennaTemp, DateTime fechaVencimiento)
-        {
-            string cuenta = _configuration["CorreoNotificaciones"]!;
-            string contrasenna = _configuration["ContrasennaNotificaciones"]!;
-
-            MailMessage message = new MailMessage();
-            message.From = new MailAddress(cuenta);
-            message.To.Add(new MailAddress(correo));
-            message.Subject = "Recuperación de Contraseña";
-            message.Body = GenerarContenidoCorreo(contrasennaTemp, fechaVencimiento);
-            message.Priority = MailPriority.Normal;
-            message.IsBodyHtml = true;
-
-            SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-            client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
-            client.EnableSsl = true;
-            client.Send(message);
-        }
-
-        private string GenerarContenidoCorreo(string contrasenna, DateTime fechaVencimiento)
-        {
-
-            string contenido = $@"
-                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;'>
-                    <h2 style='color: #4CAF50; text-align: center;'> AgendaTuLook - Recuperación de Contraseña</h2>
-                    <p>¡Hola!</p>
-                    <p>Hemos recibido una solicitud para recuperar tu contraseña. A continuación, te proporcionamos una contraseña temporal:</p>
-                    <p><strong>Contraseña temporal:</strong> {contrasenna}</p>
-                    <p><strong>Fecha de expiración:</strong> {fechaVencimiento:dd/MM/yyyy hh:mm tt}</p>
-                    <p>Por favor, inicia sesión con esta contraseña temporal y continua el proceso para actualizarla.</p>
-                    <p style='margin-top: 30px;'>¡Gracias por usar <strong>AgendaTuLook!</strong></p>
-                    <hr style='margin-top: 40px;'>
-                    <p style='font-size: 12px; color: gray;'>Este es un mensaje automático. Por favor, no respondas a este correo.</p>
-                </div>";
-
-            return contenido;
-
-
-        }
-
-        [HttpPost]
-        [Route("CambiarContrasennaTemp")]
-        public IActionResult CambiarContrasennaTemp(UsuarioModel model)
+		[HttpPost]
+        [Route("CambiarContrasenna")]
+        public IActionResult CambiarContrasenna(UsuarioModel model)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new RespuestaModel();
+				var nuevaContrasennia = model.NuevaContrasennia;
 
-                if (model.NuevaContrasennia != model.ConfirmarContrasennia)
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "Las contraseñas no coinciden.";
-                    return Ok(respuesta);
-                }
-
-                var contrasennia = model.NuevaContrasennia;
-
-                context.Execute("CambiarContrasennaTemp", new { model.Correo, NuevaContrasenna = contrasennia });
-
+				context.Execute("CambiarContrasenna", new { model.Correo, NuevaContrasennia = nuevaContrasennia });
                 respuesta.Indicador = true;
                 respuesta.Mensaje = "Contraseña actualizada correctamente.";
                 return Ok(respuesta);

@@ -3,92 +3,120 @@
 @inject IHttpContextAccessor HttpContextAccessor
 
 @{
-    var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
-    var contrasennia = HttpContextAccessor.HttpContext.Session.GetString("Contrasennia");
+	var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
+    var proveedorAuth = HttpContextAccessor.HttpContext.Session.GetString("ProveedorAuth");
+    var correoUsuario = HttpContextAccessor.HttpContext.Session.GetString("Correo");
 }
-<section style="background-color: #F0F2FA;">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8" style="background-color: #f9f9f9; border-left: 5px solid #443627; border-radius: 10px;">
-                <div class="card mb-4 w-100 border-0">
-                    <div class="card-header bg-transparent border-0">
-                        <h4 class="mb-0">Editar Perfil de Usuario</h4>
+<section>
+    <div class="container-fluid p-0">
+        <div class="mb-3">
+            <h1 class="h3 d-inline align-middle">Perfil</h1>
+        </div>
+        <div class="row">
+            <div class="col-md-4 col-xl-3">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Detalles de Perfil</h5>
                     </div>
-                    <div class="card-body">
-                        @if (TempData["ErrorMessage"] != null)
-                        {
-                            <div class="alert alert-danger">
-                                @TempData["ErrorMessage"]
+                    <form asp-action="EditarPerfilUsuario" asp-controller="Usuarios" method="post">
+                        <input type="hidden" class="form-control input-lg" asp-for="UsuarioId" value="@usuarioId">
+                        <div class="card-body text-center">
+                            <!-- Contenedor centrado -->
+                            <div style="width: 160px; height: 160px; margin: auto;" class="mb-2">
+                                <img src="https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
+                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                             </div>
+                            <h5 class="card-title mb-2 text-start">
+                                <label asp-for="Nombre" class="form-label">Nombre:</label>
+                                <input type="text" class="form-control input-lg" asp-for="Nombre" placeholder="Nombre">
+                            </h5>
+                        </div>
+                        <hr class="my-0" />
+                        <div class="card-body">
+                            <h5 class="h6 card-title">Contacto</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-1">
+                                    <label asp-for="Correo" class="form-label">Correo:</label>
+                                    <input type="email" class="form-control input-lg" asp-for="Correo" placeholder="Correo" readonly>
+                                </li>
+                                <li class="mb-1">
+                                    <label asp-for="Telefono" class="form-label">Teléfono:</label>
+                                    <input type="tel" class="form-control input-lg" asp-for="Telefono" placeholder="Teléfono">
+                                </li>
+                            </ul>
+                        </div>
+                        <hr class="my-0" />
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <a class="btn btn-danger" asp-action="PerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-8 col-xl-9">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Configuración de Cuenta</h5>
+                    </div>
+                    <div class="card-body h-100">
+
+                        @if (Model.Contrasennia == null)
+                        {
+                            <!-- Restablecer Contraseña -->
+                            <div class="alert alert-warning" role="alert">
+                                <p class="text-center mb-0">
+                                    Actualmente No Cuentas Con Una Contraseña Establecida Debido a Tu Método de Login Principal (Google)
+                                    <br />
+                                    Para Establecer Una Contraseña
+                                    <a href="javascript:void(0);" onclick="confirmarRecuperacionContrasennia()">Accede a Nuestro Proceso de Recuperación de Contraseña</a>
+                                </p>
+                            </div>
+                            <hr />
                         }
 
-                        <form method="post" asp-action="EditarPerfilUsuario" asp-controller="Usuarios">
-                            <!-- Campo oculto para el ID -->
-                            @* <input type="hidden" asp-for="UsuarioId" value="@Model.UsuarioId" /> *@
-                            <input type="hidden" name="UsuarioId" value="@usuarioId" />
-                            <!-- Campo oculto para la contraseña, que se obtiene de la sesión -->
-                            <input type="hidden" name="Contrasennia" value="@contrasennia" />
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <label asp-for="Nombre" class="form-label">Nombre</label>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input type="text" asp-for="Nombre" class="form-control" value="@Model.Nombre" required />
-                                    <span asp-validation-for="Nombre" class="text-danger"></span>
-                                </div>
+                        <!-- Restablecer Contraseña -->
+                        <h5 class="card-title">Restablecer Contraseña</h5>
+                        <form asp-action="EditarContrasenniaUsuario" asp-controller="Usuarios" method="post">
+                            <input type="hidden" class="form-control input-lg" asp-for="UsuarioId" value="@usuarioId">
+                            <input type="hidden" class="form-control input-lg" asp-for="Correo" value="@correoUsuario">
+                            <div class="mb-3">
+                                <label for="ContrasenniaActual" class="form-label">Contraseña Actual</label>
+                                <input type="password" class="form-control" id="Contrasennia" name="Contrasennia" asp-for="Contrasennia" required>
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <label asp-for="Telefono" class="form-label">Teléfono</label>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input type="text" asp-for="Telefono" class="form-control" value="@Model.Telefono" required />
-                                    <span asp-validation-for="Telefono" class="text-danger"></span>
-                                </div>
+                            <div class="mb-3">
+                                <label for="NuevaContrasennia" class="form-label">Nueva Contraseña</label>
+                                <input type="password" class="form-control" id="NuevaContrasennia" name="NuevaContrasennia" required>
+                                <span asp-validation-for="NuevaContrasennia" class="text-danger"></span>
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <label asp-for="Correo" class="form-label">Correo Electrónico</label>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input type="email" asp-for="Correo" class="form-control" value="@Model.Correo" required />
-                                    <span asp-validation-for="Correo" class="text-danger"></span>
-                                </div>
+                            <div class="mb-3">
+                                <label for="ConfirmarContrasennia" class="form-label">Confirmar Nueva Contraseña</label>
+                                <input type="password" class="form-control" id="ConfirmarContrasennia" name="ConfirmarContrasennia" required>
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <label asp-for="Contrasennia" class="form-label">Contraseña</label>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input asp-for="NuevaContrasennia" type="password" class="form-control" placeholder="Nueva Contraseña" name="NuevaContrasennia" id="NuevaContrasennia" />
-                                    <small class="form-text text-muted">Dejar en blanco para mantener la contraseña actual</small>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <label for="ConfirmarContrasennia" class="form-label">Confirmar Contraseña</label>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input asp-for="ConfirmarContrasennia" type="password" class="form-control" placeholder="Confirmar Contraseña" name="ConfirmarContrasennia" id="ConfirmarContrasennia"  />
-                                    <div id="passwordError" class="text-danger d-none">Las contraseñas no coinciden</div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-12 d-flex justify-content-end gap-2">
-                                    <a href="@Url.Action("PerfilUsuario", "Usuarios")" class="btn btn-secondary">
-                                        <i data-feather="x-circle" aria-hidden="true"></i> Cancelar
-                                    </a>
-                                    <button type="submit" class="btn btn-primary" id="btnSubmit">
-                                        <i data-feather="check-circle" aria-hidden="true"></i> Guardar Cambios
-                                    </button>
-                                </div>
-                            </div>
+                            <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
                         </form>
+                        <hr />
+                        
+                        <!-- Vinculación con Google -->
+                        @if (proveedorAuth == "Google")
+                        {
+                            <h5 class="card-title">Vinculación con Google</h5>
+                            <div class="d-grid">
+                            
+                                @* Faltan validaciones con respecto a esto *@
+                                    <a href="javascript:void(0);" class="btn btn-danger" onclick="confirmarDesvinculacion('@correoUsuario')">
+                                        <i class="fab fa-google me-2"></i> Desvincular de @correoUsuario
+                                    </a>
+                            
+                                @* else *@
+                                @* { *@
+                                @*     <a asp-controller="Autenticacion" asp-action="LoginGoogle" class="btn btn-danger"> *@
+                                @*         <i class="fab fa-google me-2"></i> Vincular Cuenta de Google *@
+                                @*     </a> *@
+                                @* } *@
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -96,39 +124,41 @@
     </div>
 </section>
 
-@section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const form = document.querySelector("form");
-            const passwordInput = document.querySelector("#NuevaContrasennia");
-            const confirmInput = document.querySelector("#ConfirmarContrasennia");
-            const passwordError = document.querySelector("#passwordError");
-
-            form.addEventListener("submit", function (e) {
-                // Validación de contraseña solo si se está cambiando
-                if (passwordInput.value !== '') {
-                    if (passwordInput.value !== confirmInput.value) {
-                        e.preventDefault();
-                        passwordError.classList.remove("d-none");
-                        return false;
-                    } else {
-                        passwordError.classList.add("d-none");
-                    }
-                }
-                return true;
-            });
-
-            // Verificación en tiempo real
-            confirmInput.addEventListener("input", function () {
-                if (passwordInput.value !== '' && passwordInput.value !== confirmInput.value) {
-                    passwordError.classList.remove("d-none");
-                } else {
-                    passwordError.classList.add("d-none");
+<script>
+        function confirmarDesvinculacion(correoUsuario) {
+            Swal.fire({
+                title: "¿Estás seguro?",
+                text: `Vas a desvincular la cuenta de Google (${correoUsuario}). Deberá volver a iniciar sesión en Google con el correo asociado a esta cuenta.`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Sí, desvincular",
+                cancelButtonText: "Cancelar"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/Autenticacion/DesvincularGoogle?correo=${correoUsuario}`;
                 }
             });
-        });
-    </script>
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-}
+
+</script>
+
+<script>
+    function confirmarRecuperacionContrasennia() {
+        Swal.fire({
+            title: "¿Estás seguro?",
+            text: "Serás llevado a otra pantalla para recuperar tu contraseña. Asegúrate de guardar tus cambios antes de continuar.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sí, continuar",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("RecuperarContrasennia", "Autenticacion")';
+            }
+        });
+    }
+</script>
