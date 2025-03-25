@@ -1,0 +1,71 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+	var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
+}
+
+@model UsuarioModel
+<section>
+		<div class="container-fluid p-0">
+
+			<div class="mb-3">
+				<h1 class="h3 d-inline align-middle">Perfil</h1>
+			</div>
+			<div class="row">
+			<div class="col-md-4 col-xl-3">
+				<div class="card mb-3">
+					<div class="card-header">
+						<h5 class="card-title mb-0">Detalles de Perfil</h5>
+					</div>
+					<div class="card-body text-center">
+						<!-- Contenedor centrado -->
+						<div style="width: 160px; height: 160px; margin: auto;" class="mb-2">
+							<img src="https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
+								 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+						</div>
+						<h5 class="card-title mb-2">@Model.Nombre</h5>
+						<div>
+							<a class="btn btn-primary btn-sm" asp-action="EditarPerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">Editar</a>
+						</div>
+					</div>
+					<hr class="my-0" />
+					<div class="card-body">
+						<h5 class="h6 card-title">Contacto</h5>
+						<ul class="list-unstyled mb-0">
+							<li class="mb-1"><span data-feather="home" class="feather-sm me-1"></span> Correo: <a href="#">@Model.Correo</a></li>
+							@{var stringTelefono = Model.Telefono != null ? Model.Telefono : "No asignado";}
+							<li class="mb-1"><span data-feather="briefcase" class="feather-sm me-1"></span> Teléfono: @stringTelefono</li>
+						</ul>
+					</div>
+					<hr class="my-0" />
+				</div>
+			</div>
+
+				<div class="col-md-8 col-xl-9">
+					<div class="card">
+						<div class="card-header">
+							<h5 class="card-title mb-0">Actividad</h5>
+						</div>
+						<div class="card-body h-100">
+
+							@* Ejemplo de Container basico *@
+							@* <div class="d-flex align-items-start"> *@
+							@* <img src="https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" width="36" height="36" class="rounded-circle me-2" alt="Vanessa Tucker"> *@
+							@* 	<div class="flex-grow-1"> *@
+							@* 		<small class="float-end text-navy">5m ago</small> *@
+							@* 		<strong>Vanessa Tucker</strong> started following <strong>Christina Mason</strong><br /> *@
+							@* 		<small class="text-muted">Today 7:51 pm</small><br /> *@
+							@* 	</div> *@
+							@* </div> *@
+							Acá iría la actividad del usuario (reviews hechas, servicios adquiridos)
+							<hr />
+							<div class="d-grid">
+								<a href="#" class="btn btn-primary">Cargar más..</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+</section>
+

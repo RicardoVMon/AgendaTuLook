@@ -1,0 +1,73 @@
+﻿<section>
+    <div class="row px-5">
+        <div class="col-12">
+            <div class="row">
+                <div class="col-6">
+                    <div class="display-3 px-0">Historial de Citas</div>
+                    <div class="text-muted px-0">Seleccione una cita ocurrida para poder administrar su información</div>
+                </div>
+            </div>
+
+            <!-- Tabla de Pacientes Activos -->
+            <div class="row">
+                <div class="col-12 px-0">
+                    <div class="table-responsive">
+                        <table id="tablaGestionServicios" class="table table-bordered table-hover bg-white">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Imagen</th>
+                                    <th scope="col">Nombre Servicio</th>
+                                    <th scope="col">Descripción</th>
+                                    <th scope="col">Precio</th>
+                                    <th scope="col">Duración</th>
+                                    <th scope="col">Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-03-19</td>
+                                    <td>Ejemplo de Servicio</td>
+                                    <td>Descripción de Servicio</td>
+                                    <td class="text-center">5000</td>
+                                    <td>60 minutos</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-outline-primary rounded" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-alt"></i> Opción</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit"></i> Editar</a></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#">
+                                                        <i class="fa-solid fa-ban"></i> Desactivar
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(document).ready(function () {
+        var table = new DataTable('#tablaGestionServicios', {
+            responsive: true, // Habilita el modo responsive
+            language: {
+                url: '//cdn.datatables.net/plug-ins/2.2.2/i18n/es-ES.json',
+            },
+            columnDefs: [{
+                targets: '_all', className: 'dt-left'
+            }],
+        });
+    });
+</script>
+

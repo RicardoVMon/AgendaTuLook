@@ -1,4 +1,11 @@
-﻿<!DOCTYPE html>
+﻿@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+	var nombreUsuario = HttpContextAccessor.HttpContext.Session.GetString("Nombre");
+	var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
+}
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,17 +13,25 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>AgendaTuLook</title>
+	<!-- CSS -->
 	<link href="~/css/app.css" rel="stylesheet" />
 	<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+	<link href="https://cdn.datatables.net/2.2.2/css/dataTables.bootstrap5.css" rel="stylesheet" />
+	<link href="https://cdn.datatables.net/responsive/3.0.4/css/responsive.bootstrap5.css" rel="stylesheet" />
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.css" rel="stylesheet">
+    <link href="~/css/overflowfix.css" rel="stylesheet" />
 </head>
 
 <body>
 	<div class="wrapper">
 		<nav id="sidebar" class="sidebar js-sidebar">
 			<div class="sidebar-content js-simplebar">
-                <a class="sidebar-brand pb-0 text-decoration-none" href="#">
+                <a class="sidebar-brand pb-0 text-decoration-none"  href="@Url.Action("index", "Home")">
                     <span class="align-middle text-white fw-bold fs-3">AgendaTuLook</span>
                 </a>
 
@@ -26,31 +41,37 @@
 					</li>
 
 					<li class="sidebar-item active">
-						<a class="sidebar-link" href="index.html">
+						<a class="sidebar-link" href="@Url.Action("index", "Home")">
 							<i class="align-middle fas fa-home"></i> <span class="align-middle">Inicio</span>
 						</a>
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" asp-action="Calendario" asp-controller="Calendario" >
 							<i class="align-middle fas fa-calendar-alt"></i> <span class="align-middle">Mi Calendario</span>
 						</a>
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" href="@Url.Action("GestionarCitas", "Citas")">
 							<i class="align-middle fas fa-calendar-check"></i> <span class="align-middle">Gestionar Citas</span>
 						</a>
 					</li>
 
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
-							<i class="align-middle fas fa-users"></i> <span class="align-middle">Gestionar personal</span>
+                    <li class="sidebar-item">
+						<a class="sidebar-link" asp-action="GestionarServicios" asp-controller="Servicios">
+							<i class="align-middle fas fa-concierge-bell"></i> <span class="align-middle">Gestionar Servicios</span>
 						</a>
-					</li>
+                    </li>
+
+                    <li class="sidebar-item">
+						<a class="sidebar-link" asp-action="GestionarDiasTrabajo" asp-controller="DiasTrabajo">
+							<i class="align-middle fas fa-clock"></i> <span class="align-middle">Gestionar Horarios Laborales</span>
+						</a>
+                    </li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" href="@Url.Action("Estadisticas", "Estadisticas")">
 							<i class="align-middle fas fa-chart-bar"></i> <span class="align-middle">Estadísticas</span>
 						</a>
 					</li>
@@ -66,24 +87,24 @@
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" asp-action="Calendario" asp-controller="Calendario">
 							<i class="align-middle fas fa-calendar-alt"></i> <span class="align-middle">Mi Calendario</span>
 						</a>
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" asp-action="SolicitarCita" asp-controller="Citas" >
 							<i class="align-middle fas fa-calendar-plus"></i> <span class="align-middle">Solicitar Cita</span>
 						</a>
 					</li>
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" href="@Url.Action("HistorialCitas", "Citas")">
 							<i class="align-middle fas fa-history"></i> <span class="align-middle">Historial de Citas</span>
 						</a>
 					</li>
 
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" href="@Url.Action("CuponesCitas", "Citas")">
 							<i class="align-middle fas fa-ticket-alt"></i> <span class="align-middle">Mis Cupones</span>
 						</a>
 					</li>
@@ -172,13 +193,13 @@
 
 							<a class="nav-link d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
                                 <img src="https://st3.depositphotos.com/9998432/13335/v/450/depositphotos_133352010-stock-illustration-default-placeholder-man-and-woman.jpg" class="avatar img-fluid rounded me-1" /> 
-                                <span class="text-dark">Usuario</span>
+                                <span class="text-dark">@nombreUsuario</span>
                                 <i class="align-middle fas fa-chevron-down"></i>
 							</a>
 							<div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item"><i class="align-middle me-1 fas fa-cog"></i> Ajustes</a>
+								<a class="dropdown-item" href="@Url.Action("PerfilUsuario", "Usuarios", new { id = usuarioId})"><i class="align-middle me-1 fas fa-cog"></i> Perfil</a>
 								<div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="@Url.Action("Login", "Autenticacion")">
+                                <a class="dropdown-item" href="@Url.Action("Logout", "Autenticacion")">
                                     <i class="align-middle me-1 fas fa-sign-out-alt"></i> Salir
                                 </a>
 							</div>
@@ -195,24 +216,29 @@
 			</main>
 			<footer class="footer">
 				<div class="container-fluid">
-					<div class="row text-muted">
+					<div class="row  text-muted">
 						<div class="col-6 text-start">
-							<p class="mb-0">
-								<a class="text-muted" href="#"><strong>Proyecto</strong></a> &copy;
-							</p>
+							<p class="text-muted mb-0"><strong>Agenda Tu Look, @DateTime.Now.Year &copy; </strong></p>
 						</div>
 						<div class="col-6 text-end">
-							<ul class="list-inline">
-								<li class="list-inline-item">
-									<a class="text-muted" href="#" target="_blank">Link</a>
-								</li>
-							</ul>
 						</div>
 					</div>
 				</div>
 			</footer>
 		</div>
 	</div>
+	@RenderSection("Scripts", required: false)
+	<!-- Bootstrap y librerías -->
 	<script src="~/js/app.js"></script>
+	<script src="~/js/alertas.js"></script>
+	<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+	<script src="https://cdn.datatables.net/2.2.2/js/dataTables.bootstrap5.js"></script>
+	<script src="https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.js"></script>
+	<script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script>
+	<div id="tempDataMessages"
+		 data-success="@TempData["successMessage"]"
+		 data-error="@TempData["errorMessage"]"
+		 data-warning="@TempData["warningMessage"]">
+	</div>
 </body>
 </html>
