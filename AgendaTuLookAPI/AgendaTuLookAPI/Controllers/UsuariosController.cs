@@ -16,10 +16,8 @@ namespace AgendaTuLookAPI.Controllers
 	public class UsuariosController : ControllerBase
 	{
 		private readonly IConfiguration _configuration;
-		private readonly IHttpClientFactory _httpClient;
-		public UsuariosController(IConfiguration configuration, IHttpClientFactory httpClient)
+		public UsuariosController(IConfiguration configuration)
 		{
-			_httpClient = httpClient;
 			_configuration = configuration;
 		}
 

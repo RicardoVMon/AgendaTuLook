@@ -22,6 +22,8 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.css" rel="stylesheet">
     <link href="~/css/overflowfix.css" rel="stylesheet" />
 </head>
 
@@ -59,6 +61,12 @@
                     <li class="sidebar-item">
 						<a class="sidebar-link" asp-action="GestionarServicios" asp-controller="Servicios">
 							<i class="align-middle fas fa-concierge-bell"></i> <span class="align-middle">Gestionar Servicios</span>
+						</a>
+                    </li>
+
+                    <li class="sidebar-item">
+						<a class="sidebar-link" asp-action="GestionarDiasTrabajo" asp-controller="DiasTrabajo">
+							<i class="align-middle fas fa-clock"></i> <span class="align-middle">Gestionar Horarios Laborales</span>
 						</a>
                     </li>
 

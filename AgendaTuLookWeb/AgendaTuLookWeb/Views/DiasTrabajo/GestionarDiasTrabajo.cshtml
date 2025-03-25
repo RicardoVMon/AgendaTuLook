@@ -1,0 +1,50 @@
+﻿@model List<DiasTrabajoModel>
+
+<section id="schedule-management">
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="display-4">Gestión de Horarios Laborales</h1>
+                <p class="text-muted">Seleccione un día de la semana para gestionar el horario correspondiente.</p>
+            </div>
+        </div>
+
+        <!-- Selección de Días de la Semana -->
+        <div class="row">
+            <div class="col-12">
+                <h3 class="mt-3">Días de la Semana</h3>
+                <div class="btn-group d-flex justify-content-center flex-wrap gap-2" role="group">
+                    @foreach (var diaTrabajo in Model)
+                    {
+                        <input type="radio" class="btn-check day-selector" name="day-select" id="dia-@diaTrabajo.DiaTrabajoId"
+                               data-start="@diaTrabajo.HoraInicio" data-end="@diaTrabajo.HoraFin" data-id="@diaTrabajo.DiaTrabajoId" autocomplete="off">
+                        <label class="btn @(diaTrabajo.Activo ?? false ? "btn-outline-success" : "btn-outline-secondary")" for="dia-@diaTrabajo.DiaTrabajoId">@diaTrabajo.NombreDia</label>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenedor de Horarios -->
+        <div id="contenedor-horas" class="mt-4 d-none">
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="hora-inicio" class="form-label">Hora de Inicio</label>
+                    <input type="time" class="form-control" id="hora-inicio" name="hora-inicio">
+                </div>
+                <div class="col-md-6">
+                    <label for="hora-fin" class="form-label">Hora de Fin</label>
+                    <input type="time" class="form-control" id="hora-fin" name="hora-fin">
+                </div>
+                <div class="col-md-12 mt-3">
+                    <button id="cambiarEstado" class="btn btn-primary">Cambiar Estado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/js/mostrarcontenedorhoras.js"></script>
+<script src="~/js/cambiarhoras.js"></script>
+<script src="~/js/cambiarestadodiatrabajo.js"></script>
+
