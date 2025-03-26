@@ -1,0 +1,91 @@
+﻿@model List<AgendaTuLookWeb.Models.ServicioModel>
+
+<div class="row px-5">
+    <div class="col-12 mb-4">
+        <div class="display-3 px-0">¿Qué servicio deseas recibir?</div>
+        <div class="text-muted px-0">Seleccioná un servicio para acceder a sus horarios</div>
+    </div>
+    <div class="col-12 mb-3">
+        <div class="row align-items-center">
+            <div class="col-auto ms-auto">
+                <div class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Buscar por nombre...">
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select" id="filterSelect" style="border-radius: 10px;">
+                            <option selected disabled>Ordenar por</option>
+                            <option value="az">Nombre A-Z</option>
+                            <option value="za">Nombre Z-A</option>
+                            <option value="precioAsc">Precio Ascendente</option>
+                            <option value="precioDesc">Precio Descendente</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="row" id="serviceList">
+            @foreach (var item in Model.Where(s => s.Estado ?? false))
+            {
+                <a asp-action="SolicitarFechaHora" asp-controller="Citas" asp-route-id="@item.ServicioId"
+                   class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4 service-card text-decoration-none text-dark"
+                   data-nombre="@item.NombreServicio"
+                   data-precio="@item.Precio">
+                    <div class="card card-hover h-100">
+                        @if (item.Imagen != null)
+                        {
+                            <img src="@item.Imagen" alt="Imagen del empleado" class="img-thumbnail" style="object-fit: cover; min-height: 250px; max-height: 300px">
+                        }
+
+                        <div class="card-body d-flex flex-column">
+                            <h3 class="mb-3">@item.NombreServicio</h3>
+                            <p class="card-text mb-0">Precio: ₡@item.Precio IVAI</p>
+                            <p class="card-text">Duración: @item.Duracion minutos</p>
+                            <p class="card-text flex-grow-1">@(item.Descripcion!.Length > 50 ? item.Descripcion.Substring(0, 100) + "..." : item.Descripcion)</p>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+<link href="~/css/estilospersonal.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        // Búsqueda por nombre
+        $('#searchInput').on('keyup', function () {
+            var value = $(this).val().toLowerCase();
+            $('.service-card').filter(function () {
+                $(this).toggle($(this).attr('data-nombre').toLowerCase().includes(value));
+            });
+        });
+
+        // Ordenar por nombre y precio
+        $('#filterSelect').on('change', function () {
+            var order = $(this).val();
+            var $cards = $('.service-card');
+
+            $cards.sort(function (a, b) {
+                var aNombre = $(a).attr('data-nombre').toLowerCase();
+                var bNombre = $(b).attr('data-nombre').toLowerCase();
+                var aPrecio = parseFloat($(a).attr('data-precio'));
+                var bPrecio = parseFloat($(b).attr('data-precio'));
+
+                if (order === "az") {
+                    return aNombre.localeCompare(bNombre, 'es', { sensitivity: 'base' });
+                } else if (order === "za") {
+                    return bNombre.localeCompare(aNombre, 'es', { sensitivity: 'base' });
+                } else if (order === "precioAsc") {
+                    return aPrecio - bPrecio;
+                } else if (order === "precioDesc") {
+                    return bPrecio - aPrecio;
+                }
+            });
+
+            $('#serviceList').html($cards);
+        });
+    });
+</script>

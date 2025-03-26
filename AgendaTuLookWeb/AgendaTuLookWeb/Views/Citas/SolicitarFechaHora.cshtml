@@ -1,0 +1,31 @@
+﻿@model List<DiasTrabajoModel>
+
+<section id="schedule-management">
+    <div class="pb-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="display-4">¿Qué día deseas recibir el servicio?</h1>
+                <p class="text-muted">Seleccione un día de la semana para gestionar el horario correspondiente.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6" id="calendar-container">
+                <div class="bg-white rounded rounded-1 p-3">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="bg-white rounded rounded-1 p-3">
+                    <div id="texto-guia" class="text-center text-secondary">Selecciona un día para mostrar su horarios disponibles</div>
+                    <div id="hour-selector">
+
+                    </div>
+                    <!-- Aquí se generarán los botones con las horas disponibles -->
+                </div>
+            </div>
+        </div>
+
+        <script src="~/js/calendariosolicitudcita.js"></script>
+    </div>
+</section>
