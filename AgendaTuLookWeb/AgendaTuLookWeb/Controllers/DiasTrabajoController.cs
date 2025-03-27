@@ -6,6 +6,8 @@ using System.Text.Json;
 
 namespace AgendaTuLookWeb.Controllers
 {
+	[FiltroSesion]
+	[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 	public class DiasTrabajoController : Controller
 	{
 		private readonly IHttpClientFactory _httpClient;

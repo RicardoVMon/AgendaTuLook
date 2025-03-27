@@ -61,7 +61,7 @@
                                                         <li><a class="dropdown-item" asp-action="EditarServicio" asp-controller="Servicios" asp-route-id="@servicio.ServicioId"><i class="fas fa-edit"></i> Editar</a></li>
                                                         <li>
                                                             <a class="dropdown-item" asp-action="CambiarEstadoServicio" asp-controller="Servicios" asp-route-id="@servicio.ServicioId">
-                                                                <i class="fa-solid fa-ban"></i> Desactivar
+                                                                <i class="@(servicio.Estado ?? false ? "fa-solid fa-ban" : "fa-solid fa-check")"></i> @(servicio.Estado ?? false ? "Inactivar" : "Activar")
                                                             </a>
                                                         </li>
                                                     </ul>
