@@ -135,5 +135,11 @@ namespace AgendaTuLookWeb.Controllers
 				_ => -1  // Valor inválido
 			};
 		}
-	}
+
+        [HttpGet]
+        public IActionResult ConfirmarCita()
+        {
+            return View();
+        }
+    }
 }
