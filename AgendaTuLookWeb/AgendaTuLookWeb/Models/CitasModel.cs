@@ -3,11 +3,16 @@
 	public class CitasModel
 	{
 		public long CitaId { get; set; }
-		public long UsuarioId { get; set; }
-		public long ServicioId { get; set; }
+		public UsuarioModel? Usuario { get; set; }
+		public string? NombreCliente { get; set; }
+		public ServicioModel? Servicio { get; set; }
+		public string? NombreServicio { get; set; }
+		public List<MetodoPagoModel>? MetodosPago { get; set; }
+		public MetodoPagoModel? MetodoPago { get; set; }
 		public DateTime Fecha { get; set; }
 		public TimeSpan HoraInicio { get; set; }
 		public TimeSpan HoraFin { get; set; }
+		public long DiaTrabajoId { get; set; }
 		public string? Estado { get; set; }
 	}
 }

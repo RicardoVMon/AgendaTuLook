@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AgendaTuLookWeb.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace AgendaTuLookWeb.Controllers
 {
@@ -17,9 +20,43 @@ namespace AgendaTuLookWeb.Controllers
 		}
 
 		// Esta vista puede ser la misma para ambos usuarios, nada más que después se valide según el rol qué se debería de mostrar
-		public IActionResult Calendario()
+		[HttpGet]
+		public  IActionResult Calendario()
 		{
 			return View();
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> ConsultarCitasCalendario()
+		{
+			using (var http = _httpClient.CreateClient())
+			{
+				long usuarioId = Convert.ToInt64(HttpContext.Session.GetString("UsuarioId"));
+
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Calendario/ConsultarCitasCalendario?Id=" + usuarioId + "&c=" + 2;
+				var response = await http.GetAsync(url);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+					if (result != null && result.Indicador)
+					{
+						var citas = JsonSerializer.Deserialize<List<CitasModel>>((JsonElement)result.Datos!)!;
+
+						var eventos = citas.Select(c => new
+						{
+							id = c.CitaId,
+							title = c.NombreCliente ?? "Sin nombre",
+							start = c.Fecha.ToString("yyyy-MM-dd") + "T" + c.HoraInicio.ToString(@"hh\:mm"),
+							end = c.Fecha.ToString("yyyy-MM-dd") + "T" + c.HoraFin.ToString(@"hh\:mm"),
+						}).ToList();
+
+						return Json(eventos);
+					}
+				}
+				return Json(new { success = false, message = "Error al obtener las citas." });
+			}
 		}
 	}
 }

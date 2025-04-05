@@ -131,6 +131,7 @@ namespace AgendaTuLookAPI.Controllers
 					if (resultRegistro > 0)
 					{
 						model.UsuarioId = resultRegistro;
+						model.RolId = 2;
 						model.Token = GenerarToken(resultRegistro, model.Correo!, model.Nombre!);
 						respuesta.Indicador = true;
 						respuesta.Datos = model;
@@ -155,6 +156,7 @@ namespace AgendaTuLookAPI.Controllers
 					var result = context.QueryFirstOrDefault("ObtenerIdUsuarioConCorreo", new { Correo = model.Correo });
 					model.UsuarioId = result!.UsuarioId;
                     model.Nombre = result.Nombre;
+					model.RolId = result.RolId;
 					model.Token = GenerarToken(result.UsuarioId, model.Correo!, model.Nombre!);
 					respuesta.Indicador = true;
 					respuesta.Datos = model;

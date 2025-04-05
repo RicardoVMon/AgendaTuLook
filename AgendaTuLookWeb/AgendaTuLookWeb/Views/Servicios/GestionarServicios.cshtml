@@ -42,7 +42,7 @@
                                         <tr>
                                             <td class="text-center"><img src="@servicio.Imagen" width="100" alt="Alternate Text" /></td>
                                             <td>@servicio.NombreServicio</td>
-                                            <td>@servicio.Descripcion</td>
+                                            <td class="w-25">@(servicio.Descripcion!.Length > 200 ? servicio.Descripcion.Substring(0, 200) + "..." : servicio.Descripcion)</td>
                                             <td class="text-center">@servicio.Precio</td>
                                             <td>@servicio.Duracion minutos</td>
                                             <td class="text-center">

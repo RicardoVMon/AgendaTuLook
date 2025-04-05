@@ -59,7 +59,8 @@ namespace AgendaTuLookWeb.Controllers
                             HttpContext.Session.SetString("UsuarioId", datosResult.UsuarioId.ToString()!);
                             HttpContext.Session.SetString("Correo", datosResult.Correo!.ToString()!);
                             HttpContext.Session.SetString("Nombre", datosResult.Nombre!.ToString());
-                            return RedirectToAction("Index", "Home");
+							HttpContext.Session.SetString("RolId", datosResult.RolId!.ToString()!);
+							return RedirectToAction("Index", "Home");
                         }
                     }
 
@@ -287,6 +288,7 @@ namespace AgendaTuLookWeb.Controllers
 						HttpContext.Session.SetString("Correo", datosResult!.Correo!);
 						HttpContext.Session.SetString("ProveedorAuth", datosResult!.ProveedorAuth!);
 						HttpContext.Session.SetString("Nombre", datosResult!.Nombre!);
+						HttpContext.Session.SetString("RolId", datosResult!.RolId.ToString()!);
 
 						return RedirectToAction("Index", "Home");
 					}

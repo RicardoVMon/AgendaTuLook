@@ -14,6 +14,7 @@ namespace AgendaTuLookAPI.Servicios
 			_configuration = configuration;
 		}
 
+		// Función de correo para código de verificación
 		public void EnviarCorreoCodigoVerificacion(string correo, string codigoVerificacion, DateTime fechaVencimiento)
 		{
 			string cuenta = _configuration["CorreoNotificaciones"]!;
@@ -64,6 +65,44 @@ namespace AgendaTuLookAPI.Servicios
 				<p style='font-size: 12px; color: gray;'>Este es un mensaje automático. Por favor, no respondas a este correo.</p>
 			</div>";
 
+			return contenido;
+		}
+
+		// Función de correo para confirmación de cita
+		public void EnviarCorreoConfirmacionCita(string correo, string nombre, string fecha, string horaInicio, string horaFin, string direccion, string codigoPostal, string pais)
+		{
+			string cuenta = _configuration["CorreoNotificaciones"]!;
+			string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+			MailMessage message = new MailMessage();
+			message.From = new MailAddress(cuenta);
+			message.To.Add(new MailAddress(correo));
+			message.Subject = "Confirmación de Cita - AgendaTuLook";
+			message.Body = GenerarContenidoCorreoConfirmacionCita(nombre, fecha, horaInicio, horaFin, direccion, codigoPostal, pais);
+			message.Priority = MailPriority.Normal;
+			message.IsBodyHtml = true;
+			SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+			client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+			client.EnableSsl = true;
+			client.Send(message);
+		}
+
+		public string GenerarContenidoCorreoConfirmacionCita(string nombre, string fecha, string horaInicio, string horaFin, string direccion, string codigoPostal, string pais)
+		{
+			string contenido = $@"
+				<div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;'>
+					<h2 style='color: #4CAF50; text-align: center;'> Confirmación de Cita - AgendaTuLook</h2>
+					<p>¡Hola {nombre}!</p>
+					<p>Tu cita ha sido confirmada con éxito. A continuación, te proporcionamos los detalles de tu cita:</p>
+					<p><strong>Fecha:</strong> {fecha}</p>
+					<p><strong>Hora de Inicio:</strong> {horaInicio}</p>
+					<p><strong>Hora de Fin:</strong> {horaFin}</p>
+					<p><strong>Dirección:</strong> {direccion}</p>
+					<p><strong>Código Postal:</strong> {codigoPostal}</p>
+					<p><strong>País:</strong> {pais}</p>
+					<p style='margin-top: 30px;'>¡Gracias por usar <strong>AgendaTuLook!</strong></p>
+					<hr style='margin-top: 40px;'>
+					<p style='font-size: 12px; color: gray;'>Este es un mensaje automático. Por favor, no respondas a este correo.</p>
+				</div>";
 			return contenido;
 		}
 	}

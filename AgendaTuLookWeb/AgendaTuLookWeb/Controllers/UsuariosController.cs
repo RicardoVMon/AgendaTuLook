@@ -47,10 +47,9 @@ namespace AgendaTuLookWeb.Controllers
 						return View(usuario);
 					}
                 }
+				TempData["ErrorMessage"] = "No se pudo obtener la información del usuario.";
+				return RedirectToAction("Index", "Home");
             }
-
-            TempData["ErrorMessage"] = "No se pudo obtener la información del usuario.";
-            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]

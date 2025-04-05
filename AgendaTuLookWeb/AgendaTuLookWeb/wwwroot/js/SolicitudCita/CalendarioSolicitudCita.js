@@ -1,6 +1,7 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
     var calendarEl = document.getElementById('calendar');
-    var availableDays = []; // Almacenará los días disponibles
+    var availableDays = [];
+    var selectedDateEl = null;
     var calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
         height: 650,
@@ -16,24 +17,18 @@
         },
         allDayText: 'Hora',
 
-        // Configuración de días laborables
         businessHours: {
             daysOfWeek: [],
             startTime: '00:00',
             endTime: '00:00'
         },
 
-        // Eventos para cargar días laborables
         events: function (fetchInfo, successCallback, failureCallback) {
             fetch('/Citas/ObtenerDiasLaborables')
                 .then(response => response.json())
                 .then(workDays => {
-                    // Guardar los días disponibles para usar en dateClick
                     availableDays = workDays.flatMap(day => day.daysOfWeek);
-
-                    // Configurar días laborables
                     calendar.setOption('businessHours', workDays);
-
                     successCallback([]);
                 })
                 .catch(error => {
@@ -42,18 +37,19 @@
                 });
         },
 
-        // Manejador de clic en fecha
         dateClick: function (info) {
-            // Obtener el día de la semana de la fecha clickeada (0-6)
             const clickedDayOfWeek = info.date.getDay();
-
-            // Verificar si el día está en los días disponibles
             if (availableDays.includes(clickedDayOfWeek)) {
 
                 const formattedDate = info.date.toISOString();
-                console.log(formattedDate)
+                document.getElementById('fechaSeleccionada').value = formattedDate;
 
-                // Llamada AJAX para obtener horas disponibles
+                if (selectedDateEl) {
+                    selectedDateEl.style.backgroundColor = '';
+                }
+                info.dayEl.style.backgroundColor = 'gray';
+                selectedDateEl = info.dayEl;
+
                 $.ajax({
                     url: '/Citas/ConsultarHorasDisponibles',
                     method: 'POST',
@@ -63,29 +59,34 @@
                     success: function (response) {
                         mostrarHorasDisponibles(response);
                     },
-                    error: function (xhr, status, error) {
-                        console.error('Error al obtener horas disponibles:', error);
-                        alert('No se pudieron cargar las horas disponibles');
-                    }
                 });
             } else {
-                // Día no disponible
-                document.getElementById('hour-selector').innerHTML = 
+                document.getElementById('selectorHoras').innerHTML = 
                     '<div class="alert alert-warning text-center mt-2" role="alert">Este día no está disponible para citas</div>';
             }
+        },
+
+        dayCellDidMount: function (info) {
+            info.el.style.cursor = 'pointer';
+            info.el.addEventListener('mouseenter', function () {
+                if (info.el !== selectedDateEl) {
+                    info.el.style.backgroundColor = '#f0f0f0';
+                }
+            });
+            info.el.addEventListener('mouseleave', function () {
+                if (info.el !== selectedDateEl) {
+                    info.el.style.backgroundColor = '';
+                }
+            });
         }
     });
-
+    
     function mostrarHorasDisponibles(horas) {
-        // Generar botones para las horas disponibles
         const horasDisponiblesHtml = horas.map(hora =>
-            `<button class="btn btn-outline-primary m-2">${hora.hora}</button>`
+            `<button class="btn btn-outline-primary m-2" onclick="seleccionarHora(this,'${hora.hora}')">${hora.hora}</button>`
         ).join('');
-
-        // Actualizar el contenedor #hour-selector con los botones generados
-        document.getElementById('hour-selector').innerHTML = horasDisponiblesHtml;
+        document.getElementById('selectorHoras').innerHTML = horasDisponiblesHtml;
     }
+
     calendar.render();
 });
-
-
