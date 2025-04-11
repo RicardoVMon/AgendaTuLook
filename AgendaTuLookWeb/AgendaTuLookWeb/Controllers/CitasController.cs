@@ -236,6 +236,32 @@ namespace AgendaTuLookWeb.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> GuardarCalificacion(CitasModel model)
+		{
+			using (var http = _httpClient.CreateClient())
+			{
+
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/GuardarCalificacion";
+
+				var response = await http.PostAsJsonAsync(url, model);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+					if (result != null && result.Indicador)
+					{
+						TempData["SuccessMessage"] = "Calificación Realizada Con Éxito";
+						return RedirectToAction("HistorialCitas", "Citas");
+					}
+				}
+				TempData["errorMessage"] = "Ocurrió un error al crear la cita, vuelva a intentarlo más tarde";
+				return RedirectToAction("HistorialCitas", "Citas");
+			}
+		}
+
 		private int MapDayNameToIndex(string? nombreDia)
 		{
 			return nombreDia?.ToLower() switch

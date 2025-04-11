@@ -14,5 +14,7 @@
 		public TimeSpan HoraFin { get; set; }
 		public long DiaTrabajoId { get; set; }
 		public string? Estado { get; set; }
+		public int CalificacionReview { get; set; }
+		public string? ComentarioReview { get; set; }
 	}
 }

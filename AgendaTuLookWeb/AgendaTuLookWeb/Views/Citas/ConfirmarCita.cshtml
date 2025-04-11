@@ -66,15 +66,18 @@
                             <input type="hidden" asp-for="DiaTrabajoId" />
                             <input type="hidden" asp-for="Fecha" />
                             <input type="hidden" asp-for="MetodoPago.MetodoPagoId" />
+                            <input type="hidden" asp-for="MetodoPago.Nombre"/>
+
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Servicio:</label>
-                                <div class="form-control bg-light py-2" readonly>@Model.Servicio!.NombreServicio</div>
+                                <label asp-for="Servicio.NombreServicio" class="form-label fw-bold">Servicio:</label>
+                                <input asp-for="Servicio.NombreServicio" class="form-control bg-light py-2" readonly />
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Precio:</label>
-                                <div class="form-control bg-light py-2" readonly>@Model.Servicio.Precio</div>
+                                <label asp-for="Servicio.Precio" class="form-label fw-bold">Precio:</label>
+                                <input asp-for="Servicio.Precio" class="form-control bg-light py-2" readonly />
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -230,8 +233,7 @@
     </div>
 </div>
 <script>
-        // Script simplificado que solo maneja el cambio de atributos "required"
-    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
         // Obtener referencias a las pestañas
         const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
 
@@ -251,12 +253,22 @@
             document.getElementById('confirmDeposito')
         ];
 
-
-                function actualizarCamposRequeridos(metodoPagoId) {
+        function actualizarCamposRequeridos(metodoPagoId) {
             // Actualizar el valor del input oculto existente
             const metodoPagoInput = document.querySelector('[name="MetodoPago.MetodoPagoId"]');
+            const metodoPagoNombre = document.querySelector('[name="MetodoPago.Nombre"]');
+
             if (metodoPagoInput) {
                 metodoPagoInput.value = metodoPagoId;
+            }
+
+            // Actualizar el nombre del método de pago
+            if (metodoPagoNombre) {
+                if (metodoPagoId === '1') {
+                    metodoPagoNombre.value = 'Tarjeta Débito/Crédito';
+                } else if (metodoPagoId === '2') {
+                    metodoPagoNombre.value = 'SINPE Móvil';
+                }
             }
 
             // Función para limpiar campos
@@ -299,7 +311,6 @@
                 limpiarCampos(camposTarjeta);
             }
         }
-
 
         // Detectar el método activo inicialmente
         const tabActivo = document.querySelector('.nav-link.active');

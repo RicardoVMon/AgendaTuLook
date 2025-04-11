@@ -4,6 +4,9 @@ using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text;
 
 namespace AgendaTuLookAPI.Controllers
 {
@@ -12,11 +15,12 @@ namespace AgendaTuLookAPI.Controllers
 	[ApiController]
 	public class CitasController : Controller
 	{
-
+		private readonly IHttpClientFactory _httpClient;
 		private readonly IConfiguration _configuration;
 		private readonly ICorreos _correos;
-		public CitasController(IConfiguration configuration, ICorreos correos)
+		public CitasController(IConfiguration configuration, ICorreos correos, IHttpClientFactory httpClient)
 		{
+			_httpClient = httpClient;
 			_configuration = configuration;
 			_correos = correos;
 		}
@@ -113,8 +117,7 @@ namespace AgendaTuLookAPI.Controllers
 					model.MetodoPago!.MetodoPagoId, model.MetodoPago.Comprobante});
 
 				// Enviar correo
-				_correos.EnviarCorreoConfirmacionCita(model.Usuario.Correo!, model.Usuario.Nombre!, model.Fecha.ToString("dd/MM/yyyy"), model.HoraInicio.ToString(@"hh\:mm"), model.HoraFin.ToString(@"hh\:mm"),
-					model.MetodoPago!.Direccion!, model.MetodoPago!.CodigoPostal!, model.MetodoPago.Pais!);
+				_correos.EnviarCorreoFacturaCita(model.Usuario.Correo!, model.Usuario.Nombre!, model.Servicio.NombreServicio!, model.Servicio.Precio!, model.MetodoPago.Nombre!, model.Fecha.ToString("dd/MM/yyyy"), model.HoraInicio.ToString(@"hh\:mm"), model.HoraFin.ToString(@"hh\:mm"));
 
 				if (resultado > 0)
 				{
@@ -129,6 +132,34 @@ namespace AgendaTuLookAPI.Controllers
 
 		}
 
+		[HttpPost]
+		[Route("GuardarCalificacion")]
+		public IActionResult GuardarCalificacion(CitaModel model)
+		{
+			using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
+			{
+
+				var respuesta = new RespuestaModel();
+				var resultado = context.Execute("GuardarCalificacionCita",
+					new
+					{
+						model.CitaId,
+						model.CalificacionReview,
+						model.ComentarioReview,
+					});
+
+				if (resultado > 0)
+				{
+					respuesta.Indicador = true;
+					return Ok(respuesta);
+				}
+
+				respuesta.Indicador = false;
+				respuesta.Mensaje = "No se pudo calificar la cita correctamente.";
+				return Ok(respuesta);
+			}
+
+		}
 		private TimeSpan RedondearHora(TimeSpan hora)
 		{
 			return new TimeSpan(hora.Hours + (hora.Minutes > 0 ? 1 : 0), 0, 0);

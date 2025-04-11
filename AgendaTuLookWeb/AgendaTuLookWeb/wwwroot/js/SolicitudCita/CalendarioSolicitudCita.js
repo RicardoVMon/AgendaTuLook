@@ -5,6 +5,9 @@
     var calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
         height: 650,
+        validRange: {
+            start: new Date() // Sets today as the earliest selectable date
+        },
         nowIndicator: true,
         initialView: 'dayGridMonth',
         headerToolbar: {
@@ -40,16 +43,13 @@
         dateClick: function (info) {
             const clickedDayOfWeek = info.date.getDay();
             if (availableDays.includes(clickedDayOfWeek)) {
-
                 const formattedDate = info.date.toISOString();
                 document.getElementById('fechaSeleccionada').value = formattedDate;
-
                 if (selectedDateEl) {
                     selectedDateEl.style.backgroundColor = '';
                 }
                 info.dayEl.style.backgroundColor = 'gray';
                 selectedDateEl = info.dayEl;
-
                 $.ajax({
                     url: '/Citas/ConsultarHorasDisponibles',
                     method: 'POST',
@@ -57,11 +57,16 @@
                         fecha: formattedDate
                     },
                     success: function (response) {
-                        mostrarHorasDisponibles(response);
+                        if (response && response.length > 0) {
+                            mostrarHorasDisponibles(response);
+                        } else {
+                            document.getElementById('selectorHoras').innerHTML =
+                                '<div class="alert alert-warning text-center mt-2" role="alert">No quedan más horas disponibles para este día</div>';
+                        }
                     },
                 });
             } else {
-                document.getElementById('selectorHoras').innerHTML = 
+                document.getElementById('selectorHoras').innerHTML =
                     '<div class="alert alert-warning text-center mt-2" role="alert">Este día no está disponible para citas</div>';
             }
         },
