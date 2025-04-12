@@ -112,9 +112,18 @@ namespace AgendaTuLookAPI.Controllers
 			using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
 			{
 				var respuesta = new RespuestaModel();
-				var resultado = context.Execute("CrearCita", 
-					new { model.Usuario!.UsuarioId, model.Servicio!.ServicioId, model.Fecha, model.HoraInicio, model.HoraFin, model.DiaTrabajoId,
-					model.MetodoPago!.MetodoPagoId, model.MetodoPago.Comprobante});
+				var resultado = context.Execute("CrearCita",
+					new
+					{
+						model.Usuario!.UsuarioId,
+						model.Servicio!.ServicioId,
+						model.Fecha,
+						model.HoraInicio,
+						model.HoraFin,
+						model.DiaTrabajoId,
+						model.MetodoPago!.MetodoPagoId,
+						model.MetodoPago.Comprobante
+					});
 
 				// Enviar correo
 				_correos.EnviarCorreoFacturaCita(model.Usuario.Correo!, model.Usuario.Nombre!, model.Servicio.NombreServicio!, model.Servicio.Precio!, model.MetodoPago.Nombre!, model.Fecha.ToString("dd/MM/yyyy"), model.HoraInicio.ToString(@"hh\:mm"), model.HoraFin.ToString(@"hh\:mm"));

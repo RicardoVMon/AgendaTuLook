@@ -1,5 +1,14 @@
-﻿using System.Net.Mail;
+﻿using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.IO.Font.Constants;
+using iText.Kernel.Font;
+using System.Net.Mail;
 using System.Text;
+using iText.Kernel.Pdf.Canvas.Draw;
+using iText.Layout.Borders;
+using iText.Layout.Properties;
+using iText.Kernel.Colors;
 
 namespace AgendaTuLookAPI.Servicios
 {
@@ -82,6 +91,10 @@ namespace AgendaTuLookAPI.Servicios
 			// Generar Meeting iCalendar
 			string calendarContent = GenerateICSInviteBody(nombreCliente, correo ,nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
 			message.Attachments.Add(new Attachment(new MemoryStream(Encoding.UTF8.GetBytes(calendarContent)), "cita.ics", "text/calendar"));
+
+			// Adjunto factura PDF
+			var pdfFactura = GenerarFacturaPDF(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
+			message.Attachments.Add(new Attachment(pdfFactura, "Factura.pdf", "application/pdf"));
 
 			message.Priority = MailPriority.Normal;
 			message.IsBodyHtml = true;
@@ -206,5 +219,118 @@ namespace AgendaTuLookAPI.Servicios
 
 			return str.ToString();
 		}
+
+		public MemoryStream GenerarFacturaPDF(
+	string nombreCliente,
+	string nombreServicio,
+	double precio,
+	string metodoPago,
+	string fecha,
+	string horaInicio,
+	string horaFin)
+		{
+			var stream = new MemoryStream();
+			var writer = new PdfWriter(stream);
+			var pdf = new PdfDocument(writer);
+			var document = new Document(pdf);
+
+			var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+			var boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+			document.SetFont(font);
+
+			// --- Encabezado Empresa ---
+			document.Add(new Paragraph("AgendaTuLook S.A.")
+				.SetFont(boldFont)
+				.SetFontSize(18)
+				.SetTextAlignment(TextAlignment.LEFT));
+
+			document.Add(new Paragraph("Centro Comercial XYZ, Local 12, San José, Costa Rica\nTel: 2222-3333 | contacto@agendatulook.com")
+				.SetFontSize(9)
+				.SetTextAlignment(TextAlignment.LEFT));
+
+			document.Add(new Paragraph($"Factura Electrónica No. {GenerarNumeroFactura()}")
+				.SetFontSize(12)
+				.SetFont(boldFont)
+				.SetMarginTop(10));
+
+			document.Add(new Paragraph($"Fecha de Emisión: {DateTime.Today:dd/MM/yyyy}")
+				.SetFontSize(9));
+
+			document.Add(new LineSeparator(new SolidLine()).SetMarginTop(5));
+
+			// --- Información del Cliente y Detalles ---
+			float[] infoCols = { 280, 280 };
+			var infoTable = new Table(infoCols).UseAllAvailableWidth();
+
+			infoTable.AddCell(new Cell().Add(new Paragraph("Información del Cliente").SetFont(boldFont)).SetBorder(Border.NO_BORDER));
+			infoTable.AddCell(new Cell().Add(new Paragraph("Detalles de la Cita").SetFont(boldFont)).SetBorder(Border.NO_BORDER));
+
+			infoTable.AddCell(new Cell().Add(new Paragraph($"{nombreCliente}")).SetBorder(Border.NO_BORDER));
+			infoTable.AddCell(new Cell().Add(new Paragraph($"Método de Pago: {metodoPago}\nFecha: {fecha}\nHora: {horaInicio} - {horaFin}")).SetBorder(Border.NO_BORDER));
+			document.Add(infoTable);
+			document.Add(new Paragraph("\n"));
+
+			// --- Tabla de Servicio ---
+			var servicioTable = new Table(new float[] { 200, 200, 80, 80 }).UseAllAvailableWidth();
+
+			servicioTable.AddHeaderCell(new Cell().Add(new Paragraph("Código").SetFont(boldFont)).SetBackgroundColor(ColorConstants.LIGHT_GRAY));
+			servicioTable.AddHeaderCell(new Cell().Add(new Paragraph("Descripción").SetFont(boldFont)).SetBackgroundColor(ColorConstants.LIGHT_GRAY));
+			servicioTable.AddHeaderCell(new Cell().Add(new Paragraph("Precio Unit.").SetFont(boldFont)).SetBackgroundColor(ColorConstants.LIGHT_GRAY));
+			servicioTable.AddHeaderCell(new Cell().Add(new Paragraph("Total").SetFont(boldFont)).SetBackgroundColor(ColorConstants.LIGHT_GRAY));
+
+			servicioTable.AddCell("S001");
+			servicioTable.AddCell(nombreServicio);
+			servicioTable.AddCell($"₡{precio:N2}");
+			servicioTable.AddCell($"₡{precio:N2}");
+
+			document.Add(servicioTable);
+			document.Add(new Paragraph("\n"));
+
+			// --- Totales calculados desde precio con IVAI ---
+			double subtotal = precio / 1.13;
+			double impuesto = precio - subtotal;
+
+			var totales = new Table(new float[] { 400, 160 }).UseAllAvailableWidth();
+
+			totales.AddCell(new Cell().Add(new Paragraph("Subtotal (sin IVA)").SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
+			totales.AddCell(new Cell().Add(new Paragraph($"₡{subtotal:N2}")).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER));
+
+			totales.AddCell(new Cell().Add(new Paragraph("IVA (13%)").SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
+			totales.AddCell(new Cell().Add(new Paragraph($"₡{impuesto:N2}")).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER));
+
+			totales.AddCell(new Cell().Add(new Paragraph("Total a Pagar").SetFont(boldFont).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(Border.NO_BORDER));
+			totales.AddCell(new Cell().Add(new Paragraph($"₡{precio:N2}")).SetFont(boldFont).SetTextAlignment(TextAlignment.RIGHT).SetBorder(Border.NO_BORDER));
+
+			document.Add(totales);
+
+			// --- Términos y agradecimiento ---
+			document.Add(new Paragraph("\nTérminos y Condiciones:")
+				.SetFont(boldFont)
+				.SetFontSize(10));
+
+			document.Add(new Paragraph("Los servicios agendados podrán ser reembolsados únicamente si la cancelación se realiza con al menos " +
+				"24 horas de antelación a la cita programada. Cancelaciones realizadas con menos de 24 horas de anticipación no califican para reembolso. " +
+				"En caso de inasistencia sin previo aviso, no se realizará ningún reembolso. " +
+				"Al agendar una cita, el cliente acepta estos términos y condiciones. " + "\n" +
+				"Gracias por confiar en AgendaTuLook.")
+				.SetFontSize(9));
+
+			// --- Footer ---
+			document.Add(new LineSeparator(new SolidLine()).SetMarginTop(10));
+			document.Add(new Paragraph("Factura generada automáticamente por AgendaTuLook - www.agendatulook.com")
+				.SetFontSize(8)
+				.SetTextAlignment(TextAlignment.CENTER)
+				.SetMarginTop(5));
+
+			document.Close();
+			return new MemoryStream(stream.ToArray());
+		}
+
+		private string GenerarNumeroFactura()
+		{
+			Random random = new Random();
+			return random.Next(10000000, 99999999).ToString();
+		}
+
 	}
 }

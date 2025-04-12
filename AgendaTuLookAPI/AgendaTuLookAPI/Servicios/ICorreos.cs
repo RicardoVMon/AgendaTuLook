@@ -21,5 +21,7 @@ namespace AgendaTuLookAPI.Servicios
 			string horaInicio,  // formato esperado: "HH:mm"
 			string horaFin      // formato esperado: "HH:mm"
 		);
-		}
+		public MemoryStream GenerarFacturaPDF(string nombreCliente, string nombreServicio, double precio, string metodoPago, string fecha, string horaInicio, string horaFin);
+
+	}
 }
