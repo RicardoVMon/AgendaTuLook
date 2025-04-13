@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text;
+using System.Data;
 
 namespace AgendaTuLookAPI.Controllers
 {
@@ -173,6 +174,34 @@ namespace AgendaTuLookAPI.Controllers
 		{
 			return new TimeSpan(hora.Hours + (hora.Minutes > 0 ? 1 : 0), 0, 0);
 		}
-	}
+
+        [HttpGet]
+        [Route("DetalleCita")]
+        public IActionResult DetalleCita(long id)
+        {
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                var cita = connection.QueryFirstOrDefault<CitaDetalleModel>("ObtenerDetalleCita", new { CitaId = id }, commandType: CommandType.StoredProcedure);
+
+                if (cita != null)
+                {
+                    return Ok(new RespuestaModel
+                    {
+                        Indicador = true,
+                        Datos = cita
+                    });
+                }
+
+                return Ok(new RespuestaModel
+                {
+                    Indicador = false,
+                    Mensaje = "No se encontró la cita."
+                });
+            }
+        }
+
+
+
+    }
 }
 

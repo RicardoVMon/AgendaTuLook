@@ -276,6 +276,33 @@ namespace AgendaTuLookWeb.Controllers
 				_ => -1  // Valor inválido
 			};
 		}
-        
+
+        [HttpGet]
+        public async Task<IActionResult> DetalleCita(long id)
+        {
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + $"Citas/DetalleCita?id={id}";
+
+                var response = await http.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resultado = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+                    if (resultado != null && resultado.Indicador)
+                    {
+                        var cita = JsonSerializer.Deserialize<CitaDetalleModel>((JsonElement)resultado.Datos!)!;
+                        return View(cita);
+                    }
+                }
+            }
+
+            TempData["Error"] = "No se pudo cargar el detalle de la cita.";
+            return RedirectToAction("Calendario", "Calendario");
+        }
+
+
     }
 }
