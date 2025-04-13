@@ -16,14 +16,30 @@ namespace AgendaTuLookWeb.Controllers
 			_configuration = configuration;
 		}
 
-        public IActionResult HistorialCitas()
-        {
-            return View();
-        }
-
-		public IActionResult GestionarCitas()
+		[HttpGet]
+		public async Task<IActionResult> HistorialCitas()
 		{
-			return View();
+
+			using (var http = _httpClient.CreateClient())
+			{
+				long usuarioId = Convert.ToInt64(HttpContext.Session.GetString("UsuarioId")!);
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Calendario/ConsultarCitasCalendario?Id=" + usuarioId + "&c=" + 1;
+
+				var response = await http.GetAsync(url);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+					if (result != null && result.Indicador)
+					{
+						var datosConfirmar = JsonSerializer.Deserialize<List<CitasModel>>((JsonElement)result.Datos!)!;
+						return View(datosConfirmar);
+					}
+				}
+				return View();
+			}
 		}
 
 		public IActionResult CuponesCitas()
@@ -121,6 +137,131 @@ namespace AgendaTuLookWeb.Controllers
 			}
 		}
 
+		[HttpGet]
+		public async Task<IActionResult> ConfirmarCita(long s, DateTime f, TimeSpan h)
+		{
+
+			using (var http = _httpClient.CreateClient())
+			{
+				long usuarioId = Convert.ToInt64(HttpContext.Session.GetString("UsuarioId")!);
+				
+				CitasModel model = new CitasModel
+				{
+					Usuario = new UsuarioModel
+					{
+						UsuarioId = usuarioId
+					},
+					Servicio = new ServicioModel
+					{
+						ServicioId = s
+					},
+					Fecha = f,
+					HoraInicio = h,
+				};
+
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ConsultarDatosConfirmar";
+				
+				var response = await http.PostAsJsonAsync(url, model);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+					if (result != null && result.Indicador)
+					{
+						var datosConfirmar = JsonSerializer.Deserialize<CitasModel>((JsonElement)result.Datos!)!;
+						return View(datosConfirmar);
+					}
+				}
+				return View();
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> ConfirmarCita(CitasModel model, IFormFile Archivos)
+		{
+			using (var http = _httpClient.CreateClient())
+			{
+
+				if (Archivos != null)
+				{
+					// acá extender para que esto sea la ruta del comprobante
+					model.MetodoPago!.Comprobante = Archivos.FileName;
+				}
+
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ConfirmarCita";
+
+				var response = await http.PostAsJsonAsync(url, model);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+					if (result != null && result.Indicador)
+					{
+						TempData["SuccessMessage"] = "Cita Creada con Éxito!";
+						return RedirectToAction("Calendario", "Calendario");
+					}
+				}
+				TempData["errorMessage"] = "Ocurrió un error al crear la cita, vuelva a intentarlo más tarde";
+				return RedirectToAction("SolicitarServiciosCita", "Citas");
+			}
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> GestionarCitas()
+		{
+
+			using (var http = _httpClient.CreateClient())
+			{
+				long usuarioId = Convert.ToInt64(HttpContext.Session.GetString("UsuarioId")!);
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Calendario/ConsultarCitasCalendario?Id=" + usuarioId + "&c=" + 2;
+
+				var response = await http.GetAsync(url);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+					if (result != null && result.Indicador)
+					{
+						var datosConfirmar = JsonSerializer.Deserialize<List<CitasModel>>((JsonElement)result.Datos!)!;
+						return View(datosConfirmar);
+					}
+				}
+				return View();
+			}
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> GuardarCalificacion(CitasModel model)
+		{
+			using (var http = _httpClient.CreateClient())
+			{
+
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/GuardarCalificacion";
+
+				var response = await http.PostAsJsonAsync(url, model);
+
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+					if (result != null && result.Indicador)
+					{
+						TempData["SuccessMessage"] = "Calificación Realizada Con Éxito";
+						return RedirectToAction("HistorialCitas", "Citas");
+					}
+				}
+				TempData["errorMessage"] = "Ocurrió un error al crear la cita, vuelva a intentarlo más tarde";
+				return RedirectToAction("HistorialCitas", "Citas");
+			}
+		}
+
 		private int MapDayNameToIndex(string? nombreDia)
 		{
 			return nombreDia?.ToLower() switch
@@ -137,9 +278,31 @@ namespace AgendaTuLookWeb.Controllers
 		}
 
         [HttpGet]
-        public IActionResult ConfirmarCita()
+        public async Task<IActionResult> DetalleCita(long id)
         {
-            return View();
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + $"Citas/DetalleCita?id={id}";
+
+                var response = await http.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resultado = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+                    if (resultado != null && resultado.Indicador)
+                    {
+                        var cita = JsonSerializer.Deserialize<CitaDetalleModel>((JsonElement)resultado.Datos!)!;
+                        return View(cita);
+                    }
+                }
+            }
+
+            TempData["Error"] = "No se pudo cargar el detalle de la cita.";
+            return RedirectToAction("Calendario", "Calendario");
         }
+
+
     }
 }

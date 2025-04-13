@@ -1,0 +1,32 @@
+﻿.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 20px;
+}
+
+.star-rating .fa-star {
+cursor: pointer;
+font-size: 2rem;
+color: #ccc;
+transition: color 0.2s;
+}
+
+.star-rating .fa-star.active {
+    color: #ffc107;
+}
+
+.rating-value {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.rating-description {
+    text-align: center;
+    font-style: italic;
+    color: #6c757d;
+    margin-top: 5px;
+    min-height: 24px;
+}

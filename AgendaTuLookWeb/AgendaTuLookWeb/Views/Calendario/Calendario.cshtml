@@ -1,22 +1,20 @@
-﻿<body>
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var usuarioId = HttpContextAccessor.HttpContext!.Session.GetString("UsuarioId");
+}
+
+<body>
     <div class="row px-5">
         <div class="d-flex justify-content-between mb-3">
-            <div class="display-3 px-0">Historial de Citas</div>
+            <div class="display-3 px-0">Calendario de Citas</div>
         </div>
 
         <!-- Calendario -->
+        <input type="hidden" id="idUsuario" value="@usuarioId" />
         <div class="bg-white rounded rounded-1 py-3" id="calendar-container">
             <div id="calendar"></div>
         </div>
     </div>
-
-    <!-- Modal Detalles Cita-->
-    
-
-    <!-- Modal Agregar Cita-->
-    
-
-    <!-- Modal Editar Cita-->
 
     <script src="~/js/calendario.js"></script>
 </body>

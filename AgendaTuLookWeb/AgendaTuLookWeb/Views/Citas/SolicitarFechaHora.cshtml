@@ -1,4 +1,8 @@
 ﻿@model List<DiasTrabajoModel>
+@{
+    var servicioId = Context.Request.Query["s"].ToString();
+}
+
 
 <section id="schedule-management">
     <div class="pb-4">
@@ -18,17 +22,22 @@
             <div class="col-6">
                 <div class="bg-white rounded rounded-1 p-3">
                     <div id="texto-guia" class="text-center text-secondary">Selecciona un día para mostrar su horarios disponibles</div>
-                    <div id="hour-selector">
+                    <div id="selectorHoras">
 
                     </div>
                     <!-- Aquí se generarán los botones con las horas disponibles -->
                 </div>
                 <div class="mt-3">
-                    <a asp-controller="Citas" asp-action="ConfirmarCita" class="btn btn-lg btn-primary w-100" style="background-color:#321914; border-color: #1F283E;">Siguiente</a>
+                    <input type="hidden" id="servicioId" value="@servicioId"/>
+                    <input type="hidden" id="fechaSeleccionada"/>
+                    <input type="hidden" id="horaSeleccionada" />
+                    <a id="confirmarCita" onclick="redirigirConfirmar()" class="btn btn-lg btn-primary w-100" style="background-color:#321914; border-color: #1F283E;">Siguiente</a>
                 </div>
             </div>
         </div>
-
-        <script src="~/js/calendariosolicitudcita.js"></script>
     </div>
 </section>
+
+<script src="~/js/solicitudcita/actualizarhoraseleccionada.js"></script>
+<script src="~/js/solicitudcita/calendariosolicitudcita.js"></script>
+<script src="~/js/solicitudcita/redirigiravistaconfirmar.js"></script>

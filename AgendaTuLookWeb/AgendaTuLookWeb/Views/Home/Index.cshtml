@@ -1,25 +1,31 @@
 ﻿<div id="carouselExampleControls" class="carousel slide mb-3" data-bs-ride="carousel">
     <div class="carousel-inner">
         <div class="carousel-item active position-relative">
-            <img src="https://images.squarespace-cdn.com/content/v1/5fd787d32a8a4a2604b22b5d/a1a982a2-8886-4017-a735-3fde5aeab145/msbs-barbershop-perspective-22000.jpg"
-                 class="d-block w-100" height="300px" style="object-fit: cover">
-            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
-                <h2 class="text-white">CTA</h2>
-            </div>
+            <a asp-action="SolicitarServiciosCita" asp-controller="Citas" class="d-block w-100 position-relative">
+                <img src="https://images.squarespace-cdn.com/content/v1/5fd787d32a8a4a2604b22b5d/a1a982a2-8886-4017-a735-3fde5aeab145/msbs-barbershop-perspective-22000.jpg"
+                     class="d-block w-100" height="300px" style="object-fit: cover">
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
+                    <h2 class="text-white">Agendar Cita</h2>
+                </div>
+            </a>
         </div>
         <div class="carousel-item position-relative">
-            <img src="https://images.squarespace-cdn.com/content/v1/59a04de337c581c5e1bcd854/1710998377547-DWXDZA5WIX8Q9VKFF0WC/AAA01567.jpg?format=1500w"
-                 class="d-block w-100" height="300px" style="object-fit: cover">
-            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
-                <h2 class="text-white">CTA</h2>
-            </div>
+            <a asp-action="SolicitarServiciosCita" asp-controller="Citas" class="d-block w-100 position-relative">
+                <img src="https://images.squarespace-cdn.com/content/v1/59a04de337c581c5e1bcd854/1710998377547-DWXDZA5WIX8Q9VKFF0WC/AAA01567.jpg?format=1500w"
+                     class="d-block w-100" height="300px" style="object-fit: cover">
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
+                    <h2 class="text-white">Agendar Cita</h2>
+                </div>
+            </a>
         </div>
         <div class="carousel-item position-relative">
-            <img src="https://cdn.prod.website-files.com/644a9d9ce529ef8812f82a28/647fb85c69e95444243ef9bd_Henley%27s%20Gentlemen%27s%20Grooming%20-%20Barbershop%20and%20Mens%20Grooming.webp"
-                 class="d-block w-100" height="300px" style="object-fit: cover">
-            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
-                <h2 class="text-white">CTA</h2>
-            </div>
+            <a asp-action="SolicitarServiciosCita" asp-controller="Citas" class="d-block w-100 position-relative">
+                <img src="https://cdn.prod.website-files.com/644a9d9ce529ef8812f82a28/647fb85c69e95444243ef9bd_Henley%27s%20Gentlemen%27s%20Grooming%20-%20Barbershop%20and%20Mens%20Grooming.webp"
+                     class="d-block w-100" height="300px" style="object-fit: cover">
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
+                    <h2 class="text-white">Agendar Cita</h2>
+                </div>
+            </a>
         </div>
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
@@ -33,40 +39,113 @@
 </div>
 
 
+<!-- Reseñas de Clientes -->
+<h1 style="font-size: 2vh;" class="fw-bold mb-3">Lo Que Dicen Nuestros Clientes</h1>
 
-<h1 style="font-size: 2vh;" class="fw-bold"> Accesos Rápidos</h1>
-<div class="row">
-    <div class="col-3">
-        <a class="card text-decoration-none border border-1 shadow-sm">
-            <div class="card-body text-center">
-                <i class="align-middle mb-2 fas fa-calendar-plus fa-2x text-black"></i>
-                <h5 class="card-title mb-0">Opción 1</h5>
+<div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        <!-- Reseña 1 -->
+        <div class="carousel-item active">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="Foto de cliente">
+                        <div>
+                            <h5 class="mb-0">Carlos Rodríguez</h5>
+                            <div class="text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="card-text mb-0">"El mejor lugar para un corte de cabello en la ciudad. Los barberos son verdaderos profesionales y el ambiente es excelente. ¡Siempre salgo con un corte que supera mis expectativas!"</p>
+                </div>
             </div>
-        </a>
+        </div>
+
+        <!-- Reseña 2 -->
+        <div class="carousel-item">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="Foto de cliente">
+                        <div>
+                            <h5 class="mb-0">Miguel Ángel</h5>
+                            <div class="text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="card-text mb-0">"Servicio excepcional y atención personalizada. Me encanta que se toman el tiempo para entender exactamente lo que quiero. La experiencia del afeitado tradicional es algo que todo hombre debería probar aquí."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reseña 3 -->
+        <div class="carousel-item">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="Foto de cliente">
+                        <div>
+                            <h5 class="mb-0">Alejandro Méndez</h5>
+                            <div class="text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="card-text mb-0">"Desde que descubrí esta barbería, no voy a ningún otro lugar. El sistema de citas es muy eficiente y siempre respetan mi tiempo. Los productos que utilizan son de primera calidad."</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-3">
-        <a class="card text-decoration-none border border-1 shadow-sm">
-            <div class="card-body text-center">
-                <i class="align-middle mb-2 fas fa-calendar-check fa-2x text-black"></i>
-                <h5 class="card-title mb-0">Opción 2</h5>
-            </div>
-        </a>
-    </div>
-    <div class="col-3">
-        <a class="card text-decoration-none border border-1 shadow-sm">
-            <div class="card-body text-center">
-                <i class="align-middle mb-2 fas fa-calendar-check fa-2x text-black"></i>
-                <h5 class="card-title mb-0">Opción 3</h5>
-            </div>
-        </a>
-    </div>
-    <div class="col-3">
-        <a class="card text-decoration-none border border-1 shadow-sm">
-            <div class="card-body text-center">
-                <i class="align-middle mb-2 fas fa-calendar-check fa-2x text-black"></i>
-                <h5 class="card-title mb-0">Opción 4</h5>
-            </div>
-        </a>
+
+    <div class="d-flex justify-content-center mt-3">
+        <button class="btn btn-sm btn-outline-dark mx-1" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-dark mx-1" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
+            <i class="fas fa-chevron-right"></i>
+        </button>
     </div>
 </div>
 
+<!-- Estilos adicionales para mejorar la apariencia -->
+<style>
+    #reviewsCarousel .card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+    }
+
+    #reviewsCarousel .carousel-item {
+        padding: 10px;
+    }
+
+    .text-warning {
+        color: #FFD700 !important;
+    }
+
+    /* Hacer que los controles del carrusel sean más elegantes */
+    #reviewsCarousel .btn-outline-dark {
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+ 
+</style>
