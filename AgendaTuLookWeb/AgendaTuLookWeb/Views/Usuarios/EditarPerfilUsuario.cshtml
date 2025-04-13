@@ -48,8 +48,8 @@
                         <hr class="my-0" />
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
-                                <a class="btn btn-danger" asp-action="PerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">Cancelar</a>
-                                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                <a class="btn btn-outline-danger" asp-action="PerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">Cancelar</a>
+                                <button type="submit" class="btn btn-outline-primary">Guardar Cambios</button>
                             </div>
                         </div>
                     </form>
@@ -94,7 +94,7 @@
                                 <label for="ConfirmarContrasennia" class="form-label">Confirmar Nueva Contraseña</label>
                                 <input type="password" class="form-control" id="ConfirmarContrasennia" name="ConfirmarContrasennia" required>
                             </div>
-                            <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                            <button type="submit" class="btn btn-outline-primary">Cambiar Contraseña</button>
                         </form>
                         <hr />
                         
@@ -105,7 +105,7 @@
                             <div class="d-grid">
                             
                                 @* Faltan validaciones con respecto a esto *@
-                                    <a href="javascript:void(0);" class="btn btn-danger" onclick="confirmarDesvinculacion('@correoUsuario')">
+                                <a href="javascript:void(0);" class="btn btn-outline-danger" onclick="confirmarDesvinculacion('@correoUsuario')">
                                         <i class="fab fa-google me-2"></i> Desvincular de @correoUsuario
                                     </a>
                             

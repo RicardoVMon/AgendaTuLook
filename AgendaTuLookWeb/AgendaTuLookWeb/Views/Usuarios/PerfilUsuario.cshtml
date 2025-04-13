@@ -1,71 +1,166 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
-
 @{
-	var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
+    var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
 }
-
 @model UsuarioModel
-<section>
-		<div class="container-fluid p-0">
+<section class="py-4">
+    <div class="container-fluid p-0">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h1 class="h3 d-inline align-middle">Mi Perfil</h1>
+                <p class="text-muted">Administra tu información personal</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-xl-8 offset-xl-2">
+                <div class="card mb-4 shadow-sm">
+                    <!-- Cover photo area con azul más tenue -->
+                    <div class="card-img-top bg-gradient-primary" style="height: 150px; background: linear-gradient(135deg, #000000 0%, #74512D 100%);">
+                    </div>
+                    <div class="card-body text-center position-relative">
+                        <!-- Profile picture with border that overlaps the cover photo -->
+                        <div class="position-absolute" style="top: -75px; left: 50%; transform: translateX(-50%);">
+                            <div class="rounded-circle bg-white p-2 shadow-sm d-inline-block">
+                                <div style="width: 150px; height: 150px; overflow: hidden; border-radius: 50%;">
+                                    <img src="https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
+                                         class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Profile info with proper spacing from the profile picture -->
+                        <div class="mt-5 pt-4">
+                            <h4 class="card-title mb-1">@Model.Nombre</h4>
+                            <p class="text-muted mb-3">@Model.Correo</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a class="btn btn-outline-warning" asp-action="EditarPerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">
+                                    <i data-feather="edit-2" class="feather-sm me-1"></i> Editar Perfil
+                                </a>
+                                <button class="btn btn-outline-primary" type="button" id="changePhotoBtn">
+                                    <i data-feather="camera" class="feather-sm me-1"></i> Cambiar Foto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-			<div class="mb-3">
-				<h1 class="h3 d-inline align-middle">Perfil</h1>
-			</div>
-			<div class="row">
-			<div class="col-md-4 col-xl-3">
-				<div class="card mb-3">
-					<div class="card-header">
-						<h5 class="card-title mb-0">Detalles de Perfil</h5>
-					</div>
-					<div class="card-body text-center">
-						<!-- Contenedor centrado -->
-						<div style="width: 160px; height: 160px; margin: auto;" class="mb-2">
-							<img src="https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
-								 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-						</div>
-						<h5 class="card-title mb-2">@Model.Nombre</h5>
-						<div>
-							<a class="btn btn-primary btn-sm" asp-action="EditarPerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">Editar</a>
-						</div>
-					</div>
-					<hr class="my-0" />
-					<div class="card-body">
-						<h5 class="h6 card-title">Contacto</h5>
-						<ul class="list-unstyled mb-0">
-							<li class="mb-1"><span data-feather="home" class="feather-sm me-1"></span> Correo: <a href="#">@Model.Correo</a></li>
-							@{var stringTelefono = Model.Telefono != null ? Model.Telefono : "No asignado";}
-							<li class="mb-1"><span data-feather="briefcase" class="feather-sm me-1"></span> Teléfono: @stringTelefono</li>
-						</ul>
-					</div>
-					<hr class="my-0" />
-				</div>
-			</div>
+                    <!-- Profile navigation tabs -->
+                    <div class="card-header bg-transparent border-0 pb-0">
+                        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-bs-toggle="tab" href="#info" role="tab">Información</a>
+                            </li>
+                        </ul>
+                    </div>
 
-				<div class="col-md-8 col-xl-9">
-					<div class="card">
-						<div class="card-header">
-							<h5 class="card-title mb-0">Actividad</h5>
-						</div>
-						<div class="card-body h-100">
+                    <!-- Tab content -->
+                    <div class="card-body tab-content">
+                        <div class="tab-pane fade show active" id="info" role="tabpanel">
+                            <!--  tarjeta de bienvenida visual -->
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i data-feather="user" class="text-primary" style="width: 32px; height: 32px;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">¡Bienvenido a tu perfil personal!</h6>
+                                            <p class="mb-0 text-muted small">Consulta y actualiza tu información desde aquí</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-							@* Ejemplo de Container basico *@
-							@* <div class="d-flex align-items-start"> *@
-							@* <img src="https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" width="36" height="36" class="rounded-circle me-2" alt="Vanessa Tucker"> *@
-							@* 	<div class="flex-grow-1"> *@
-							@* 		<small class="float-end text-navy">5m ago</small> *@
-							@* 		<strong>Vanessa Tucker</strong> started following <strong>Christina Mason</strong><br /> *@
-							@* 		<small class="text-muted">Today 7:51 pm</small><br /> *@
-							@* 	</div> *@
-							@* </div> *@
-							Acá iría la actividad del usuario (reviews hechas, servicios adquiridos)
-							<hr />
-							<div class="d-grid">
-								<a href="#" class="btn btn-primary">Cargar más..</a>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                            <h5 class="h6 card-title">Información de Contacto</h5>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">Nombre</label>
+                                        <p class="mb-0">@Model.Nombre</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">Correo Electrónico</label>
+                                        <p class="mb-0">@Model.Correo</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">Teléfono</label>
+                                        <p class="mb-0">@(Model.Telefono ?? "No asignado")</p>
+                                    </div>
+                                </div>
+                                
+                            </div>
+
+                            <h5 class="h6 card-title">Síguenos en Redes Sociales</h5>
+                            <div class="d-flex gap-3 mb-3">
+                                <!-- Link a Twitter/X con etiqueta -->
+                                <a href="https://twitter.com/tuempresa" target="_blank" class="text-decoration-none">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded p-2 me-2">
+                                            <i data-feather="twitter" class="feather-sm"></i>
+                                        </div>
+                                        <span>Twitter/X</span>
+                                    </div>
+                                </a>
+                                <!-- Link a LinkedIn con etiqueta -->
+                                <a href="https://linkedin.com/company/tuempresa" target="_blank" class="text-decoration-none">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded p-2 me-2">
+                                            <i data-feather="linkedin" class="feather-sm"></i>
+                                        </div>
+                                        <span>LinkedIn</span>
+                                    </div>
+                                </a>
+                                <!-- Link a Facebook con etiqueta -->
+                                <a href="https://facebook.com/tuempresa" target="_blank" class="text-decoration-none">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded p-2 me-2">
+                                            <i data-feather="facebook" class="feather-sm"></i>
+                                        </div>
+                                        <span>Facebook</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
+<!-- Input file hidden for profile picture upload -->
+<input type="file" id="profilePictureInput" style="display: none;" accept="image/*">
+
+<!-- Add JavaScript for functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Profile picture upload
+        const changePhotoBtn = document.getElementById('changePhotoBtn');
+        const profilePictureInput = document.getElementById('profilePictureInput');
+
+        if (changePhotoBtn && profilePictureInput) {
+            changePhotoBtn.addEventListener('click', function () {
+                profilePictureInput.click();
+            });
+
+            // Handle file selection - in a real app, you would upload the file to your server
+            profilePictureInput.addEventListener('change', function (e) {
+                if (e.target.files.length > 0) {
+                    // This is just a preview, in a real application you would upload the file
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.querySelector('.card-body .rounded-circle img').src = e.target.result;
+                    }
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+        }
+
+        // Initialize Feather icons if available
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    });
+</script>
