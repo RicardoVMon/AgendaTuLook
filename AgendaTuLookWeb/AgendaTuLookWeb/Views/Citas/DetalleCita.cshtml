@@ -22,13 +22,7 @@
                             <h4 class="mb-0">
                                 <i class="fas fa-user-circle mr-2" style="color:#321914"></i> Información Personal
                             </h4>
-                            <div class="text-end">
-                                <small class="text-muted me-2">¿La información personal no está correcta?</small>
-                                <a asp-controller="Usuarios" asp-action="PerfilUsuario" asp-route-id="@Model.UsuarioId"
-                                   class="btn btn-sm btn-outline-secondary">
-                                    <i class="fas fa-user-edit me-1"></i> Actualizar
-                                </a>
-                            </div>
+
                         </div>
 
                         <div class="row">
@@ -95,8 +89,8 @@
                 </form>
                 <div class="text-end mt-3">
                     <a asp-action="Calendario" asp-controller="Calendario" class="btn btn-outline-primary">
-                     <i class="fas fa-arrow-left me-1"></i> Regresar al Calendario
-                 </a>
+                        <i class="fas fa-arrow-left me-1"></i> Regresar al Calendario
+                    </a>
                 </div>
 
             </div>
