@@ -175,33 +175,58 @@ namespace AgendaTuLookAPI.Controllers
 			return new TimeSpan(hora.Hours + (hora.Minutes > 0 ? 1 : 0), 0, 0);
 		}
 
-        [HttpGet]
-        [Route("DetalleCita")]
-        public IActionResult DetalleCita(long id)
-        {
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
-            {
-                var cita = connection.QueryFirstOrDefault<CitaDetalleModel>("ObtenerDetalleCita", new { CitaId = id }, commandType: CommandType.StoredProcedure);
+		[HttpGet]
+		[Route("DetalleCita")]
+		public IActionResult DetalleCita(long id)
+		{
+			using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+			{
+				var cita = connection.QueryFirstOrDefault<CitaDetalleModel>("ObtenerDetalleCita", new { CitaId = id }, commandType: CommandType.StoredProcedure);
 
-                if (cita != null)
-                {
-                    return Ok(new RespuestaModel
-                    {
-                        Indicador = true,
-                        Datos = cita
-                    });
-                }
+				if (cita != null)
+				{
+					return Ok(new RespuestaModel
+					{
+						Indicador = true,
+						Datos = cita
+					});
+				}
 
-                return Ok(new RespuestaModel
-                {
-                    Indicador = false,
-                    Mensaje = "No se encontró la cita."
-                });
-            }
-        }
+				return Ok(new RespuestaModel
+				{
+					Indicador = false,
+					Mensaje = "No se encontró la cita."
+				});
+			}
+		}
 
+		[HttpGet]
+		[Route("Reseñas")]
+		public IActionResult Reseñas()
+		{
+			using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+			{
+				var reviews = connection.Query<ReviewDestacadoModel>(
+					"sp_ObtenerReviewsDestacados",
+					commandType: CommandType.StoredProcedure
+				).ToList();
 
+				if (reviews.Any())
+				{
+					return Ok(new RespuestaModel
+					{
+						Indicador = true,
+						Datos = reviews
+					});
+				}
 
-    }
+				return Ok(new RespuestaModel
+				{
+					Indicador = false,
+					Mensaje = "No hay reviews destacados para mostrar."
+				});
+			}
+		}
+
+	}
 }
-

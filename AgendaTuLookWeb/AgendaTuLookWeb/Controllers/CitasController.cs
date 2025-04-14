@@ -304,5 +304,31 @@ namespace AgendaTuLookWeb.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> Reseñas()
+        {
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Reseñas";
+
+                var response = await http.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resultado = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+                    if (resultado != null && resultado.Indicador)
+                    {
+                        var reviews = JsonSerializer.Deserialize<List<ReviewDestacadoModel>>((JsonElement)resultado.Datos!)!;
+                        return View(reviews);
+                    }
+                }
+            }
+
+            TempData["Error"] = "No se pudieron cargar las reseñas.";
+            return RedirectToAction("Index", "Home");
+        }
+
     }
 }
