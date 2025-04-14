@@ -29,8 +29,8 @@ namespace AgendaTuLookAPI.Controllers
             {
                 var Estadistica = connection.QuerySingleOrDefault<EstadisticasModel>("Estadisticas", new
                 {
-                    InicioMesActual = fechaInicial,
-                    FinMesActual = fechaFinal
+                    fechaInicio = fechaInicial,
+                    fechaFinal = fechaFinal
                 },
                 commandType: CommandType.StoredProcedure);
                 //Reviws no existe en el branch actual cuando exista descomentar esta parte

@@ -1,38 +1,43 @@
 ﻿@model EstadisticasModel
-@if (Model != null)
-{
-    <div class="row">
-        <div class="col-12">
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-light ">
-                    <h3 class="mb-0">Estadísticas Generales</h3>
-                    <div class="filter-bar">
-                        <form asp-controller="Estadisticas" asp-action="Estadisticas" method="get" class="form-inline">
-                            <div class="form-group">
-                                <label for="fechaInicio">Fecha Inicio:</label>
-                                <input type="date" id="fechaInicio" name="fechaInicio"
-                                       value="@(ViewBag.FechaInicio ?? DateTime.Now.ToString("yyyy-MM-dd"))"
-                                       class="form-control w-25" />
-                            </div>
-                            <div class="form-group">
-                                <label for="fechaFinal">Fecha Final:</label>
-                                <input type="date" id="fechaFinal" name="fechaFinal"
-                                       value="@(ViewBag.FechaFinal ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToString("yyyy-MM-dd"))"
-                                       class="form-control w-25" />
-                            </div>
-                            <button type="submit" class="btn btn-primary">Filtrar</button>
-                        </form>
-                    </div>
+<div class="row">
+    <div class="col-12">
 
+        <div class="card shadow-sm">
+            <div class="card-header bg-light ">
+                <h3 class="mb-0">Estadísticas Generales</h3>
+                <div class="filter-bar">
+                    <form asp-controller="Estadisticas" asp-action="Estadisticas" method="get" class="form-inline">
+                        <div class="form-group">
+                            @if (ViewBag.errorMensaje != null)
+                            {
+                                <div class="alert alert-danger w-25">
+                                    @ViewBag.errorMensaje
+                                </div>
+                            }
+                            <label for="fechaInicio">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicio" name="fechaInicio"
+                            value="@(ViewBag.FechaInicio ?? DateTime.Now.ToString("yyyy-MM-dd"))"
+                            class="form-control w-25" />
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFinal">Fecha Final:</label>
+                            <input type="date" id="fechaFinal" name="fechaFinal"
+                            value="@(ViewBag.FechaFinal ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToString("yyyy-MM-dd"))"
+                            class="form-control w-25" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                    </form>
                 </div>
+               
+            </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h5 class="card-title text-muted">Clientes Atendidos Este Mes</h5>
-                                    <h2 class="display-4 fw-bold text-primary">@Model.UsuariosAtendidos</h2>
+                                    <h2 class="display-4 fw-bold text-primary">@(Model.UsuariosAtendidos ?? 0)</h2>
                                     @if (Model.PorcentajeUsuariosAtendidos != null)
                                     {
                                         <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeUsuariosAtendidos % vs mes anterior</p>
@@ -48,10 +53,10 @@
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h5 class="card-title text-muted">Nuevos Usuarios</h5>
-                                    <h2 class="display-4 fw-bold text-success">@Model.UsuariosNuevos</h2>
+                                <h2 class="display-4 fw-bold text-success">@(Model.UsuariosNuevos?? 0)</h2>
                                     @if (Model.PorcentajeUsuarioNuevos != null)
                                     {
-                                        <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeUsuarioNuevos % vs mes anterior</p>
+                                        <p class="text-success"><i class="bi bi-arrow-up"></i>@(Model.PorcentajeUsuarioNuevos ?? 0) % vs mes anterior</p>
                                     }
                                     else 
                                     {
@@ -65,7 +70,7 @@
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h5 class="card-title text-muted">Citas Agendadas</h5>
-                                    <h2 class="display-4 fw-bold text-warning">@Model.CitasNuevas</h2>
+                                    <h2 class="display-4 fw-bold text-warning">@(Model.CitasNuevas ?? 0)</h2>
                                     @if (Model.PorcentajeCitas != null)
                                     {
                                         <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeCitas % vs mes anterior</p>
@@ -78,6 +83,7 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -92,7 +98,7 @@
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h5 class="card-title text-muted">Total Reviews</h5>
-                                    <h2 class="display-4 fw-bold text-primary">@Model.ReviewsTotales</h2>
+                                <h2 class="display-4 fw-bold text-primary">@(Model.ReviewsTotales ?? 0)</h2>
                                     @if (Model.PorcentajeTotalReviews != null)
                                     {
                                         <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeTotalReviews % vs mes anterior</p>
@@ -108,7 +114,7 @@
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h5 class="card-title text-muted">Reviews Positivas</h5>
-                                    <h2 class="display-4 fw-bold text-success">@Model.ReviewsPositivasTotales</h2>
+                                <h2 class="display-4 fw-bold text-success">@(Model.ReviewsPositivasTotales ?? 0)</h2>
                                     @if (Model.PorcentajeTotalReviewsPositivas != null)
                                     {
                                         <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeTotalReviewsPositivas % vs mes anterior</p>
@@ -124,7 +130,7 @@
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
                                     <h5 class="card-title text-muted">Reviews Negativas</h5>
-                                    <h2 class="display-4 fw-bold text-danger">@Model.ReviewsNegativasTotales</h2>
+                                <h2 class="display-4 fw-bold text-danger">@(Model.ReviewsNegativasTotales ?? 0)</h2>
                                     @if (Model.PorcentajeTotalReviewsNegativas != null)
                                     {
                                         <p class="text-danger"><i class="bi bi-arrow-up"></i>@Model.PorcentajeTotalReviewsNegativas % vs mes anterior</p>
@@ -173,8 +179,4 @@
             </div>
         </div>
     </div>
-}
-else { 
-    <p> Algo salio mal...</p>
-}
 

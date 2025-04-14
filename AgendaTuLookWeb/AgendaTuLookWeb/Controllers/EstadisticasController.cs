@@ -16,14 +16,22 @@ namespace AgendaTuLookWeb.Controllers
             _httpClient = httpClient;
             _configuration = configuration;
         }
-        public async Task<IActionResult> Estadisticas(string fechaInicio, string fechaFinal)
+        public async Task<IActionResult> Estadisticas(DateTime fechaInicio, DateTime fechaFinal)
         {
-            
+            if (fechaInicio > fechaFinal) {
+                ViewBag.errorMensaje = "Coloque un valor valido";
+                var estadisticaVacia = new EstadisticasModel();
+                return View(estadisticaVacia);
+            }
+            var parsedFechaInicio = fechaInicio.ToString("yyyy-MM-dd");
+            var parsedFechaFinal = fechaFinal.ToString("yyyy-MM-dd");
+
+
             using (var http = _httpClient.CreateClient())
             {
                     
                     http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-                    var url = $"{_configuration.GetSection("Variables:urlWebApi").Value}Estadisticas/ConsultarEstadisticas?fechaInicial={fechaInicio}&fechaFinal={fechaFinal}";
+                    var url = $"{_configuration.GetSection("Variables:urlWebApi").Value}Estadisticas/ConsultarEstadisticas?fechaInicial={parsedFechaInicio}&fechaFinal={parsedFechaFinal}";
                     var response = await http.GetAsync(url);
 
                     if (response.IsSuccessStatusCode)
@@ -33,8 +41,8 @@ namespace AgendaTuLookWeb.Controllers
                         if (result != null && result.Indicador)
                         {
                             var Estadisticas = JsonSerializer.Deserialize<EstadisticasModel>((JsonElement)result.Datos!)!;
-                            ViewBag.FechaInicio = fechaInicio;
-                            ViewBag.FechaFinal = fechaFinal;
+                            ViewBag.FechaInicio = parsedFechaInicio;
+                            ViewBag.FechaFinal = parsedFechaFinal;
                             return View(Estadisticas);
                         }
                     }

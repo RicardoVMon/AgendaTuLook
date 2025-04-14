@@ -2,12 +2,12 @@
 {
     public class EstadisticasModel
     {
-        public int CitasNuevas { get; set; }
-        public int UsuariosNuevos { get; set; }
-        public int UsuariosAtendidos { get; set; }
-        public int ReviewsTotales { get; set; }
-        public int ReviewsPositivasTotales { get; set; }
-        public int ReviewsNegativasTotales { get; set; }
+        public int? CitasNuevas { get; set; }
+        public int? UsuariosNuevos { get; set; }
+        public int? UsuariosAtendidos { get; set; }
+        public int? ReviewsTotales { get; set; }
+        public int? ReviewsPositivasTotales { get; set; }
+        public int? ReviewsNegativasTotales { get; set; }
         public decimal? PorcentajeCitas { get; set; }
         public decimal? PorcentajeUsuarioNuevos { get; set; }
         public decimal? PorcentajeUsuariosAtendidos { get; set; }
