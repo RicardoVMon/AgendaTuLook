@@ -26,7 +26,9 @@ namespace AgendaTuLookAPI.Controllers
 		[Route("ConsultarEstadisticas")]
 		public IActionResult ConsultarEstadisticas(DateTime fechaInicial, DateTime fechaFinal)
 		{
-			using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+			Console.WriteLine("fecha inicial " + fechaInicial);
+            Console.WriteLine("fecha final " + fechaFinal);
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
 			{
 				var Estadistica = connection.QuerySingleOrDefault<EstadisticasModel>("Estadisticas", new
 				{

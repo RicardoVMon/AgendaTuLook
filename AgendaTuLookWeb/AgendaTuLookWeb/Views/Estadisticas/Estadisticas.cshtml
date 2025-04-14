@@ -7,22 +7,33 @@
                 <h3 class="mb-0">Estadísticas Generales</h3>
                 <div class="filter-bar mt-3">
                     <form asp-controller="Estadisticas" asp-action="Estadisticas" method="get" class="d-flex flex-wrap align-items-end gap-3">
+                        
                         <div class="form-group">
+                            @if (TempData["Mensaje"] != null)
+                            {
+                                <div class="alert alert-warning text-center">
+                                    @TempData["Mensaje"]
+                                </div>
+                            }
                             <label for="fechaInicio">Fecha Inicio:</label>
                             <input type="date" id="fechaInicio" name="fechaInicio"
-                                   value="@(ViewBag.FechaInicio ?? DateTime.Now.ToString("yyyy-MM-dd"))"
-                                   class="form-control" />
+                            value="@(ViewBag.FechaInicio ?? DateTime.Now.ToString("yyyy-MM-dd"))"
+                            class="form-control" />
                         </div>
                         <div class="form-group">
                             <label for="fechaFinal">Fecha Final:</label>
                             <input type="date" id="fechaFinal" name="fechaFinal"
-                                   value="@(ViewBag.FechaFinal ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToString("yyyy-MM-dd"))"
-                                   class="form-control" />
+                            value="@(ViewBag.FechaFinal ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToString("yyyy-MM-dd"))"
+                            class="form-control" />
                         </div>
                         <div class="form-group">
+                            
                             <button type="submit" class="btn btn-primary">Filtrar</button>
                         </div>
+                        
+
                     </form>
+                    
                 </div>
             </div>
             <div class="card-body">
@@ -182,26 +193,31 @@
                     </div>
 
                     <!-- Gráfico de Reviews Positivas vs Negativas -->
-                    <div class="col-md-12">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Gráfico de Reviews Positivas vs Negativas</h5>
-                                <canvas id="chartReviewsPosVsNeg"
-                                        height="200"
-                                        class="mx-auto d-block"
-                                        style="max-width: 400px;"
-                                        data-reviews-data='[@Model.ReviewsPositivasTotales,@Model.ReviewsNegativasTotales]'></canvas>
+                    @if (@Model.ReviewsPositivasTotales != null && @Model.ReviewsNegativasTotales != null) { 
+                        <div class="col-md-12">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Gráfico de Reviews Positivas vs Negativas</h5>
+                                    <canvas id="chartReviewsPosVsNeg"
+                                            height="200"
+                                            class="mx-auto d-block"
+                                            style="max-width: 400px;"
+                                            data-reviews-data='[@Model.ReviewsPositivasTotales,@Model.ReviewsNegativasTotales]'></canvas>
 
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }else{
+                        <p>no hay datos para mostrar el grafico de reviews</p>
+                    }
+                    
 
 
                 </div> 
             </div> 
         </div> 
     </div>
-    
+
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-header bg-light">
@@ -210,26 +226,38 @@
             <div class="card-body">
                 <div class="row">
                     <!-- Total de ingresos -->
-                    <div class="col-md-12 mb-3">
-                        <div class="card bg-light mb-3 d-flex align-items-center justify-content-center" style="height: 100%;">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Ingreso Total</h5>
-                                <h2 class="display-4 fw-bold text-success">₡@Model.IngresosTotales.ToString("N2")</h2>
+                    @if (Model.IngresosTotales != 0) { 
+                        <div class="col-md-12 mb-3">
+                            <div class="card bg-light mb-3 d-flex align-items-center justify-content-center" style="height: 100%;">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Ingreso Total</h5>
+                                    <h2 class="display-4 fw-bold text-success">₡@Model.IngresosTotales.ToString("N2")</h2>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }else{
+                        <p>no hay datos para mostrar los ingresos</p>
+                    }
+                    
                     <!-- Gráfico de ingresos por servicio -->
-                    <div class="col-md-12">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Ingresos por Servicio</h5>
-                                <canvas id="chartIngresosPorServicio"
-                                        height="200" class="mx-auto d-block" style="max-width: 500px;"
-                                        data-servicios='@Html.Raw(Json.Serialize(Model.Servicios.Select(s => s.NombreServicio)))'
-                                        data-ingresos='@Html.Raw(Json.Serialize(Model.Servicios.Select(s => s.Ingresos)))'></canvas>
+                    @if (Model.Servicios != null) {
+                        <div class="col-md-12">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Ingresos por Servicio</h5>
+                                    <canvas id="chartIngresosPorServicio"
+                                            height="200" class="mx-auto d-block" style="max-width: 500px;"
+                                            data-servicios='@Html.Raw(Json.Serialize(Model.Servicios.Select(s => s.NombreServicio)))'
+                                            data-ingresos='@Html.Raw(Json.Serialize(Model.Servicios.Select(s => s.Ingresos)))'></canvas>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    
+                    }else{
+                    
+                    <p>no hay datos para mostrar el grafico</p>
+                    }
+                    
                 </div>
             </div>
         </div>

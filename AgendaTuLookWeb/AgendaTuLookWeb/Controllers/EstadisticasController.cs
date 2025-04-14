@@ -19,8 +19,9 @@ namespace AgendaTuLookWeb.Controllers
         public async Task<IActionResult> Estadisticas(DateTime fechaInicio, DateTime fechaFinal)
         {
             if (fechaInicio > fechaFinal) {
-                ViewBag.errorMensaje = "Coloque un valor valido";
+                TempData["Mensaje"] = "coloque una fecha valida";
                 var estadisticaVacia = new EstadisticasModel();
+                estadisticaVacia.IngresosTotales = 0;
                 return View(estadisticaVacia);
             }
             var parsedFechaInicio = fechaInicio.ToString("yyyy-MM-dd");
@@ -46,10 +47,13 @@ namespace AgendaTuLookWeb.Controllers
                             return View(Estadisticas);
                         }
                     }
-                
-                
-                
-                return View();
+
+
+
+                var estadisticaVacia = new EstadisticasModel();
+                estadisticaVacia.IngresosTotales = 0;
+                TempData["Mensaje"] = "coloque una fecha valida";
+                return View(estadisticaVacia);
             }
         }
     }
