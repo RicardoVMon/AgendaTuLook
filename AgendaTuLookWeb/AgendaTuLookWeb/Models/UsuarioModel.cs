@@ -17,5 +17,7 @@
         public DateTime? FechaVencimientoVerificacion { get; set; }
 		public string? CodigoVerificacion { get; set; }
 
-	}
+		public string? RecaptchaToken { get; set; }
+
+    }
 }
