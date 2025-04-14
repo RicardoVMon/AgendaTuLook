@@ -10,6 +10,7 @@ namespace AgendaTuLookAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EstadisticasController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -22,16 +23,29 @@ namespace AgendaTuLookAPI.Controllers
 
         [HttpGet]
         [Route("ConsultarEstadisticas")]
-        public IActionResult ConsultarEstadisticas(string fechaInicial, string fechaFinal)
+        public IActionResult ConsultarEstadisticas(DateTime fechaInicial, DateTime fechaFinal)
         {
             using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
-                var Estadistica = connection.QuerySingleOrDefault<EstadisticasModel>("Estadisticas", new {
+                var Estadistica = connection.QuerySingleOrDefault<EstadisticasModel>("Estadisticas", new
+                {
                     InicioMesActual = fechaInicial,
                     FinMesActual = fechaFinal
                 },
                 commandType: CommandType.StoredProcedure);
+                //Reviws no existe en el branch actual cuando exista descomentar esta parte
 
+
+                /*
+             var Reviews = connection.Query<ReviewsModel>("BuscarReviewsPorFecha", new
+             {
+                    InicioMesActual = fechaInicial,
+                    FinMesActual = fechaFinal
+             },
+            commandType: CommandType.StoredProcedure);
+
+            Estadistica.reviews = Reviews
+                */
                 if (Estadistica != null)
                 {
                     return Ok(new RespuestaModel

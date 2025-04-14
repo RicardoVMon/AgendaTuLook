@@ -1,12 +1,48 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AgendaTuLookWeb.Models;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AgendaTuLookWeb.Controllers
 {
-	public class EstadisticasController : Controller
-	{
-		public IActionResult Estadisticas()
-		{
-			return View();
-		}
-	}
+    public class EstadisticasController : Controller
+    {
+        private readonly IHttpClientFactory _httpClient;
+        private readonly IConfiguration _configuration;
+
+
+        public EstadisticasController(IHttpClientFactory httpClient, IConfiguration configuration)
+        {
+            _httpClient = httpClient;
+            _configuration = configuration;
+        }
+        public async Task<IActionResult> Estadisticas(string fechaInicio, string fechaFinal)
+        {
+            
+            using (var http = _httpClient.CreateClient())
+            {
+                    
+                    http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                    var url = $"{_configuration.GetSection("Variables:urlWebApi").Value}Estadisticas/ConsultarEstadisticas?fechaInicial={fechaInicio}&fechaFinal={fechaFinal}";
+                    var response = await http.GetAsync(url);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                        if (result != null && result.Indicador)
+                        {
+                            var Estadisticas = JsonSerializer.Deserialize<EstadisticasModel>((JsonElement)result.Datos!)!;
+                            ViewBag.FechaInicio = fechaInicio;
+                            ViewBag.FechaFinal = fechaFinal;
+                            return View(Estadisticas);
+                        }
+                    }
+                
+                
+                
+                return View();
+            }
+        }
+    }
 }

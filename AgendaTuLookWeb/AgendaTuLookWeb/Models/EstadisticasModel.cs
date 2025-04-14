@@ -1,4 +1,4 @@
-﻿namespace AgendaTuLookAPI.Models
+﻿namespace AgendaTuLookWeb.Models
 {
     public class EstadisticasModel
     {

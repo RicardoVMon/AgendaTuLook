@@ -1,35 +1,171 @@
-﻿<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <h3 class="mb-0">Estadísticas Generales</h3>
+﻿@model EstadisticasModel
+@if (Model != null)
+{
+    <div class="row">
+        <div class="col-12">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light ">
+                    <h3 class="mb-0">Estadísticas Generales</h3>
+                    <div class="filter-bar">
+                        <form asp-controller="Estadisticas" asp-action="Estadisticas" method="get" class="form-inline">
+                            <div class="form-group">
+                                <label for="fechaInicio">Fecha Inicio:</label>
+                                <input type="date" id="fechaInicio" name="fechaInicio"
+                                       value="@(ViewBag.FechaInicio ?? DateTime.Now.ToString("yyyy-MM-dd"))"
+                                       class="form-control w-25" />
+                            </div>
+                            <div class="form-group">
+                                <label for="fechaFinal">Fecha Final:</label>
+                                <input type="date" id="fechaFinal" name="fechaFinal"
+                                       value="@(ViewBag.FechaFinal ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToString("yyyy-MM-dd"))"
+                                       class="form-control w-25" />
+                            </div>
+                            <button type="submit" class="btn btn-primary">Filtrar</button>
+                        </form>
+                    </div>
+
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Clientes Atendidos Este Mes</h5>
+                                    <h2 class="display-4 fw-bold text-primary">@Model.UsuariosAtendidos</h2>
+                                    @if (Model.PorcentajeUsuariosAtendidos != null)
+                                    {
+                                        <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeUsuariosAtendidos % vs mes anterior</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-warning"><i class="bi bi-arrow-up"></i>No hay datos</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Nuevos Usuarios</h5>
+                                    <h2 class="display-4 fw-bold text-success">@Model.UsuariosNuevos</h2>
+                                    @if (Model.PorcentajeUsuarioNuevos != null)
+                                    {
+                                        <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeUsuarioNuevos % vs mes anterior</p>
+                                    }
+                                    else 
+                                    {
+                                        <p class="text-warning"><i class="bi bi-arrow-up"></i>No hay datos</p>
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Citas Agendadas</h5>
+                                    <h2 class="display-4 fw-bold text-warning">@Model.CitasNuevas</h2>
+                                    @if (Model.PorcentajeCitas != null)
+                                    {
+                                        <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeCitas % vs mes anterior</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-warning"><i class="bi bi-arrow-up"></i>No hay datos</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Clientes Atendidos Este Mes</h5>
-                                <h2 class="display-4 fw-bold text-primary">50</h2>
-                                <p class="text-success"><i class="bi bi-arrow-up"></i> 15% vs mes anterior</p>
+        </div>
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">Reviews</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Total Reviews</h5>
+                                    <h2 class="display-4 fw-bold text-primary">@Model.ReviewsTotales</h2>
+                                    @if (Model.PorcentajeTotalReviews != null)
+                                    {
+                                        <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeTotalReviews % vs mes anterior</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-warning"><i class="bi bi-arrow-up"></i>No hay datos</p>
+                                    }
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Nuevos Usuarios</h5>
-                                <h2 class="display-4 fw-bold text-success">10</h2>
-                                <p class="text-success"><i class="bi bi-arrow-up"></i> 25% vs mes anterior</p>
+                        <div class="col-md-4">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Reviews Positivas</h5>
+                                    <h2 class="display-4 fw-bold text-success">@Model.ReviewsPositivasTotales</h2>
+                                    @if (Model.PorcentajeTotalReviewsPositivas != null)
+                                    {
+                                        <p class="text-success"><i class="bi bi-arrow-up"></i>@Model.PorcentajeTotalReviewsPositivas % vs mes anterior</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-danger"><i class="bi bi-arrow-up"></i>No hay datos</p>
+                                    }
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Citas Agendadas</h5>
-                                <h2 class="display-4 fw-bold text-warning">35</h2>
-                                <p class="text-primary"><i class="bi bi-calendar-check"></i> Próxima semana</p>
+                        <div class="col-md-4">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-muted">Reviews Negativas</h5>
+                                    <h2 class="display-4 fw-bold text-danger">@Model.ReviewsNegativasTotales</h2>
+                                    @if (Model.PorcentajeTotalReviewsNegativas != null)
+                                    {
+                                        <p class="text-danger"><i class="bi bi-arrow-up"></i>@Model.PorcentajeTotalReviewsNegativas % vs mes anterior</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-success"><i class="bi bi-arrow-up"></i>No hay datos</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title text-muted">Reviews</h5>
+                                    <table id="reviewsTable" class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Nombre del Atendido</th>
+                                                <th>Review</th>
+                                                <th>Calificación</th>
+                                                <th>Detalles</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Juan Pérez</td>
+                                                <td>Muy bonito.</td>
+                                                <td>4</td>
+                                                <td><button class="btn btn-primary">Ver Detalles</button></td>
+                                            </tr>
+                                            <tr>
+                                                <td>María López</td>
+                                                <td>El lugar estaba sucio.</td>
+                                                <td>1</td>
+                                                <td><button class="btn btn-primary">Ver Detalles</button></td>
+                                            </tr>
+                                            <!-- Agregar más filas según sea necesario -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -37,74 +173,8 @@
             </div>
         </div>
     </div>
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <h3 class="mb-0">Reviews</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Total Reviews</h5>
-                                <h2 class="display-4 fw-bold text-primary">100</h2>
-                                <p class="text-success"><i class="bi bi-arrow-up"></i> 20% vs mes anterior</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Reviews Positivas</h5>
-                                <h2 class="display-4 fw-bold text-success">80</h2>
-                                <p class="text-success"><i class="bi bi-arrow-up"></i> 30% vs mes anterior</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-muted">Reviews Negativas</h5>
-                                <h2 class="display-4 fw-bold text-danger">20</h2>
-                                <p class="text-danger"><i class="bi bi-arrow-down"></i> 10% vs mes anterior</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body">
-                                <h5 class="card-title text-muted">Reviews</h5>
-                                <table id="reviewsTable" class="table table-striped table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Nombre del Atendido</th>
-                                            <th>Review</th>
-                                            <th>Calificación</th>
-                                            <th>Detalles</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Juan Pérez</td>
-                                            <td>Muy bonito.</td>
-                                            <td>4</td>
-                                            <td><button class="btn btn-primary">Ver Detalles</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td>María López</td>
-                                            <td>El lugar estaba sucio.</td>
-                                            <td>1</td>
-                                            <td><button class="btn btn-primary">Ver Detalles</button></td>
-                                        </tr>
-                                        <!-- Agregar más filas según sea necesario -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+}
+else { 
+    <p> Algo salio mal...</p>
+}
+

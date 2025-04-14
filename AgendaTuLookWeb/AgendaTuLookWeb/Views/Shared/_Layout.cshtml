@@ -84,7 +84,9 @@
 						</li>
 
 						<li class="sidebar-item">
-							<a class="sidebar-link" href="@Url.Action("Estadisticas", "Estadisticas")">
+							<a class="sidebar-link" href="@Url.Action("Estadisticas", "Estadisticas",
+							new { fechaInicio = DateTime.Now.ToString("yyyy-MM-dd"),
+							fechaFinal = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToString("yyyy-MM-dd")})">
 								<i class="align-middle fas fa-chart-bar"></i> <span class="align-middle">Estadísticas</span>
 							</a>
 						</li>
