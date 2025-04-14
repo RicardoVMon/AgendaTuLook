@@ -15,7 +15,7 @@
         public decimal? PorcentajeTotalReviewsPositivas { get; set; }
         public decimal? PorcentajeTotalReviewsNegativas { get; set; }
 
-        //Reviws no existe en el branch actual cuando exista descomentar esta parte
-        //public List<ReviewsModel> reviews { get; set; }
+        
+        public List<ReviewsModel>? Reviews { get; set; }
     }
 }

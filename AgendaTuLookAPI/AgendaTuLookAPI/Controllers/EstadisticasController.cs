@@ -10,7 +10,7 @@ namespace AgendaTuLookAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    
     public class EstadisticasController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -33,21 +33,26 @@ namespace AgendaTuLookAPI.Controllers
                     fechaFinal = fechaFinal
                 },
                 commandType: CommandType.StoredProcedure);
-                //Reviws no existe en el branch actual cuando exista descomentar esta parte
+                
 
 
-                /*
-             var Reviews = connection.Query<ReviewsModel>("BuscarReviewsPorFecha", new
+                
+             var Reviews = connection.Query<ReviewsModel>("ConsultarReviewsPorFecha", new
              {
-                    InicioMesActual = fechaInicial,
-                    FinMesActual = fechaFinal
+                    fechaInicio = fechaInicial,
+                    fechaFinal = fechaFinal
              },
             commandType: CommandType.StoredProcedure);
-
-            Estadistica.reviews = Reviews
-                */
+                
+                
+               
                 if (Estadistica != null)
                 {
+                    if(Reviews != null) 
+                    {
+                        
+                        Estadistica.Reviews = Reviews.ToList();
+                    }
                     return Ok(new RespuestaModel
                     {
                         Indicador = true,
