@@ -10,6 +10,7 @@ namespace AgendaTuLookAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     
     public class EstadisticasController : Controller
     {
