@@ -9,5 +9,6 @@
 		public int Duracion { get; set; }
 		public string? Imagen { get; set; }
 		public bool? Estado { get; set; }
+		public decimal Ingresos { get; set; }
 	}
 }

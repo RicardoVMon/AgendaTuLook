@@ -81,12 +81,12 @@ namespace AgendaTuLookWeb.Controllers
                 }
                 else
                 {
-                    ViewBag.mensajeError = "No se pudo verificar el ReCaptcha";
+					TempData["Mensaje"] = "No se pudo verificar el ReCaptcha correctamente, por favor, inténtalo de nuevo.";
                     return View();
                 }
 
             }
-            ViewBag.mensajeError = "completa el ReCaptcha para continuar";
+			TempData["Mensaje"] = "Por favor, verifica el ReCaptcha para continuar.";
             return View();
         }
 
@@ -133,13 +133,13 @@ namespace AgendaTuLookWeb.Controllers
                 }
                 else
                 {
-                    ViewBag.mensajeError = "No se pudo verificar el ReCaptcha";
-                    return View();
+					TempData["Mensaje"] = "No se pudo verificar el ReCaptcha correctamente, por favor, inténtalo de nuevo.";
+					return View();
                 }
 
             }
-            ViewBag.mensajeError = "verifica el ReCaptcha";
-            return View();
+			TempData["Mensaje"] = "Por favor, verifica el ReCaptcha para continuar.";
+			return View();
         }
 
         [HttpGet]

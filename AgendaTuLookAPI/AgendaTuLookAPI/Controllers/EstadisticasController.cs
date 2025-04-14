@@ -22,52 +22,56 @@ namespace AgendaTuLookAPI.Controllers
 
         }
 
-        [HttpGet]
-        [Route("ConsultarEstadisticas")]
-        public IActionResult ConsultarEstadisticas(DateTime fechaInicial, DateTime fechaFinal)
-        {
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
-            {
-                var Estadistica = connection.QuerySingleOrDefault<EstadisticasModel>("Estadisticas", new
-                {
-                    fechaInicio = fechaInicial,
-                    fechaFinal = fechaFinal
-                },
-                commandType: CommandType.StoredProcedure);
-                
+		[HttpGet]
+		[Route("ConsultarEstadisticas")]
+		public IActionResult ConsultarEstadisticas(DateTime fechaInicial, DateTime fechaFinal)
+		{
+			using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+			{
+				var Estadistica = connection.QuerySingleOrDefault<EstadisticasModel>("Estadisticas", new
+				{
+					fechaInicio = fechaInicial,
+					fechaFinal = fechaFinal
+				});
 
+				var Reviews = connection.Query<ReviewsModel>("ConsultarReviewsPorFecha", new
+				{
+					fechaInicio = fechaInicial,
+					fechaFinal = fechaFinal
+				});
 
-                
-             var Reviews = connection.Query<ReviewsModel>("ConsultarReviewsPorFecha", new
-             {
-                    fechaInicio = fechaInicial,
-                    fechaFinal = fechaFinal
-             },
-            commandType: CommandType.StoredProcedure);
-                
-                
-               
-                if (Estadistica != null)
-                {
-                    if(Reviews != null) 
-                    {
-                        
-                        Estadistica.Reviews = Reviews.ToList();
-                    }
-                    return Ok(new RespuestaModel
-                    {
-                        Indicador = true,
-                        Datos = Estadistica
-                    });
-                }
+				using (var multi = connection.QueryMultiple("EstadisticasFinancieras", new
+				{
+					fechaInicio = fechaInicial,
+					fechaFinal = fechaFinal
+				},
+				commandType: CommandType.StoredProcedure))
+				{
+					var ingresosPorServicio = multi.Read<ServicioModel>().ToList();
+					var ingresoTotal = multi.ReadFirstOrDefault<decimal>();
 
-                return Ok(new RespuestaModel
-                {
-                    Indicador = false,
-                    Mensaje = "No se encontró la estadistica."
-                });
-            }
-        }
-    }
-    
+					if (Estadistica != null)
+					{
+						Estadistica.Reviews = Reviews?.ToList();
+						Estadistica.Servicios = ingresosPorServicio;
+						Estadistica.IngresosTotales = ingresoTotal;
+
+						return Ok(new RespuestaModel
+						{
+							Indicador = true,
+							Datos = Estadistica
+						});
+					}
+				}
+
+				return Ok(new RespuestaModel
+				{
+					Indicador = false,
+					Mensaje = "No se encontró la estadística."
+				});
+			}
+		}
+
+	}
+
 }

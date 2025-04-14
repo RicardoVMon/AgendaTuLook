@@ -15,7 +15,9 @@
         public decimal? PorcentajeTotalReviewsPositivas { get; set; }
         public decimal? PorcentajeTotalReviewsNegativas { get; set; }
 
-       
         public List<ReviewsModel>? Reviews { get; set; }
-    }
+
+		public decimal IngresosTotales { get; set; }
+		public List<ServicioModel>? Servicios { get; set; }
+	}
 }
