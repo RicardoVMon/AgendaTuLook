@@ -1,4 +1,5 @@
-﻿<div id="carouselExampleControls" class="carousel slide mb-3" data-bs-ride="carousel">
+﻿@model List<ReviewDestacadoModel>
+<div id="carouselExampleControls" class="carousel slide mb-3" data-bs-ride="carousel">
     <div class="carousel-inner">
         <div class="carousel-item active position-relative">
             <a asp-action="SolicitarServiciosCita" asp-controller="Citas" class="d-block w-100 position-relative">
@@ -38,90 +39,57 @@
     </button>
 </div>
 
-
 <!-- Reseñas de Clientes -->
-<h1 style="font-size: 2vh;" class="fw-bold mb-3">Lo Que Dicen Nuestros Clientes</h1>
+<h1 style="font-size: 2vh;" class="fw-bold mb-3">Nuestros Clientes</h1>
 
-<div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        <!-- Reseña 1 -->
-        <div class="carousel-item active">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="Foto de cliente">
-                        <div>
-                            <h5 class="mb-0">Carlos Rodríguez</h5>
-                            <div class="text-warning">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
+@if (Model != null && Model.Any())
+{
+    <div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var review = Model[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-0">@review.Nombre</h5>
+                                    <div class="text-warning">
+                                        @for (int star = 0; star < review.CalificacionReview; star++)
+                                        {
+                                            <i class="fas fa-star"></i>
+                                        }
+                                        @for (int star = review.CalificacionReview; star < 5; star++)
+                                        {
+                                            <i class="far fa-star"></i>
+                                        }
+                                    </div>
+                                </div>
                             </div>
+                            <p class="card-text mb-0">"@review.ComentarioReview"</p>
                         </div>
                     </div>
-                    <p class="card-text mb-0">"El mejor lugar para un corte de cabello en la ciudad. Los barberos son verdaderos profesionales y el ambiente es excelente. ¡Siempre salgo con un corte que supera mis expectativas!"</p>
                 </div>
-            </div>
+            }
         </div>
 
-        <!-- Reseña 2 -->
-        <div class="carousel-item">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="Foto de cliente">
-                        <div>
-                            <h5 class="mb-0">Miguel Ángel</h5>
-                            <div class="text-warning">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="card-text mb-0">"Servicio excepcional y atención personalizada. Me encanta que se toman el tiempo para entender exactamente lo que quiero. La experiencia del afeitado tradicional es algo que todo hombre debería probar aquí."</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Reseña 3 -->
-        <div class="carousel-item">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="Foto de cliente">
-                        <div>
-                            <h5 class="mb-0">Alejandro Méndez</h5>
-                            <div class="text-warning">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="card-text mb-0">"Desde que descubrí esta barbería, no voy a ningún otro lugar. El sistema de citas es muy eficiente y siempre respetan mi tiempo. Los productos que utilizan son de primera calidad."</p>
-                </div>
-            </div>
+        <!-- Botones carrusel dentro del contenedor -->
+        <div class="d-flex justify-content-center mt-3">
+            <button class="btn btn-sm btn-outline-dark mx-1" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-dark mx-1" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     </div>
+}
+else
+{
+    <div class="alert alert-info">No hay reseñas disponibles.</div>
+}
 
-    <div class="d-flex justify-content-center mt-3">
-        <button class="btn btn-sm btn-outline-dark mx-1" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="btn btn-sm btn-outline-dark mx-1" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
-</div>
-
-<!-- Estilos adicionales para mejorar la apariencia -->
 <style>
     #reviewsCarousel .card {
         transition: all 0.3s ease;
@@ -136,7 +104,6 @@
         color: #FFD700 !important;
     }
 
-    /* Hacer que los controles del carrusel sean más elegantes */
     #reviewsCarousel .btn-outline-dark {
         border-radius: 50%;
         width: 35px;
@@ -146,6 +113,4 @@
         align-items: center;
         justify-content: center;
     }
-
- 
 </style>

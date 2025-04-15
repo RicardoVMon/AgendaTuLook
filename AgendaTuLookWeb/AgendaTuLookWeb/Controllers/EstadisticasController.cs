@@ -56,5 +56,6 @@ namespace AgendaTuLookWeb.Controllers
                 return View(estadisticaVacia);
             }
         }
+
     }
 }

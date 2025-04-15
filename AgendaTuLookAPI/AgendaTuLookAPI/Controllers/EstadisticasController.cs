@@ -8,27 +8,27 @@ using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace AgendaTuLookAPI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    
-    public class EstadisticasController : Controller
-    {
-        private readonly IConfiguration _configuration;
-   
-        public EstadisticasController(IConfiguration configuration)
-        {
-            _configuration = configuration;
+	[Route("api/[controller]")]
+	[ApiController]
+	[Authorize]
 
-        }
+	public class EstadisticasController : Controller
+	{
+		private readonly IConfiguration _configuration;
+
+		public EstadisticasController(IConfiguration configuration)
+		{
+			_configuration = configuration;
+
+		}
 
 		[HttpGet]
 		[Route("ConsultarEstadisticas")]
 		public IActionResult ConsultarEstadisticas(DateTime fechaInicial, DateTime fechaFinal)
 		{
 			Console.WriteLine("fecha inicial " + fechaInicial);
-            Console.WriteLine("fecha final " + fechaFinal);
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+			Console.WriteLine("fecha final " + fechaFinal);
+			using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
 			{
 				var Estadistica = connection.QuerySingleOrDefault<EstadisticasModel>("Estadisticas", new
 				{
@@ -74,6 +74,35 @@ namespace AgendaTuLookAPI.Controllers
 			}
 		}
 
-	}
+		[HttpGet("Reviews")]
+		public IActionResult GetReviews()
+		{
+			using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+			{
+				var reviews = connection.Query<ReviewDestacadoModel>(
+					"ObtenerReviewsDestacados",
+					commandType: CommandType.StoredProcedure
+				).ToList();
 
+				if (reviews.Any())
+				{
+					return Ok(new RespuestaModel
+					{
+						Indicador = true,
+						Datos = reviews
+					});
+				}
+
+				return Ok(new RespuestaModel
+				{
+					Indicador = false,
+					Mensaje = "No se encontraron reseñas."
+				});
+			}
+		}
+	}
 }
+
+
+
+
