@@ -1,8 +1,24 @@
 ﻿@model UsuarioModel;
-
+@inject IConfiguration configuration
 @{
     Layout = "~/Views/Shared/_LayoutExterno.cshtml";
+    var sitekey = configuration.GetSection("RecaptchaSettings:site_key").Value;
 }
+<script type="text/javascript">
+    var onloadCallback = function() {
+      grecaptcha.render('html_element', {
+          'sitekey' : '@sitekey'
+        });
+    };
+
+     function onSubmit(event){
+            var token = grecaptcha.getResponse();
+            document.getElementById("recaptchaTokenInput").value = token;
+        }
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+        async defer>
+</script>
 <div class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-dark navbar-extend p-2" style="background-color: #291410;">
         <div class="container-fluid">
@@ -17,7 +33,8 @@
         </div>
         <div class="col d-flex align-items-center">
             <div class="container-fluid d-flex flex-column">
-                <form asp-controller="Autenticacion" asp-action="Login" class="pb-5 border-bottom px-5" method="POST">
+                <form asp-controller="Autenticacion" asp-action="Login" class="pb-5 border-bottom px-5" method="POST" onsubmit="onSubmit(event)">
+                    <input asp-for="RecaptchaToken" type="hidden" id="recaptchaTokenInput" />
                     <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
                     <h2 class="mb-5 text-center" style="color: #321914;">Ingresar</h2>
 
@@ -35,6 +52,15 @@
                     <div class="form-group form-floating pb-3">
                         <input asp-for="Contrasennia" type="password" class="form-control" placeholder="Contraseña" name="Contrasennia" id="Contrasennia" required />
                         <label class="form-label">Contraseña</label>
+                    </div>
+                    <div class="form-group form-floating pb-3">
+                        <div class="form-group form-floating pb-3">
+                            <div class="d-flex justify-content-center">
+                                
+                                <div id="html_element"></div>
+                                <hr />
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group text-center">
                         <button type="submit" class="btn btn-lg btn-primary w-100" style="background-color:#321914; border-color: #1F283E;">
