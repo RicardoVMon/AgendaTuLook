@@ -39,78 +39,183 @@
     </button>
 </div>
 
-<!-- Reseñas de Clientes -->
-<h1 style="font-size: 2vh;" class="fw-bold mb-3">Nuestros Clientes</h1>
 
-@if (Model != null && Model.Any())
-{
-    <div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            @for (int i = 0; i < Model.Count; i++)
-            {
-                var review = Model[i];
-                <div class="carousel-item @(i == 0 ? "active" : "")">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <div>
-                                    <h5 class="mb-0">@review.Nombre</h5>
-                                    <div class="text-warning">
-                                        @for (int star = 0; star < review.CalificacionReview; star++)
-                                        {
-                                            <i class="fas fa-star"></i>
-                                        }
-                                        @for (int star = review.CalificacionReview; star < 5; star++)
-                                        {
-                                            <i class="far fa-star"></i>
-                                        }
-                                    </div>
+<!-- Reseñas de Clientes -->
+<section class="reviews-section py-5 bg-white">
+    <div class="container">
+        <h2 class="text-center mb-5 position-relative">
+            <span class="border-bottom border-brown border-3 pb-2">Nuestros Clientes</span>
+        </h2>
+        
+        @if (Model != null && Model.Any())
+        {
+            <div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                <div class="carousel-inner">
+                    @{
+                        // Mostrar 3 tarjetas a la vez en pantallas grandes
+                        for (int i = 0; i < Model.Count; i += 3)
+                        {
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <div class="row justify-content-center">
+                                    @for (int j = i; j < Math.Min(i + 3, Model.Count); j++)
+                                    {
+                                        var review = Model[j];
+                                        <div class="col-md-4 mb-4 mb-md-0">
+                                            <div class="card review-card h-100 border-0 shadow-sm">
+                                                <div class="card-body p-4">
+                                                    <div class="text-warning mb-3">
+                                                        @for (int star = 0; star < review.CalificacionReview; star++)
+                                                        {
+                                                            <i class="fas fa-star"></i>
+                                                        }
+                                                        @for (int star = review.CalificacionReview; star < 5; star++)
+                                                        {
+                                                            <i class="far fa-star"></i>
+                                                        }
+                                                    </div>
+                                                    <p class="card-text mb-4">"@review.ComentarioReview"</p>
+                                                    <div class="d-flex align-items-center mt-auto">
+                                                        <div class="review-avatar bg-brown text-white rounded-circle">
+                                                            @review.Nombre.Substring(0, 1)
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <h5 class="mb-0 fw-bold">@review.Nombre</h5>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
                             </div>
-                            <p class="card-text mb-0">"@review.ComentarioReview"</p>
-                        </div>
-                    </div>
+                        }
+                    }
                 </div>
-            }
-        </div>
-
-        <!-- Botones carrusel dentro del contenedor -->
-        <div class="d-flex justify-content-center mt-3">
-            <button class="btn btn-sm btn-outline-dark mx-1" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-dark mx-1" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
+                
+                <!-- Indicadores -->
+                <div class="carousel-indicators position-relative mt-4">
+                    @for (int i = 0; i < Math.Ceiling((double)Model.Count / 3); i++)
+                    {
+                        <button type="button" data-bs-target="#reviewsCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" 
+                                aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i+1)"></button>
+                    }
+                </div>
+                
+                <!-- Botones de navegación -->
+                <div class="d-flex justify-content-center mt-3">
+                    <button class="btn btn-brown rounded-circle mx-2 nav-btn" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-brown rounded-circle mx-2 nav-btn" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center py-4 shadow-sm" style="background-color: #f8f1e9; color: #7d5a44; border-color: #d9bea3;">
+                <i class="fas fa-info-circle me-2"></i> No hay reseñas disponibles en este momento.
+            </div>
+        }
     </div>
-}
-else
-{
-    <div class="alert alert-info">No hay reseñas disponibles.</div>
-}
+</section>
 
 <style>
-    #reviewsCarousel .card {
+    :root {
+        --brown-primary: #7d5a44;
+        --brown-secondary: #a67c52;
+        --brown-light: #d9bea3;
+        --brown-very-light: #f8f1e9;
+        --brown-dark: #5c4030;
+    }
+    
+    .border-brown {
+        border-color: var(--brown-primary) !important;
+    }
+    
+    .bg-brown {
+        background-color: var(--brown-primary) !important;
+    }
+    
+    .btn-brown {
+        background-color: var(--brown-primary);
+        border-color: var(--brown-primary);
+        color: white;
+    }
+    
+    .btn-brown:hover, .btn-brown:focus {
+        background-color: var(--brown-dark);
+        border-color: var(--brown-dark);
+        color: white;
+    }
+    
+    .reviews-section {
+        background-color: white;
+    }
+    
+    .review-card {
+        border-radius: 15px;
         transition: all 0.3s ease;
-        border-radius: 10px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background-color: white;
     }
-
-    #reviewsCarousel .carousel-item {
-        padding: 10px;
+    
+    .review-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(125, 90, 68, 0.15) !important;
     }
-
-    .text-warning {
-        color: #FFD700 !important;
-    }
-
-    #reviewsCarousel .btn-outline-dark {
-        border-radius: 50%;
-        width: 35px;
-        height: 35px;
-        padding: 0;
+    
+    .review-avatar {
+        width: 48px;
+        height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
     }
-</style>
+    
+    .text-warning {
+        color: #daa520 !important; /* Dorado más cálido para combinar con el café */
+    }
+    
+    .text-warning i {
+        margin-right: 2px;
+    }
+    
+    .carousel-indicators {
+        bottom: -10px;
+    }
+    
+    .carousel-indicators button {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--brown-light);
+        border: none;
+        margin: 0 5px;
+    }
+    
+    .carousel-indicators button.active {
+        background-color: var(--brown-primary);
+    }
+    
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    
+    /* Estilos responsivos */
+    media (max-width: 767.98px) {
+        .review-card {
+            margin-bottom: 20px;
+        }
+    }
+</style></style>
