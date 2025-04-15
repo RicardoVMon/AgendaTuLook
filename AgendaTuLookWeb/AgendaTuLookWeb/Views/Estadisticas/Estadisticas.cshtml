@@ -1,39 +1,59 @@
 ﻿@model EstadisticasModel
 
 <div class="row">
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-warning text-center">
+            @TempData["Mensaje"]
+        </div>
+    }
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-header bg-light">
                 <h3 class="mb-0">Estadísticas Generales</h3>
                 <div class="filter-bar mt-3">
-                    <form asp-controller="Estadisticas" asp-action="Estadisticas" method="get" class="d-flex flex-wrap align-items-end gap-3">
-                        
-                        <div class="form-group">
-                            @if (TempData["Mensaje"] != null)
-                            {
-                                <div class="alert alert-warning text-center">
-                                    @TempData["Mensaje"]
-                                </div>
-                            }
-                            <label for="fechaInicio">Fecha Inicio:</label>
-                            <input type="date" id="fechaInicio" name="fechaInicio"
-                            value="@(ViewBag.FechaInicio ?? DateTime.Now.ToString("yyyy-MM-dd"))"
-                            class="form-control" />
-                        </div>
-                        <div class="form-group">
-                            <label for="fechaFinal">Fecha Final:</label>
-                            <input type="date" id="fechaFinal" name="fechaFinal"
-                            value="@(ViewBag.FechaFinal ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToString("yyyy-MM-dd"))"
-                            class="form-control" />
-                        </div>
-                        <div class="form-group">
-                            
-                            <button type="submit" class="btn btn-primary">Filtrar</button>
-                        </div>
-                        
 
-                    </form>
-                    
+
+                    <a href="#"
+                       class="btn btn-success btn-xl custom-position m-4 rounded-circle z-3 d-flex align-items-center justify-content-center" style="z-index:100"
+                       data-bs-toggle="modal" data-bs-target="#filtrosModal"
+                       title="Cambiar Filtros de Estadística" id="CambiarFiltros">
+                        <i class="fa-solid fa-filter"></i>
+                    </a>
+
+
+                    <div class="modal fade" id="filtrosModal" tabindex="-1" aria-labelledby="filtrosModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="filtrosModalLabel">Filtros de Estadísticas</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form asp-controller="Estadisticas" asp-action="Estadisticas" method="get">
+                                        <div class="form-group mb-3">
+                                            <label for="fechaInicio">Fecha Inicio:</label>
+                                            <input type="date" id="fechaInicio" name="fechaInicio"
+                                                   value="@(ViewBag.FechaInicio ?? DateTime.Now.ToString("yyyy-MM-dd"))"
+                                                   class="form-control" />
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="fechaFinal">Fecha Final:</label>
+                                            <input type="date" id="fechaFinal" name="fechaFinal"
+                                                   value="@(ViewBag.FechaFinal ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToString("yyyy-MM-dd"))"
+                                                   class="form-control" />
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Filtrar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
             <div class="card-body">
@@ -186,14 +206,15 @@
                                 }
                                 else
                                 {
-                                    <p>No hay reviews</p>
+                                    <p>No hay reviews disponibles en el plazo de fechas especificado.</p>
                                 }
                             </div>
                         </div>
                     </div>
 
                     <!-- Gráfico de Reviews Positivas vs Negativas -->
-                    @if (@Model.ReviewsPositivasTotales != null && @Model.ReviewsNegativasTotales != null) { 
+                    @if (@Model.ReviewsPositivasTotales != null && @Model.ReviewsNegativasTotales != null)
+                    {
                         <div class="col-md-12">
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
@@ -207,15 +228,17 @@
                                 </div>
                             </div>
                         </div>
-                    }else{
-                        <p>no hay datos para mostrar el grafico de reviews</p>
                     }
-                    
+                    else
+                    {
+                        <p>No hay datos para el gráfico de reviews positivas y negativas del plazo de fechas especificado.</p>
+                    }
 
 
-                </div> 
-            </div> 
-        </div> 
+
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="col-12">
@@ -226,7 +249,8 @@
             <div class="card-body">
                 <div class="row">
                     <!-- Total de ingresos -->
-                    @if (Model.IngresosTotales != 0) { 
+                    @if (Model.IngresosTotales != 0)
+                    {
                         <div class="col-md-12 mb-3">
                             <div class="card bg-light mb-3 d-flex align-items-center justify-content-center" style="height: 100%;">
                                 <div class="card-body text-center">
@@ -235,12 +259,15 @@
                                 </div>
                             </div>
                         </div>
-                    }else{
-                        <p>no hay datos para mostrar los ingresos</p>
                     }
-                    
+                    else
+                    {
+                        <p>No hay datos para mostrar los ingresos en el rango de fechas especificado.</p>
+                    }
+
                     <!-- Gráfico de ingresos por servicio -->
-                    @if (Model.Servicios != null) {
+                    @if (Model.Servicios != null)
+                    {
                         <div class="col-md-12">
                             <div class="card bg-light mb-3">
                                 <div class="card-body text-center">
@@ -252,12 +279,14 @@
                                 </div>
                             </div>
                         </div>
-                    
-                    }else{
-                    
-                    <p>no hay datos para mostrar el grafico</p>
+
                     }
-                    
+                    else
+                    {
+
+                        <p>No hay datos para mostrar las ganancias por servicio en el rango de fechas especificado.</p>
+                    }
+
                 </div>
             </div>
         </div>
@@ -267,5 +296,5 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script src="~/js/estadisticas/graficos.js"></script>
-
-    
+<script src="~/js/botontooltip.js"></script>
+<link href="~/css/botontooltip.css" rel="stylesheet" />

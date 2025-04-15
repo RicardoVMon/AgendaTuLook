@@ -19,7 +19,7 @@ namespace AgendaTuLookWeb.Controllers
         public async Task<IActionResult> Estadisticas(DateTime fechaInicio, DateTime fechaFinal)
         {
             if (fechaInicio > fechaFinal) {
-                TempData["Mensaje"] = "coloque una fecha valida";
+                TempData["Mensaje"] = "La fecha de inicio no puede ser mayor a la fecha final, por favor coloque una fecha válida";
                 var estadisticaVacia = new EstadisticasModel();
                 estadisticaVacia.IngresosTotales = 0;
                 return View(estadisticaVacia);
@@ -31,28 +31,26 @@ namespace AgendaTuLookWeb.Controllers
             using (var http = _httpClient.CreateClient())
             {
                     
-                    http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-                    var url = $"{_configuration.GetSection("Variables:urlWebApi").Value}Estadisticas/ConsultarEstadisticas?fechaInicial={parsedFechaInicio}&fechaFinal={parsedFechaFinal}";
-                    var response = await http.GetAsync(url);
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var url = $"{_configuration.GetSection("Variables:urlWebApi").Value}Estadisticas/ConsultarEstadisticas?fechaInicial={parsedFechaInicio}&fechaFinal={parsedFechaFinal}";
+                var response = await http.GetAsync(url);
 
-                    if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                    if (result != null && result.Indicador)
                     {
-                        var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
-
-                        if (result != null && result.Indicador)
-                        {
-                            var Estadisticas = JsonSerializer.Deserialize<EstadisticasModel>((JsonElement)result.Datos!)!;
-                            ViewBag.FechaInicio = parsedFechaInicio;
-                            ViewBag.FechaFinal = parsedFechaFinal;
-                            return View(Estadisticas);
-                        }
+                        var Estadisticas = JsonSerializer.Deserialize<EstadisticasModel>((JsonElement)result.Datos!)!;
+                        ViewBag.FechaInicio = parsedFechaInicio;
+                        ViewBag.FechaFinal = parsedFechaFinal;
+                        return View(Estadisticas);
                     }
-
-
+                }
 
                 var estadisticaVacia = new EstadisticasModel();
                 estadisticaVacia.IngresosTotales = 0;
-                TempData["Mensaje"] = "coloque una fecha valida";
+                TempData["Mensaje"] = "Por favor, coloque una fecha valida";
                 return View(estadisticaVacia);
             }
         }
