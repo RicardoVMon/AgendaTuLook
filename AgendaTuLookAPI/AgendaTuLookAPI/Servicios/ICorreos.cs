@@ -23,5 +23,30 @@ namespace AgendaTuLookAPI.Servicios
 		);
 		public MemoryStream GenerarFacturaPDF(string nombreCliente, string nombreServicio, double precio, string metodoPago, string fecha, string horaInicio, string horaFin);
 
-	}
+        public void EnviarCorreoCancelacion(string correoDestino, string nombreCliente, string nombreServicio, string fecha, 
+			string horaInicio, string horaFin, string metodoPago, decimal precio, bool aplicaReembolso);
+
+
+        void EnviarCorreoFacturaCitaEdicion(
+            string correo,
+            string nombreCliente,
+            string nombreServicio,
+            double precio,
+            string metodoPago,
+            string fecha,
+            string horaInicio,
+            string horaFin,
+            bool servicioCambiado);
+
+        string GenerarContenidoCorreoCitaEdicion(
+            string nombreCliente,
+            string nombreServicio,
+            double precio,
+            string metodoPago,
+            string fecha,
+            string horaInicio,
+            string horaFin,
+            bool servicioCambiado);
+
+    }
 }

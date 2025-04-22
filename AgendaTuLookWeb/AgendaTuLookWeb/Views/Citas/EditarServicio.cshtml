@@ -1,0 +1,76 @@
+﻿@model AgendaTuLookWeb.Models.CitasModel
+@{
+    ViewData["Title"] = "Editar Servicio";
+}
+
+<div class="row px-5">
+    <div class="col-12 mb-4">
+        <div class="display-3 px-0">Editar Servicio de la Cita</div>
+        <div class="text-muted px-0">Selecciona un nuevo servicio o mantén el actual</div>
+
+        @if (Model.Servicio != null)
+        {
+            <div class="alert alert-info mt-3">
+                <strong>Servicio actual:</strong> @Model.Servicio.NombreServicio - ₡@Model.Servicio.Precio
+            </div>
+        }
+    </div>
+
+    <div class="col-12">
+        @if (Model?.Servicio == null)
+        {
+            <div class="alert alert-danger">
+                No se pudo cargar la información del servicio. Por favor, inténtelo de nuevo.
+            </div>
+        }
+        else
+        {
+            <form asp-controller="Citas" asp-action="EditarFechaHora" method="get">
+                <input type="hidden" name="id" value="@Model.CitaId" />
+                <input type="hidden" name="servicioId" id="selectedServicioId" value="@Model.Servicio.ServicioId" />
+
+                <div class="row" id="serviceList">
+                    @foreach (var item in ((List<ServicioModel>)(ViewBag.Servicios ?? new List<ServicioModel>())).Where(s => s.Estado ?? false))
+                    {
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4 service-card">
+                            <div class="card card-hover h-100 @(item.ServicioId == Model.Servicio.ServicioId ? "border-primary" : "")">
+                                @if (!string.IsNullOrEmpty(item.Imagen))
+                                {
+                                    <img src="@item.Imagen" alt="Imagen del servicio" class="img-thumbnail" style="object-fit: cover; min-height: 250px; max-height: 300px">
+                                }
+                                else
+                                {
+                                    <div class="img-thumbnail d-flex align-items-center justify-content-center" style="height: 250px; background-color: #f8f9fa;">
+                                        <i class="fas fa-image fa-3x text-muted"></i>
+                                    </div>
+                                }
+
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="mb-3">@item.NombreServicio</h3>
+                                    <p class="card-text mb-0">Precio: ₡@item.Precio IVAI</p>
+                                    <p class="card-text">Duración: @item.Duracion minutos</p>
+                                    <p class="card-text flex-grow-1">
+                                        @if (!string.IsNullOrEmpty(item.Descripcion))
+                                        {
+                                            @(item.Descripcion.Length > 50 ? item.Descripcion.Substring(0, 100) + "..." : item.Descripcion)
+                                        }
+                                    </p>
+
+                                    <div class="mt-auto">
+                                        <button type="submit" name="servicioId" value="@item.ServicioId"
+                                                class="btn @(item.ServicioId == Model.Servicio.ServicioId ? "btn-primary" : "btn-outline-primary") w-100">
+                                            @(item.ServicioId == Model.Servicio.ServicioId ? "Servicio Actual" : "Seleccionar")
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+<link href="~/css/estilospersonal.css" rel="stylesheet" />
+<script src="~/js/solicitudcita/ordenarservicios.js"></script>

@@ -17,7 +17,6 @@
             @*     </a> *@
             @* </div> *@
 
-            <!-- Tabla de Pacientes Activos -->
             <div class="row">
                 <div class="col-12 px-0">
                     <div class="table-responsive">
@@ -53,9 +52,11 @@
                                                         <i class="fas fa-ellipsis-v"></i>
                                                     </button>
                                                     <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye"></i> Detalles</a></li>
+                                                        <li><a class="dropdown-item" asp-controller="Citas" asp-action="DetalleCita" asp-route-id="@cita.CitaId"><i class="fas fa-eye"></i> Detalles</a></li>
                                                         <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-undo-alt"></i> Reembolsar</a></li>
+                                                        <li><a class="dropdown-item" asp-controller="Citas" asp-action="EditarServicio" asp-route-id="@cita.CitaId"><i class="fas fa-edit"></i> Editar</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item cancelar-cita" href="#" data-id="@cita.CitaId"><i class="fas fa-times-circle"></i> Cancelar</a></li>
                                                     </ul>
                                                 </div>
                                             </td>
@@ -71,6 +72,7 @@
     </div>
 </section>
 <script src="~/js/botontooltip.js"></script>
+<script src="~/js/solicitudcita/cancelarcita.js"></script>
 <link href="~/css/botontooltip.css" rel="stylesheet" />
 
 <script>

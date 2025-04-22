@@ -14,10 +14,10 @@ namespace AgendaTuLookAPI.Controllers
 	{
 
 		private readonly IConfiguration _configuration;
-		public ServiciosController(IConfiguration configuration)
+        public ServiciosController(IConfiguration configuration)
 		{
 			_configuration = configuration;
-		}
+        }
 
 		[HttpGet]
 		[Route("GestionarServicios")]
@@ -49,12 +49,11 @@ namespace AgendaTuLookAPI.Controllers
 			using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
 			{
 				var respuesta = new RespuestaModel();
-				// Traigo el id porque lo voy a ocupar para la imagen
-				var resultServicioId = context.QueryFirstOrDefault<long>("CrearServicio", new { model.NombreServicio, model.Descripcion, model.Precio, model.Duracion});
+
+				var resultServicioId = context.QueryFirstOrDefault<long>("CrearServicio", new { model.NombreServicio, model.Descripcion, model.Precio, model.Duracion, model.Imagen });
 
 				if (resultServicioId > 0)
 				{
-					// Acá se trata la imagen
 					respuesta.Indicador = true;
 					return Ok(respuesta);
 				}
@@ -126,5 +125,28 @@ namespace AgendaTuLookAPI.Controllers
 			}
 		}
 
-	}
+        [HttpGet]
+        [Route("ObtenerServicioPorId")]
+        public IActionResult ObtenerServicioPorId(long servicioId)
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new RespuestaModel();
+                var servicio = context.QueryFirstOrDefault<ServicioModel>("ConsultarServicios", new { ServicioId = servicioId });
+
+                if (servicio != null)
+                {
+                    respuesta.Indicador = true;
+                    respuesta.Datos = servicio;
+                    return Ok(respuesta);
+                }
+
+                respuesta.Indicador = false;
+                respuesta.Mensaje = "No se pudo obtener el servicio";
+                return Ok(respuesta);
+            }
+        }
+
+
+    }
 }

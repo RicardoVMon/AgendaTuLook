@@ -1,7 +1,9 @@
 ﻿using AgendaTuLookWeb.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using static System.Net.WebRequestMethods;
 
 namespace AgendaTuLookWeb.Controllers
 {
@@ -303,6 +305,243 @@ namespace AgendaTuLookWeb.Controllers
             return RedirectToAction("Calendario", "Calendario");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CancelarCita([FromForm] long citaId)
+        {
+            using var http = _httpClient.CreateClient();
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
+            var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/Cancelar";
+            var response = await http.PostAsJsonAsync(url, citaId);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+                if (result != null)
+                {
+                    if (result.Indicador)
+                    {
+                        TempData["SuccessMessage"] = result.Mensaje ?? "Cita cancelada exitosamente.";
+                        return RedirectToAction("GestionarCitas");
+                    }
+                    else
+                    {
+                        TempData["errorMessage"] = result.Mensaje ?? "Ocurrió un error al cancelar la cita.";
+                        return RedirectToAction("GestionarCitas");
+                    }
+                }
+            }
+
+            TempData["errorMessage"] = "Ocurrió un error al comunicarse con el servidor.";
+            return RedirectToAction("GestionarCitas");
+        }
+
+        //-----------------------------------------------
+
+        [HttpGet]
+        public async Task<IActionResult> EditarServicio(long id)
+        {
+            using (var http = _httpClient.CreateClient())
+            {
+                // Verificar si la cita es editable
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var editableUrl = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/VerificarCitaEditable";
+
+                var editableResponse = await http.PostAsJsonAsync(editableUrl, new { CitaId = id });
+
+                if (!editableResponse.IsSuccessStatusCode)
+                {
+                    TempData["errorMessage"] = "Se presentó un error al solicitar editar la cita.";
+                    return RedirectToAction("GestionarCitas");
+                }
+
+                var editableResult = await editableResponse.Content.ReadFromJsonAsync<RespuestaModel>();
+                if (editableResult == null || !editableResult.Indicador)
+                {
+                    TempData["errorMessage"] = "Lo sentimos. No se puede editar citas con menos de 24 horas de anticipación.";
+                    return RedirectToAction("GestionarCitas");
+                }
+
+                // Obtener información de la cita
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ObtenerCitaParaEditar";
+                var response = await http.PostAsJsonAsync(url, new { CitaId = id });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+                    if (result != null && result.Indicador && result.Datos != null)
+                    {
+                        var cita = JsonSerializer.Deserialize<CitasModel>((JsonElement)result.Datos!);
+
+                        if (cita == null || cita.Servicio == null)
+                        {
+                            TempData["errorMessage"] = "No se pudo cargar la información para editar la cita";
+                            return RedirectToAction("GestionarCitas");
+                        }
+
+                        // Guardar el precio original
+                        cita.PrecioOriginal = cita.Servicio.Precio;
+
+                        // Obtener lista de servicios
+                        var serviciosResponse = await http.GetAsync(_configuration.GetSection("Variables:urlWebApi").Value + "Servicios/GestionarServicios");
+                        if (serviciosResponse.IsSuccessStatusCode)
+                        {
+                            var serviciosResult = await serviciosResponse.Content.ReadFromJsonAsync<RespuestaModel>();
+                            if (serviciosResult != null && serviciosResult.Indicador && serviciosResult.Datos != null)
+                            {
+                                var servicios = JsonSerializer.Deserialize<List<ServicioModel>>((JsonElement)serviciosResult.Datos!);
+                                ViewBag.Servicios = servicios ?? new List<ServicioModel>();
+                                return View(cita);
+                            }
+                        }
+                    }
+                }
+
+                TempData["errorMessage"] = "No se pudo cargar la información para editar la cita";
+                return RedirectToAction("GestionarCitas");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditarFechaHora(long id, long servicioId)
+        {
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
+                // Obtener información de la cita
+                var citaResponse = await http.PostAsJsonAsync(
+                    _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ObtenerCitaParaEditar",
+                    new { CitaId = id });
+
+                if (citaResponse.IsSuccessStatusCode)
+                {
+                    var result = await citaResponse.Content.ReadFromJsonAsync<RespuestaModel>();
+                    if (result != null && result.Indicador)
+                    {
+                        var cita = JsonSerializer.Deserialize<CitasModel>((JsonElement)result.Datos!);
+
+                        // Obtener el servicio seleccionado
+                        var servicioResponse = await http.GetAsync(
+                            _configuration.GetSection("Variables:urlWebApi").Value + $"api/Servicios/EditarServicio?id={servicioId}");
+
+                        if (servicioResponse.IsSuccessStatusCode)
+                        {
+                            var servicioResult = await servicioResponse.Content.ReadFromJsonAsync<RespuestaModel>();
+                            if (servicioResult != null && servicioResult.Indicador)
+                            {
+                                var servicioActual = JsonSerializer.Deserialize<ServicioModel>((JsonElement)servicioResult.Datos!);
+
+                                // Guardar el precio original del servicio antes de cualquier cambio
+                                if (cita.PrecioOriginal == 0)
+                                {
+                                    cita.PrecioOriginal = cita.Servicio.Precio;
+                                }
+
+                                // Actualizar el servicio en la cita
+                                cita.Servicio = servicioActual;
+                            }
+                        }
+
+                        return View(cita);
+                    }
+                }
+                TempData["errorMessage"] = "No se pudo cargar la información para editar la cita";
+                return RedirectToAction("GestionarCitas");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmarEdicionCita(long id, DateTime f, TimeSpan h)
+        {
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
+                // Obtener información de la cita
+                var citaResponse = await http.PostAsJsonAsync(
+                    $"{_configuration["Variables:urlWebApi"]}Citas/ObtenerCitaParaEditar",
+                    new { CitaId = id });
+
+                if (!citaResponse.IsSuccessStatusCode)
+                {
+                    TempData["errorMessage"] = "Error al obtener datos de la cita";
+                    return RedirectToAction("GestionarCitas");
+                }
+
+                var citaResult = await citaResponse.Content.ReadFromJsonAsync<RespuestaModel>();
+                var cita = JsonSerializer.Deserialize<CitasModel>((JsonElement)citaResult.Datos!);
+
+                // fecha y hora
+                cita.Fecha = f.Date;
+                cita.HoraInicio = h;
+                cita.HoraFin = h.Add(TimeSpan.FromMinutes(cita.Servicio.Duracion));
+
+                // usuario
+                if (string.IsNullOrEmpty(cita.Usuario?.Nombre))
+                {
+                    var usuarioResponse = await http.GetAsync(
+                        $"{_configuration["Variables:urlWebApi"]}Usuarios/PerfilUsuario?Id={cita.Usuario.UsuarioId}");
+
+                    if (usuarioResponse.IsSuccessStatusCode)
+                    {
+                        var usuarioResult = await usuarioResponse.Content.ReadFromJsonAsync<RespuestaModel>();
+                        var usuario = JsonSerializer.Deserialize<UsuarioModel>((JsonElement)usuarioResult.Datos!);
+                        cita.Usuario = usuario;
+                    }
+                }
+
+                // métodos de pago
+                var metodosResponse = await http.GetAsync(
+                    $"{_configuration["Variables:urlWebApi"]}Citas/ObtenerMetodosPago");
+
+                if (metodosResponse.IsSuccessStatusCode)
+                {
+                    var metodosResult = await metodosResponse.Content.ReadFromJsonAsync<RespuestaModel>();
+                    cita.MetodosPago = JsonSerializer.Deserialize<List<MetodoPagoModel>>((JsonElement)metodosResult.Datos!);
+                }
+
+                return View(cita);
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmarEdicionCita(CitasModel model, IFormFile Archivos)
+        {
+            using (var http = _httpClient.CreateClient())
+            {
+                // Determinar si el servicio cambió
+                bool servicioCambiado = model.Servicio.ServicioId != model.PrecioOriginal;
+
+                if (servicioCambiado && Archivos != null)
+                {
+                    model.MetodoPago.Comprobante = Archivos.FileName;
+                }
+
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ActualizarCita";
+
+                var response = await http.PostAsJsonAsync(url, model);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+                    if (result != null && result.Indicador)
+                    {
+                        TempData["SuccessMessage"] = servicioCambiado ?
+                            "Cita actualizada con éxito. Se ha generado una nueva factura." :
+                            "Cita actualizada con éxito.";
+                        return RedirectToAction("GestionarCitas");
+                    }
+                }
+
+                TempData["errorMessage"] = "Ocurrió un error al actualizar la cita";
+                return RedirectToAction("GestionarCitas");
+            }
+        }
+
 
     }
+
 }

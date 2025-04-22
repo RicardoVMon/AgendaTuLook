@@ -51,34 +51,37 @@ namespace AgendaTuLookWeb.Controllers
 			return View();
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> CrearServicio(ServicioModel model, IFormFile Archivos)
-		{
-			using (var http = _httpClient.CreateClient())
-			{
+        [HttpPost]
+        public async Task<IActionResult> CrearServicio(ServicioModel model, IFormFile Archivos)
+        {
+            // Manejo de la imagen primero
+            if (Archivos != null && Archivos.Length > 0)
+            {
+                model.Imagen = await GuardarImagenServicio(Archivos);
+            }
 
-				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Servicios/CrearServicio";
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Servicios/CrearServicio";
 
-				// Pendiente trabajar con la imagen
-				var response = await http.PostAsJsonAsync(url, model);
+                var response = await http.PostAsJsonAsync(url, model);
 
-				if (response.IsSuccessStatusCode)
-				{
-					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    if (result != null && result.Indicador)
+                    {
+                        TempData["successMessage"] = "Servicio creado exitosamente";
+                        return RedirectToAction("GestionarServicios", "Servicios");
+                    }
+                    TempData["errorMessage"] = result!.Mensaje;
+                }
+            }
+            return View(model);
+        }
 
-					if (result != null && result.Indicador)
-					{
-						TempData["successMessage"] = "Servicio creado exitosamente";
-						return RedirectToAction("GestionarServicios", "Servicios");
-					}
-					TempData["errorMessage"] = result!.Mensaje;
-				}
-			}
-			return RedirectToAction("GestionarServicios");
-		}
-
-		[HttpGet]
+        [HttpGet]
 		public async Task<IActionResult> EditarServicio(long id)
 		{
 			using (var http = _httpClient.CreateClient())
@@ -102,36 +105,42 @@ namespace AgendaTuLookWeb.Controllers
 			return View();
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> EditarServicio(ServicioModel model, IFormFile Archivos)
-		{
-			using (var http = _httpClient.CreateClient())
-			{
-				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Servicios/EditarServicio";
+        [HttpPost]
+        public async Task<IActionResult> EditarServicio(ServicioModel model, IFormFile Archivos)
+        {
+            // Manejo de la imagen primero
+            if (Archivos != null && Archivos.Length > 0)
+            {
+                // Eliminar imagen anterior si existe
+                if (!string.IsNullOrEmpty(model.Imagen))
+                {
+                    EliminarImagenServicio(model.Imagen);
+                }
+                model.Imagen = await GuardarImagenServicio(Archivos);
+            }
 
-				if (Archivos != null)
-				{
-					model.Imagen = Archivos.FileName;
-				}
-				var response = await http.PutAsJsonAsync(url, model);
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Servicios/EditarServicio";
 
-				if (response.IsSuccessStatusCode)
-				{
-					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                var response = await http.PutAsJsonAsync(url, model);
 
-					if (result != null && result.Indicador)
-					{
-						TempData["successMessage"] = "Servicio editado exitosamente";
-						return View(model);
-					}
-					TempData["errorMessage"] = result!.Mensaje;
-				}
-			}
-			return View();
-		}
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    if (result != null && result.Indicador)
+                    {
+                        TempData["successMessage"] = "Servicio actualizado exitosamente";
+                        return RedirectToAction("GestionarServicios", "Servicios");
+                    }
+                    TempData["errorMessage"] = result!.Mensaje;
+                }
+            }
+            return View(model);
+        }
 
-		[HttpGet]
+        [HttpGet]
 		public async Task<IActionResult> CambiarEstadoServicio(long id)
 		{
 			using (var http = _httpClient.CreateClient())
@@ -155,5 +164,41 @@ namespace AgendaTuLookWeb.Controllers
 			}
 			return View();
 		}
-	}
+
+        private async Task<string> GuardarImagenServicio(IFormFile imagen)
+        {
+            // Ruta relativa a partir de wwwroot
+            var rutaRelativa = Path.Combine("img", "servicios");
+
+            // Ruta completa usando ContentRootPath (independiente de la ubicación del repo)
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", rutaRelativa);
+
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(imagen.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await imagen.CopyToAsync(fileStream);
+            }
+
+            return $"/img/servicios/{uniqueFileName}";
+        }
+
+        private void EliminarImagenServicio(string rutaImagen)
+        {
+            if (!string.IsNullOrEmpty(rutaImagen))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", rutaImagen.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+        }
+    }
 }
