@@ -61,7 +61,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Exception Handler
+//// Exception Handler
 app.UseExceptionHandler("/api/Error/CapturarError");
 
 app.UseHttpsRedirection();

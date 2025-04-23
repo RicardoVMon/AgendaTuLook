@@ -74,6 +74,7 @@ namespace AgendaTuLookAPI.Controllers
 
 					CitaModel confirmarCita = new CitaModel
 					{
+                        CitaId = model.CitaId,
 						Fecha = model.Fecha,
 						HoraInicio = horaInicio,
 						HoraFin = horaFin,
@@ -90,7 +91,8 @@ namespace AgendaTuLookAPI.Controllers
 							ServicioId = model.Servicio.ServicioId,
 							NombreServicio = firstInfo.NombreServicio,
 							Precio = (double)firstInfo.Precio,
-							Duracion = firstInfo.Duracion
+							Duracion = firstInfo.Duracion,
+                            CambioServicio = model.Servicio.CambioServicio
 						},
 						DiaTrabajoId = firstInfo.DiaTrabajoId,
 						MetodosPago = metodosPago.ToList(),
@@ -204,49 +206,27 @@ namespace AgendaTuLookAPI.Controllers
 
         [HttpPost]
         [Route("Cancelar")]
-        //public IActionResult CancelarCita(long citaId)
-        public IActionResult CancelarCita([FromBody] long citaId)
+        public IActionResult CancelarCita(long citaId)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                var datosCita = context.QueryFirstOrDefault(@"SELECT u.Nombre, u.Correo, c.Fecha, c.HoraInicio, c.HoraFin, 
-                                      s.NombreServicio, s.Precio, m.Nombre AS MetodoPago, c.Estado
-                                      FROM tCitas c
-                                      JOIN tUsuarios u ON c.UsuarioId = u.UsuarioId
-                                      JOIN tServicios s ON c.ServicioId = s.ServicioId
-                                      LEFT JOIN tPagos p ON p.CitaId = c.CitaId
-                                      LEFT JOIN tMetodosPago m ON m.MetodoPagoId = p.MetodoPagoId
-                                      WHERE c.CitaId = @CitaId", new { CitaId = citaId });
 
-                var fechaCita = Convert.ToDateTime(datosCita.Fecha);
-                var aplicaReembolso = fechaCita.AddDays(-1) >= DateTime.Now;
+                var datosCita = context.QueryFirstOrDefault("ObtenerCitaParaEditar", new { CitaId = citaId });
+                var aplicaReembolso = datosCita.Fecha.AddDays(-1) >= DateTime.Now;
 
                 var resultado = context.Execute("CancelarCita", new { CitaId = citaId });
-
-                var estadoActualizado = context.QueryFirstOrDefault<string>(
-                    "SELECT Estado FROM tCitas WHERE CitaId = @CitaId",
-                    new { CitaId = citaId });
-
-                if (estadoActualizado == "Cancelada")
-                {
-                    _correos.EnviarCorreoCancelacion(datosCita.Correo, datosCita.Nombre, datosCita.NombreServicio,
-                                                 fechaCita.ToString("dd/MM/yyyy"),
-                                                 ((TimeSpan)datosCita.HoraInicio).ToString(@"hh\:mm"),
-                                                 ((TimeSpan)datosCita.HoraFin).ToString(@"hh\:mm"),
-                                                 datosCita.MetodoPago ?? "No especificado",
-                                                 Convert.ToDecimal(datosCita.Precio),
-                                                 aplicaReembolso);
-                    return Ok(new RespuestaModel
-                    {
-                        Indicador = true,
-                        Mensaje = "Cita cancelada exitosamente"
-                    });
-                }
-
+                
+                _correos.EnviarCorreoCancelacion(datosCita.UsuarioCorreo, datosCita.UsuarioNombre, datosCita.NombreServicio,
+                                                datosCita.Fecha.ToString("dd/MM/yyyy"),
+                                                ((TimeSpan)datosCita.HoraInicio).ToString(@"hh\:mm"),
+                                                ((TimeSpan)datosCita.HoraFin).ToString(@"hh\:mm"),
+                                                datosCita.MetodoPagoNombre ?? "No especificado",
+                                                Convert.ToDecimal(datosCita.Precio),
+                                                aplicaReembolso);
                 return Ok(new RespuestaModel
                 {
-                    Indicador = false,
-                    Mensaje = "No se pudo cancelar la cita"
+                    Indicador = true,
+                    Mensaje = "Cita cancelada exitosamente"
                 });
             }
         }
@@ -329,13 +309,6 @@ namespace AgendaTuLookAPI.Controllers
             {
                 var respuesta = new RespuestaModel();
 
-                // Verificar si el servicio cambió
-                var servicioOriginal = context.QueryFirstOrDefault<long>(
-                    "SELECT ServicioId FROM tCitas WHERE CitaId = @CitaId",
-                    new { model.CitaId });
-
-                bool servicioCambiado = servicioOriginal != model.Servicio.ServicioId;
-
                 // Actualizar la cita
                 var resultado = context.Execute("ActualizarCita",
                     new
@@ -346,38 +319,26 @@ namespace AgendaTuLookAPI.Controllers
                         model.HoraInicio,
                         model.HoraFin,
                         model.DiaTrabajoId,
-                        NuevoMetodoPagoId = servicioCambiado ? model.MetodoPago?.MetodoPagoId : (long?)null,
-                        Comprobante = servicioCambiado ? model.MetodoPago?.Comprobante : null,
-                        ServicioCambiado = servicioCambiado ? 1 : 0
+                        model.MetodoPago.MetodoPagoId,
+                        model.MetodoPago.Comprobante,
+						ServicioCambiado = model.Servicio.CambioServicio ? 1 : 0
                     });
 
-                if (resultado > 0)
+				if (resultado > 0)
                 {
-                    // Obtener datos completos de la cita para el correo
-                    var citaActualizada = context.QueryFirstOrDefault<dynamic>(
-                        @"SELECT c.*, u.Nombre AS NombreCliente, u.Correo, s.NombreServicio, s.Precio, 
-                         mp.Nombre AS MetodoPagoNombre
-                          FROM tCitas c
-                          JOIN tUsuarios u ON c.UsuarioId = u.UsuarioId
-                          JOIN tServicios s ON c.ServicioId = s.ServicioId
-                          LEFT JOIN tPagos p ON p.CitaId = c.CitaId
-                          LEFT JOIN tMetodosPago mp ON mp.MetodoPagoId = p.MetodoPagoId
-                          WHERE c.CitaId = @CitaId",
-                        new { model.CitaId });
+					// Enviar correo de confirmación
+					_correos.EnviarCorreoFacturaCitaEdicion(
+						model.Usuario.Correo,
+						model.Usuario.Nombre,
+						model.Servicio.NombreServicio,
+						model.Servicio.Precio,
+						model.MetodoPago.Nombre,
+						model.Fecha.ToString("dd/MM/yyyy"),
+						model.HoraInicio.ToString(@"hh\:mm"),
+						model.HoraFin.ToString(@"hh\:mm"),
+						model.Servicio.CambioServicio);
 
-                    // Enviar correo de confirmación
-                    _correos.EnviarCorreoFacturaCitaEdicion(
-                        citaActualizada.Correo,
-                        citaActualizada.NombreCliente,
-                        citaActualizada.NombreServicio,
-                        (double)citaActualizada.Precio,
-                        citaActualizada.MetodoPagoNombre ?? "No especificado",
-                        model.Fecha.ToString("dd/MM/yyyy"),
-                        model.HoraInicio.ToString(@"hh\:mm"),
-                        model.HoraFin.ToString(@"hh\:mm"),
-                        servicioCambiado);
-
-                    respuesta.Indicador = true;
+					respuesta.Indicador = true;
                     return Ok(respuesta);
                 }
 

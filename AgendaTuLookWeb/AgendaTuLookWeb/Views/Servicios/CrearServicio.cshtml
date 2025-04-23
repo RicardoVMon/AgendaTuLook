@@ -56,7 +56,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Sección de Información General -->
                                 <div class="col-12">
                                     <h4>Multimedia</h4>
                                     <hr class="my-3">
@@ -64,18 +63,7 @@
                                         <!-- Archivos Anexados -->
                                         <div class="col-md-12">
                                             <div id="dropzoneArea" class="dropzone border rounded p-3 bg-white"></div>
-                                            <div class="mb-3">
-                                                <label for="Archivos" class="form-label">Imagen del Servicio</label>
-                                                <input type="file" class="form-control" id="Archivos" name="Archivos" accept="image/*" />
-                                                <small class="text-muted">Formatos aceptados: .jpg, .jpeg, .png (Máx. 2MB)</small>
-                                                @if (!string.IsNullOrEmpty(Model?.Imagen))
-                                                {
-                                                    <div class="mt-2">
-                                                        <img src="@Model.Imagen" class="img-thumbnail" style="max-height: 200px;" />
-                                                        <p class="text-muted mt-1">Imagen actual</p>
-                                                    </div>
-                                                }
-                                            </div>
+                                            <input type="file" class="form-control d-none" id="Archivos" name="Archivos"/>
                                         </div>
                                     </div>
                                 </div>

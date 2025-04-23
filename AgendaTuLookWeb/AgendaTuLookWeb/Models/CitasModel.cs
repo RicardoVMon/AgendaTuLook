@@ -19,9 +19,6 @@
 
         //--
         public double PrecioOriginal { get; set; }
-        //public double DiferenciaPago { get; set; }
-        //public bool RequierePagoAdicional { get; set; }
-        //public bool RequiereReembolso { get; set; }
-        //public double PrecioOriginal { get; set; }
-    }
+		
+	}
 }

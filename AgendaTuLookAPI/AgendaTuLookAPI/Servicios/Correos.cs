@@ -221,13 +221,13 @@ namespace AgendaTuLookAPI.Servicios
 		}
 
 		public MemoryStream GenerarFacturaPDF(
-	string nombreCliente,
-	string nombreServicio,
-	double precio,
-	string metodoPago,
-	string fecha,
-	string horaInicio,
-	string horaFin)
+		string nombreCliente,
+		string nombreServicio,
+		double precio,
+		string metodoPago,
+		string fecha,
+		string horaInicio,
+		string horaFin)
 		{
 			var stream = new MemoryStream();
 			var writer = new PdfWriter(stream);
@@ -492,9 +492,9 @@ namespace AgendaTuLookAPI.Servicios
                 ? @"<div style='background-color: #fff8e1; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #ffc107;'>
               <h4 style='margin-top: 0; color: #ff8f00;'>¡Importante! - Servicio Cambiado</h4>
               <p>Has modificado el servicio de tu cita. La factura anterior ha sido anulada y se ha generado una nueva factura con los detalles actualizados.</p>
-              <p>Si el nuevo servicio tiene un costo diferente al original, se ha procesado el ajuste correspondiente.</p>
+              <p>El importe total del servicio anterior ha sido reembolsado íntegramente al método de pago utilizado en la transacción original.</p>
            </div>"
-                : @"<div style='background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #2196f3;'>
+				: @"<div style='background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #2196f3;'>
               <h4 style='margin-top: 0; color: #1565c0;'>Cambios Confirmados</h4>
               <p>Has actualizado los detalles de tu cita sin cambiar el servicio. Solo se han modificado la fecha y/o hora.</p>
            </div>";

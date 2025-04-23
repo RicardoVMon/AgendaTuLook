@@ -43,16 +43,12 @@
         dateClick: function (info) {
             const clickedDayOfWeek = info.date.getDay();
             if (availableDays.includes(clickedDayOfWeek)) {
-                const formattedDate = info.dateStr; // Cambiado a formato YYYY-MM-DD
+                const formattedDate = info.date.toISOString();
                 document.getElementById('fechaSeleccionada').value = formattedDate;
-
-                // Limpiar selección anterior
                 if (selectedDateEl) {
                     selectedDateEl.style.backgroundColor = '';
                 }
-
-                // Marcar nuevo día seleccionado
-                info.dayEl.style.backgroundColor = '#e6f7ff';
+                info.dayEl.style.backgroundColor = 'gray';
                 selectedDateEl = info.dayEl;
                 $.ajax({
                     url: '/Citas/ConsultarHorasDisponibles',
@@ -76,15 +72,6 @@
         },
 
         dayCellDidMount: function (info) {
-            const fechaCita = '@Model.Fecha.ToString("yyyy-MM-dd")';
-            const cellDate = info.date.toISOString().split('T')[0];
-
-            if (cellDate === fechaCita) {
-                info.el.style.backgroundColor = '#e6f7ff';
-                info.el.style.border = '2px solid #1890ff';
-                selectedDateEl = info.el;
-            }
-
             info.el.style.cursor = 'pointer';
             info.el.addEventListener('mouseenter', function () {
                 if (info.el !== selectedDateEl) {
@@ -92,7 +79,7 @@
                 }
             });
             info.el.addEventListener('mouseleave', function () {
-                if (info.el !== selectedDateEl && info.dateStr !== fechaCita) {
+                if (info.el !== selectedDateEl) {
                     info.el.style.backgroundColor = '';
                 }
             });

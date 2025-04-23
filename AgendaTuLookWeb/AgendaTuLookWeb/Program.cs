@@ -27,6 +27,9 @@ builder.Services.AddHttpContextAccessor();
 // Servicio de Seguridad
 builder.Services.AddScoped<ISeguridad, Seguridad>();
 
+// Servicio de Imágenes
+builder.Services.AddScoped<IPictures, Pictures>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

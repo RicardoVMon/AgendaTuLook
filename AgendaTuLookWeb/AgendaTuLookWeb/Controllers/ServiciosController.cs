@@ -13,12 +13,14 @@ namespace AgendaTuLookWeb.Controllers
 	{
 		private readonly IHttpClientFactory _httpClient;
 		private readonly IConfiguration _configuration;
-		
+		private readonly IPictures _pictures;
 
-		public ServiciosController(IHttpClientFactory httpClient, IConfiguration configuration)
+
+		public ServiciosController(IHttpClientFactory httpClient, IConfiguration configuration, IPictures pictures)
 		{
 			_httpClient = httpClient;
 			_configuration = configuration;
+			_pictures = pictures;
 		}
 
 		[HttpGet]
@@ -57,7 +59,7 @@ namespace AgendaTuLookWeb.Controllers
             // Manejo de la imagen primero
             if (Archivos != null && Archivos.Length > 0)
             {
-                model.Imagen = await GuardarImagenServicio(Archivos);
+                model.Imagen = await _pictures.GuardarImagen(Archivos, "Servicios");
             }
 
             using (var http = _httpClient.CreateClient())
@@ -114,9 +116,9 @@ namespace AgendaTuLookWeb.Controllers
                 // Eliminar imagen anterior si existe
                 if (!string.IsNullOrEmpty(model.Imagen))
                 {
-                    EliminarImagenServicio(model.Imagen);
+                    _pictures.EliminarImagen(model.Imagen);
                 }
-                model.Imagen = await GuardarImagenServicio(Archivos);
+                model.Imagen = await _pictures.GuardarImagen(Archivos, "Servicios");
             }
 
             using (var http = _httpClient.CreateClient())
@@ -165,40 +167,5 @@ namespace AgendaTuLookWeb.Controllers
 			return View();
 		}
 
-        private async Task<string> GuardarImagenServicio(IFormFile imagen)
-        {
-            // Ruta relativa a partir de wwwroot
-            var rutaRelativa = Path.Combine("img", "servicios");
-
-            // Ruta completa usando ContentRootPath (independiente de la ubicación del repo)
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", rutaRelativa);
-
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
-
-            var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(imagen.FileName)}";
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await imagen.CopyToAsync(fileStream);
-            }
-
-            return $"/img/servicios/{uniqueFileName}";
-        }
-
-        private void EliminarImagenServicio(string rutaImagen)
-        {
-            if (!string.IsNullOrEmpty(rutaImagen))
-            {
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", rutaImagen.TrimStart('/'));
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-            }
-        }
     }
 }

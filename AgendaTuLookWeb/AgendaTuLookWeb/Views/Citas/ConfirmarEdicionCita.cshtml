@@ -1,8 +1,8 @@
-﻿@model AgendaTuLookWeb.Models.CitasModel
+﻿@model CitasModel
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     var usuarioId = HttpContextAccessor.HttpContext!.Session.GetString("UsuarioId");
-    bool servicioCambiado = Model.Servicio.ServicioId != Model.PrecioOriginal;
+    var servicioId = Context.Request.Query["s"].ToString();
 }
 
 <div class="pb-4">
@@ -11,7 +11,7 @@
             <h1 class="display-4">Confirmar cambios en la cita</h1>
             <p class="text-muted">Verifica que todos los datos sean correctos antes de confirmar los cambios.</p>
 
-            @if (servicioCambiado)
+            @if (Model.Servicio.CambioServicio)
             {
                 <div class="alert alert-warning">
                     <strong>Atención:</strong> Al cambiar el servicio, se anulará la factura anterior y se generará una nueva.
@@ -31,41 +31,44 @@
     <div class="row">
         <div class="col-12">
             <div class="bg-white rounded rounded-1 p-3 mb-3">
-                <form method="post" asp-controller="Citas" asp-action="ConfirmarEdicionCita" enctype="multipart/form-data">
-                    <input type="hidden" asp-for="CitaId" />
-                    <input type="hidden" asp-for="Servicio.ServicioId" />
-                    <input type="hidden" asp-for="Usuario.UsuarioId" />
-                    <input type="hidden" asp-for="DiaTrabajoId" />
-                    <input type="hidden" asp-for="Fecha" />
-                    <input type="hidden" asp-for="HoraInicio" />
-                    <input type="hidden" asp-for="HoraFin" />
-                    <input type="hidden" asp-for="PrecioOriginal" />
 
+                <form method="post" asp-controller="Citas" asp-action="ConfirmarEdicionCita" enctype="multipart/form-data">
                     <!-- Info del Cliente -->
                     <div class="mb-4">
-                        <h4 class="mb-3">
-                            <i class="fas fa-user-circle mr-2" style="color:#321914"></i> Información Personal
-                        </h4>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0">
+                                <i class="fas fa-user-circle mr-2" style="color:#321914"></i> Información Personal
+                            </h4>
+                            <div class="text-end">
+                                <small class="text-muted me-2">¿La información personal no está correcta?</small>
+                                <a asp-controller="Usuarios" asp-action="PerfilUsuario" asp-route-id="@usuarioId"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-user-edit me-1"></i> Actualizar
+                                </a>
+                            </div>
+                        </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Nombre:</label>
-                                <div class="form-control bg-light py-2">@Model.Usuario.Nombre</div>
+                                <label asp-for="Usuario.Nombre" class="form-label fw-bold">Nombre:</label>
+                                <input asp-for="Usuario.Nombre" class="form-control bg-light py-2" />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Correo electrónico:</label>
-                                <div class="form-control bg-light py-2">@Model.Usuario.Correo</div>
+                                <label asp-for="Usuario.Correo" class="form-label fw-bold">Correo electrónico:</label>
+                                <input asp-for="Usuario.Correo" class="form-control bg-light py-2" />
                             </div>
 
                             @if (Model.Usuario.Telefono != null)
                             {
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Teléfono:</label>
-                                    <div class="form-control bg-light py-2">@Model.Usuario.Telefono</div>
+                                    <div class="form-control bg-light py-2" readonly>@Model.Usuario.Telefono</div>
                                 </div>
                             }
+
                         </div>
                     </div>
+
 
                     <!-- Detalles cita -->
                     <div class="mb-4">
@@ -73,19 +76,30 @@
                             <i class="fas fa-calendar-alt mr-2" style="color:#321914"></i> Detalles de la Cita
                         </h4>
                         <div class="row">
+                            <input type="hidden" asp-for="CitaId" />
+                            <input type="hidden" asp-for="Servicio!.ServicioId" />
+                            <input type="hidden" asp-for="Servicio!.CambioServicio" />
+                            <input type="hidden" asp-for="Usuario!.UsuarioId" />
+                            <input type="hidden" asp-for="DiaTrabajoId" />
+                            <input type="hidden" asp-for="Fecha" />
+                            <input type="hidden" asp-for="MetodoPago.MetodoPagoId" />
+                            <input type="hidden" asp-for="MetodoPago.Nombre" />
+
+
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Servicio:</label>
-                                <div class="form-control bg-light py-2">@Model.Servicio.NombreServicio</div>
+                                <label asp-for="Servicio.NombreServicio" class="form-label fw-bold">Servicio:</label>
+                                <input asp-for="Servicio.NombreServicio" class="form-control bg-light py-2" readonly />
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Precio (IVAI):</label>
-                                <div class="form-control bg-light py-2">₡@Model.Servicio.Precio</div>
+                                <label asp-for="Servicio.Precio" class="form-label fw-bold">Precio (IVAI):</label>
+                                <input asp-for="Servicio.Precio" class="form-control bg-light py-2" readonly />
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Duración (minutos):</label>
-                                <div class="form-control bg-light py-2">@Model.Servicio.Duracion</div>
+                                <div class="form-control bg-light py-2" readonly>@Model.Servicio.Duracion</div>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -94,19 +108,20 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Hora de Inicio:</label>
-                                <div class="form-control bg-light py-2">@Model.HoraInicio.ToString(@"hh\:mm")</div>
+                                <label asp-for="HoraInicio" class="form-label fw-bold">Hora de Inicio:</label>
+                                <input asp-for="HoraInicio" class="form-control bg-light py-2" readonly />
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Hora de Finalización:</label>
-                                <div class="form-control bg-light py-2">@Model.HoraFin.ToString(@"hh\:mm")</div>
+                                <label asp-for="HoraFin" class="form-label fw-bold">Hora de Finalización (Con amortiguación):</label>
+                                <input asp-for="HoraFin" class="form-control bg-light py-2" readonly />
                             </div>
                         </div>
                     </div>
 
-                    <!-- Método de Pago (solo si el servicio cambió) -->
-                    @if (servicioCambiado)
+                    <!-- Método de Pago -->
+
+                    @if (Model.Servicio.CambioServicio)
                     {
                         <div class="mb-4">
                             <h4 class="mb-3">
@@ -182,7 +197,8 @@
                                                 </div>
                                             </div>
                                         }
-                                        else if (metodo.MetodoPagoId == 2)
+
+                                        @if (metodo.MetodoPagoId == 2)
                                         {
                                             <!-- SINPE -->
                                             <div class="border rounded p-3 bg-light">
@@ -191,11 +207,11 @@
                                                     <li><strong>Número de teléfono:</strong> <span class="text-primary">+506 8888-9999</span></li>
                                                     <li><strong>Nombre del destinatario:</strong> <span class="text-primary">Juan Pérez</span></li>
                                                     <li><strong>Monto a pagar:</strong> <span class="text-success fw-bold">₡@Model.Servicio.Precio IVAI</span></li>
-                                                    <li><strong>Detalle recomendado:</strong> <span class="text-secondary">Cita #@Model.CitaId - @Model.Usuario.Nombre</span></li>
+                                                    <li><strong>Detalle recomendado:</strong> <span class="text-secondary">@Model.Servicio.NombreServicio - @Model.Usuario.Nombre</span></li>
                                                 </ul>
                                                 <div class="alert alert-warning mt-3">
                                                     <i class="fas fa-exclamation-triangle me-2"></i>
-                                                    <strong>Importante:</strong> En el detalle de la transferencia, solo escribe <strong>"Cita #@Model.CitaId - @Model.Usuario.Nombre"</strong> para evitar problemas con la validación.
+                                                    <strong>Importante:</strong> En el detalle de la transferencia, solo escribe <strong>"@Model.Servicio.NombreServicio - @Model.Usuario.Nombre"</strong> para evitar problemas con la validación.
                                                 </div>
                                             </div>
 
@@ -205,6 +221,7 @@
                                                     <input class="form-control" type="file" id="Archivos" name="Archivos" accept="image/*,.pdf">
                                                 </div>
                                             </div>
+
                                             <div class="mt-4">
                                                 <h5 class="fw-bold">Paso final: Validar el depósito</h5>
                                                 <p>Confirma que realizaste el depósito correctamente:</p>
@@ -220,22 +237,25 @@
                                 }
                             </div>
                         </div>
+                    } else {
+                    <div class="alert alert-warning">
+                        <strong>Atención:</strong> Debido a que no cambiaste el servicio solicitado originalmente, no es necesario agregar información de pago nuevamente.
+                    </div>
                     }
 
                     <div class="mt-5 d-flex justify-content-between">
-                        <a asp-controller="Citas" asp-action="EditarFechaHora" asp-route-id="@Model.CitaId" asp-route-servicioId="@Model.Servicio.ServicioId" class="btn btn-outline-secondary btn-lg">
+                        <a asp-controller="Citas" asp-action="SolicitarFechaHora" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-arrow-left mr-2"></i> Regresar
                         </a>
                         <button class="btn btn-primary btn-lg" style="background-color:#321914; border-color: #1F283E;">
-                            <i class="fas fa-check-circle mr-2"></i> Confirmar Cambios
+                            <i class="fas fa-check-circle mr-2"></i> Confirmar Cita
                         </button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
 </div>
-
 <script src="~/js/solicitudcita/manejometodospago.js"></script>
 <script src="~/js/solicitudcita/simulacioncomprobante.js"></script>
-

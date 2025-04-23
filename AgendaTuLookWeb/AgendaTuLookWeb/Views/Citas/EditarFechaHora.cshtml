@@ -1,6 +1,8 @@
 ﻿@model AgendaTuLookWeb.Models.CitasModel
+@inject IHttpContextAccessor HttpContextAccessor
 @{
-    var servicioId = Model.Servicio.ServicioId;
+    var servicioNuevoId = Model.Servicio.ServicioId;
+    var servicioActualId = Context.Request.Query["sa"].ToString();
 }
 
 <section id="schedule-management">
@@ -10,16 +12,16 @@
                 <h1 class="display-4">Editar fecha y hora de la cita</h1>
                 <p class="text-muted">Seleccione un nuevo día y horario para el servicio.</p>
                 <div class="alert alert-info">
-                    <strong>Servicio seleccionado:</strong> @Model.Servicio.NombreServicio - ₡@Model.Servicio.Precio
+                    <strong>Servicio seleccionado:</strong> @Model.Servicio.NombreServicio:  ₡@Model.Servicio.Precio
                     @if (Model.Servicio.Precio != Model.PrecioOriginal)
                     {
                         <br />
-                        <span class="@(Model.Servicio.Precio > Model.PrecioOriginal ? "text-danger" : "text-success")">
-                            @(Model.Servicio.Precio > Model.PrecioOriginal ?
-                                "Se generará una nueva factura por este servicio" :
-                                "Se generará un reembolso por la diferencia")
-                        </span>
+                        <span class="@(Model.Servicio.Precio > Model.PrecioOriginal ? "text-danger" : "text-success")"></span>
                     }
+                </div>
+                <div class="alert alert-warning">
+                    <strong>Fecha Actual de la Cita:</strong> @Model.Fecha.ToString("dd/MM/yyyy")
+                    <strong>Hora Actual de la Cita:</strong> @Model.HoraInicio
                 </div>
             </div>
         </div>
@@ -39,7 +41,8 @@
                 </div>
                 <div class="mt-3">
                     <input type="hidden" id="citaId" value="@Model.CitaId" />
-                    <input type="hidden" id="servicioId" value="@servicioId" />
+                    <input type="hidden" id="servicioNuevoId" value="@servicioNuevoId" />
+                    <input type="hidden" id="servicioActualId" value="@servicioActualId" />
                     <input type="hidden" id="fechaSeleccionada" />
                     <input type="hidden" id="horaSeleccionada" />
                     <a id="confirmarEdicion" onclick="redirigirConfirmarEdicion()" class="btn btn-lg btn-primary w-100" style="background-color:#321914; border-color: #1F283E;">Siguiente</a>
@@ -53,46 +56,4 @@
 <script src="~/js/solicitudcita/actualizarhoraseleccionada.js"></script>
 <script src="~/js/solicitudcita/calendarioEditar.js"></script>
 <script src="~/js/solicitudcita/redirigiravistaeditar.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Obtener la fecha actual de la cita
-        const fechaCita = '@Model.Fecha.ToString("yyyy-MM-dd")';
-        const horaCita = '@Model.HoraInicio.ToString(@"hh\:mm")';
 
-        // Si hay fecha y hora, marcarlas como seleccionadas
-        if (fechaCita && horaCita) {
-            document.getElementById('fechaSeleccionada').value = fechaCita;
-            document.getElementById('horaSeleccionada').value = horaCita;
-
-            // Mostrar la hora seleccionada
-            mostrarHoraSeleccionada(horaCita);
-
-            // Marcar el día en el calendario
-            setTimeout(() => {
-                const fechaObj = new Date(fechaCita);
-                calendar.gotoDate(fechaObj);
-
-                // Simular click en la fecha para cargar las horas disponibles
-                const dayEls = document.querySelectorAll('.fc-day');
-                dayEls.forEach(dayEl => {
-                    const dayDate = dayEl.getAttribute('data-date');
-                    if (dayDate === fechaCita) {
-                        dayEl.click();
-                    }
-                });
-            }, 500);
-        }
-    });
-
-    function mostrarHoraSeleccionada(hora) {
-        const selectorHoras = document.getElementById('selectorHoras');
-        if (selectorHoras) {
-            selectorHoras.innerHTML = `
-                    <div class="alert alert-info mb-3">
-                        Hora actualmente seleccionada: <strong>${hora}</strong>
-                    </div>
-                    <div id="horasDisponiblesContainer"></div>
-                `;
-        }
-    }
-</script>

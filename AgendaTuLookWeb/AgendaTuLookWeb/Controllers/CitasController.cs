@@ -1,4 +1,5 @@
 ﻿using AgendaTuLookWeb.Models;
+using AgendaTuLookWeb.Servicios;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Net.Http.Headers;
@@ -13,9 +14,11 @@ namespace AgendaTuLookWeb.Controllers
     {
 		private readonly IHttpClientFactory _httpClient;
 		private readonly IConfiguration _configuration;
-		public CitasController(IHttpClientFactory httpClient, IConfiguration configuration) { 
+		private readonly IPictures _pictures;
+		public CitasController(IHttpClientFactory httpClient, IConfiguration configuration, IPictures pictures) { 
 			_httpClient = httpClient;
 			_configuration = configuration;
+			_pictures = pictures;
 		}
 
 		[HttpGet]
@@ -188,8 +191,8 @@ namespace AgendaTuLookWeb.Controllers
 
 				if (Archivos != null)
 				{
-					// acá extender para que esto sea la ruta del comprobante
-					model.MetodoPago!.Comprobante = Archivos.FileName;
+					string rutaImagen = await _pictures.GuardarImagen(Archivos, "Comprobantes");
+					model.MetodoPago!.Comprobante = rutaImagen;
 				}
 
 				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
@@ -339,7 +342,7 @@ namespace AgendaTuLookWeb.Controllers
         //-----------------------------------------------
 
         [HttpGet]
-        public async Task<IActionResult> EditarServicio(long id)
+        public async Task<IActionResult> EditarCitaServicio(long id)
         {
             using (var http = _httpClient.CreateClient())
             {
@@ -403,7 +406,7 @@ namespace AgendaTuLookWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> EditarFechaHora(long id, long servicioId)
+        public async Task<IActionResult> EditarFechaHora(long id, long sn, long sa)
         {
             using (var http = _httpClient.CreateClient())
             {
@@ -423,7 +426,7 @@ namespace AgendaTuLookWeb.Controllers
 
                         // Obtener el servicio seleccionado
                         var servicioResponse = await http.GetAsync(
-                            _configuration.GetSection("Variables:urlWebApi").Value + $"api/Servicios/EditarServicio?id={servicioId}");
+                            _configuration.GetSection("Variables:urlWebApi").Value + $"Servicios/EditarServicio?id={sn}");
 
                         if (servicioResponse.IsSuccessStatusCode)
                         {
@@ -452,58 +455,46 @@ namespace AgendaTuLookWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ConfirmarEdicionCita(long id, DateTime f, TimeSpan h)
+        public async Task<IActionResult> ConfirmarEdicionCita(long id, long sa, long sn, DateTime f, TimeSpan h)
         {
-            using (var http = _httpClient.CreateClient())
-            {
-                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+			using (var http = _httpClient.CreateClient())
+			{
+				long usuarioId = Convert.ToInt64(HttpContext.Session.GetString("UsuarioId")!);
 
-                // Obtener información de la cita
-                var citaResponse = await http.PostAsJsonAsync(
-                    $"{_configuration["Variables:urlWebApi"]}Citas/ObtenerCitaParaEditar",
-                    new { CitaId = id });
+				CitasModel model = new CitasModel
+				{
+					CitaId = id,
+					Usuario = new UsuarioModel
+					{
+						UsuarioId = usuarioId
+					},
+					Servicio = new ServicioModel
+					{
+						ServicioId = sn,
+						CambioServicio = sa != sn
+					},
+					Fecha = f,
+					HoraInicio = h
+				};
 
-                if (!citaResponse.IsSuccessStatusCode)
-                {
-                    TempData["errorMessage"] = "Error al obtener datos de la cita";
-                    return RedirectToAction("GestionarCitas");
-                }
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ConsultarDatosConfirmar";
 
-                var citaResult = await citaResponse.Content.ReadFromJsonAsync<RespuestaModel>();
-                var cita = JsonSerializer.Deserialize<CitasModel>((JsonElement)citaResult.Datos!);
+				var response = await http.PostAsJsonAsync(url, model);
 
-                // fecha y hora
-                cita.Fecha = f.Date;
-                cita.HoraInicio = h;
-                cita.HoraFin = h.Add(TimeSpan.FromMinutes(cita.Servicio.Duracion));
+				if (response.IsSuccessStatusCode)
+				{
+					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
 
-                // usuario
-                if (string.IsNullOrEmpty(cita.Usuario?.Nombre))
-                {
-                    var usuarioResponse = await http.GetAsync(
-                        $"{_configuration["Variables:urlWebApi"]}Usuarios/PerfilUsuario?Id={cita.Usuario.UsuarioId}");
-
-                    if (usuarioResponse.IsSuccessStatusCode)
-                    {
-                        var usuarioResult = await usuarioResponse.Content.ReadFromJsonAsync<RespuestaModel>();
-                        var usuario = JsonSerializer.Deserialize<UsuarioModel>((JsonElement)usuarioResult.Datos!);
-                        cita.Usuario = usuario;
-                    }
-                }
-
-                // métodos de pago
-                var metodosResponse = await http.GetAsync(
-                    $"{_configuration["Variables:urlWebApi"]}Citas/ObtenerMetodosPago");
-
-                if (metodosResponse.IsSuccessStatusCode)
-                {
-                    var metodosResult = await metodosResponse.Content.ReadFromJsonAsync<RespuestaModel>();
-                    cita.MetodosPago = JsonSerializer.Deserialize<List<MetodoPagoModel>>((JsonElement)metodosResult.Datos!);
-                }
-
-                return View(cita);
-            }
-        }
+					if (result != null && result.Indicador)
+					{
+						var datosConfirmar = JsonSerializer.Deserialize<CitasModel>((JsonElement)result.Datos!)!;
+						return View(datosConfirmar);
+					}
+				}
+				return View();
+			}
+		}
 
 
         [HttpPost]
@@ -511,15 +502,19 @@ namespace AgendaTuLookWeb.Controllers
         {
             using (var http = _httpClient.CreateClient())
             {
-                // Determinar si el servicio cambió
-                bool servicioCambiado = model.Servicio.ServicioId != model.PrecioOriginal;
 
-                if (servicioCambiado && Archivos != null)
-                {
-                    model.MetodoPago.Comprobante = Archivos.FileName;
-                }
+				// Manejo de la imagen primero
+				if (Archivos != null && Archivos.Length > 0)
+				{
+					// Eliminar imagen anterior si existe
+					if (!string.IsNullOrEmpty(model.MetodoPago.Comprobante)) // Esto no va a llegar porque no lo hemos traido, por si ya tiene
+					{
+						_pictures.EliminarImagen(model.MetodoPago.Comprobante);
+					}
+					model.MetodoPago.Comprobante = await _pictures.GuardarImagen(Archivos, "Comprobantes");
+				}
 
-                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
                 var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ActualizarCita";
 
                 var response = await http.PostAsJsonAsync(url, model);
@@ -529,7 +524,7 @@ namespace AgendaTuLookWeb.Controllers
                     var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
                     if (result != null && result.Indicador)
                     {
-                        TempData["SuccessMessage"] = servicioCambiado ?
+                        TempData["SuccessMessage"] = model.Servicio.CambioServicio ?
                             "Cita actualizada con éxito. Se ha generado una nueva factura." :
                             "Cita actualizada con éxito.";
                         return RedirectToAction("GestionarCitas");

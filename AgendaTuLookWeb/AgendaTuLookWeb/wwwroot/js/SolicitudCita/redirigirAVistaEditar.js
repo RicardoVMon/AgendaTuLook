@@ -1,6 +1,7 @@
 ﻿function redirigirConfirmarEdicion() {
     const citaId = document.getElementById('citaId').value;
-    const servicioId = document.getElementById('servicioId').value;
+    const servicioNuevoId = document.getElementById('servicioNuevoId').value;
+    const servicioActualId = document.getElementById('servicioActualId').value;
     const fechaSeleccionada = document.getElementById('fechaSeleccionada').value;
     const horaSeleccionada = document.getElementById('horaSeleccionada').value;
 
@@ -13,9 +14,5 @@
         return;
     }
 
-    // Convertir la fecha seleccionada a formato legible
-    const fecha = new Date(fechaSeleccionada);
-    const fechaFormateada = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
-
-    window.location.href = `/Citas/ConfirmarEdicionCita?id=${citaId}&f=${fechaFormateada}&h=${horaSeleccionada}`;
+    window.location.href = `/Citas/ConfirmarEdicionCita?id=${citaId}&sn=${servicioNuevoId}&sa=${servicioActualId}&f=${fechaSeleccionada}&h=${horaSeleccionada}`;
 }

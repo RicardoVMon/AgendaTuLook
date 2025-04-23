@@ -11,7 +11,7 @@
         @if (Model.Servicio != null)
         {
             <div class="alert alert-info mt-3">
-                <strong>Servicio actual:</strong> @Model.Servicio.NombreServicio - ₡@Model.Servicio.Precio
+                <strong>Servicio actual:</strong> @Model.Servicio.NombreServicio:  ₡@Model.Servicio.Precio
             </div>
         }
     </div>
@@ -25,7 +25,6 @@
         }
         else
         {
-            <form asp-controller="Citas" asp-action="EditarFechaHora" method="get">
                 <input type="hidden" name="id" value="@Model.CitaId" />
                 <input type="hidden" name="servicioId" id="selectedServicioId" value="@Model.Servicio.ServicioId" />
 
@@ -57,17 +56,16 @@
                                     </p>
 
                                     <div class="mt-auto">
-                                        <button type="submit" name="servicioId" value="@item.ServicioId"
-                                                class="btn @(item.ServicioId == Model.Servicio.ServicioId ? "btn-primary" : "btn-outline-primary") w-100">
+                                    <a asp-action="EditarFechaHora" asp-controller="Citas" asp-route-id="@Model.CitaId" asp-route-sa="@Model.Servicio.ServicioId" asp-route-sn="@item.ServicioId"
+                                       class="btn @(item.ServicioId == Model.Servicio.ServicioId ? "btn-primary" : "btn-outline-primary") w-100">
                                             @(item.ServicioId == Model.Servicio.ServicioId ? "Servicio Actual" : "Seleccionar")
-                                        </button>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     }
                 </div>
-            </form>
         }
     </div>
 </div>

@@ -20,7 +20,6 @@ namespace AgendaTuLookAPI.Controllers
         [Route("CapturarError")]
 		public async Task<IActionResult> CapturarError()
 		{
-            Console.WriteLine("He llegado al metodo mae");
             var ex = HttpContext.Features.Get<IExceptionHandlerFeature>();
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value)) 
             {
@@ -48,8 +47,6 @@ namespace AgendaTuLookAPI.Controllers
             {
                 var IdUsuario = User.Claims.FirstOrDefault(x => x.Type == "Id")?.Value;
                 return long.Parse(IdUsuario!);
-                
-            
             }
             return 0;
         
