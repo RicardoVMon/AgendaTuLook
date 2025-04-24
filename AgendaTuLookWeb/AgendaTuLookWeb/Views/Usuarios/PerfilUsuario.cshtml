@@ -1,0 +1,97 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
+}
+@model UsuarioModel
+<section class="py-4">
+    <div class="container-fluid p-0">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h1 class="h3 d-inline align-middle">Mi Perfil</h1>
+                <p class="text-muted">Administra tu información personal</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4 shadow-sm">
+                    <!-- Cover photo area con azul más tenue -->
+                    <div class="card-img-top bg-gradient-primary" style="height: 150px; background: linear-gradient(135deg, #000000 0%, #74512D 100%);">
+                    </div>
+                    <div class="card-body text-center position-relative">
+                        <!-- Profile picture with border that overlaps the cover photo -->
+                        <div class="position-absolute" style="top: -75px; left: 50%; transform: translateX(-50%);">
+                            <div class="rounded-circle bg-white p-2 shadow-sm d-inline-block">
+                                <div style="width: 150px; height: 150px; overflow: hidden; border-radius: 50%;">
+                                    <img src="@Model.Imagen"
+                                         class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Profile info with proper spacing from the profile picture -->
+                        <div class="mt-5 pt-4">
+                            <h4 class="card-title mb-1 mt-3">@Model.Nombre</h4>
+                            <p class="text-muted mb-3">@Model.Correo</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a class="btn btn-primary" asp-action="EditarPerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">
+                                    <i data-feather="edit-2" class="feather-sm me-1"></i> Editar Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile navigation tabs -->
+                    <div class="card-header bg-transparent border-0 pb-0">
+                        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-bs-toggle="tab" href="#info" role="tab">Información</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Tab content -->
+                    <div class="card-body tab-content">
+                        <div class="tab-pane fade show active" id="info" role="tabpanel">
+                            <!--  tarjeta de bienvenida visual -->
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i data-feather="user" class="text-primary" style="width: 32px; height: 32px;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">¡Bienvenido a tu perfil personal!</h6>
+                                            <p class="mb-0 text-muted small">Consulta y actualiza tu información desde aquí</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="h6 card-title">Información de Contacto</h5>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">Nombre</label>
+                                        <p class="mb-0">@Model.Nombre</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">Correo Electrónico</label>
+                                        <p class="mb-0">@Model.Correo</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small">Teléfono</label>
+                                        <p class="mb-0">@(Model.Telefono ?? "No asignado")</p>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

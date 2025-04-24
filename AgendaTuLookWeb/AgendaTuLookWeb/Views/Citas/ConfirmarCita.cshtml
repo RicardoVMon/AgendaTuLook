@@ -1,0 +1,238 @@
+﻿@model CitasModel
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var usuarioId = HttpContextAccessor.HttpContext!.Session.GetString("UsuarioId");
+    var servicioId = Context.Request.Query["s"].ToString();
+}
+
+<div class="pb-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4">Confirmación de cita</h1>
+            <p class="text-muted">Por favor verifica que todos los datos sean correctos antes de confirmar.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="bg-white rounded rounded-1 p-3 mb-3">
+                
+                <form method="post" asp-controller="Citas" asp-action="ConfirmarCita" enctype="multipart/form-data">
+                    <!-- Info del Cliente -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0">
+                                <i class="fas fa-user-circle mr-2" style="color:#321914"></i> Información Personal
+                            </h4>
+                            <div class="text-end">
+                                <small class="text-muted me-2">¿La información personal no está correcta?</small>
+                                <a asp-controller="Usuarios" asp-action="PerfilUsuario" asp-route-id="@usuarioId"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-user-edit me-1"></i> Actualizar
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Usuario.Nombre" class="form-label fw-bold">Nombre:</label>
+                                <input asp-for="Usuario.Nombre" class="form-control bg-light py-2" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Usuario.Correo" class="form-label fw-bold">Correo electrónico:</label>
+                                <input asp-for="Usuario.Correo" class="form-control bg-light py-2" />
+                            </div>
+
+                            @if (Model.Usuario.Telefono != null)
+                            {
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Teléfono:</label>
+                                    <div class="form-control bg-light py-2" readonly>@Model.Usuario.Telefono</div>
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+
+                
+                    <!-- Detalles cita -->
+                    <div class="mb-4">
+                        <h4 class="mb-3">
+                            <i class="fas fa-calendar-alt mr-2" style="color:#321914"></i> Detalles de la Cita
+                        </h4>
+                        <div class="row">
+                            <input type="hidden" asp-for="Servicio!.ServicioId" />
+                            <input type="hidden" asp-for="Usuario!.UsuarioId" />
+                            <input type="hidden" asp-for="DiaTrabajoId" />
+                            <input type="hidden" asp-for="Fecha" />
+                            <input type="hidden" asp-for="MetodoPago.MetodoPagoId" />
+                            <input type="hidden" asp-for="MetodoPago.Nombre"/>
+
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Servicio:</label>
+                                <label asp-for="Servicio.NombreServicio" class="form-label fw-bold">Servicio:</label>
+                                <input asp-for="Servicio.NombreServicio" class="form-control bg-light py-2" readonly />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Servicio.Precio" class="form-label fw-bold">Precio (IVAI):</label>
+                                <input asp-for="Servicio.Precio" class="form-control bg-light py-2" readonly />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Duración (minutos):</label>
+                                <div class="form-control bg-light py-2" readonly>@Model.Servicio.Duracion</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Fecha:</label>
+                                <div class="form-control bg-light py-2">@Model.Fecha.ToString("dddd, dd 'de' MMMM 'del' yyyy", new System.Globalization.CultureInfo("es-ES"))</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="HoraInicio" class="form-label fw-bold">Hora de Inicio:</label>
+                                <div class="form-control bg-light py-2">@DateTime.Today.Add(Model.HoraInicio).ToString("hh:mm tt")</div>
+                                <input asp-for="HoraInicio" class="form-control bg-light py-2" hidden />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="HoraFin" class="form-label fw-bold">Hora de Finalización (Con amortiguación):</label>
+                                <div class="form-control bg-light py-2">@DateTime.Today.Add(Model.HoraFin).ToString("hh:mm tt")</div>
+                                <input asp-for="HoraFin" class="form-control bg-light py-2" hidden />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Método de Pago -->
+                    <div class="mb-4">
+                        <h4 class="mb-3">
+                            <i class="fas fa-credit-card me-2" style="color:#321914"></i> Método de Pago
+                        </h4>
+
+                        <ul class="nav nav-tabs" id="metodoPagoTab" role="tablist">
+                            @foreach (var metodo in Model.MetodosPago)
+                            {
+                                var isActive = Model.MetodosPago.IndexOf(metodo) == 0 ? "active" : "";
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @isActive" id="@metodo.MetodoPagoId-tab"
+                                            data-bs-toggle="tab" data-bs-target="#tab-@metodo.MetodoPagoId"
+                                            type="button" role="tab" aria-controls="tab-@metodo.MetodoPagoId"
+                                            aria-selected="@(isActive == "active" ? "true" : "false")">
+                                        @metodo.Nombre
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+
+                        <div class="tab-content mt-3" id="metodoPagoTabContent">
+                            @foreach (var metodo in Model.MetodosPago)
+                            {
+                                var isActive = Model.MetodosPago.IndexOf(metodo) == 0 ? "show active" : "";
+                                <div class="tab-pane fade @isActive" id="tab-@metodo.MetodoPagoId" role="tabpanel">
+                                    @if (metodo.MetodoPagoId == 1)
+                                    {
+                                        <!-- Tarjeta -->
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Aceptamos:</label>
+                                            <div>
+                                                <img src="~/img/Assets/visa.webp" alt="Visa" style="height:20px; margin-right:10px;">
+                                                <img src="/img/Assets/mastercard.png" alt="Mastercard" style="height:30px; margin-right:10px;">
+                                                <img src="/img/Assets/amex.png" alt="American Express" style="height:30px;">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h5 class="fw-bold mb-3">Información de la Tarjeta</h5>
+                                            <label class="form-label">Número de Tarjeta</label>
+                                            <input type="text" id="numeroTarjeta" pattern="^[0-9]{4}(\s?[0-9]{4}){3}$" class="form-control mb-3" placeholder="0000 0000 0000 0000" maxlength="19" />
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Fecha de Expiración</label>
+                                                    <input type="text" id="expiracionTarjeta" pattern="^(0[1-9]|1[0-2])\/([0-9]{2})$" class="form-control" placeholder="MM/AA" maxlength="5" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">CVV</label>
+                                                    <input type="text" id="cvvTarjeta" pattern="^[0-9]{3,4}$" class="form-control" placeholder="123" maxlength="4" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h5 class="fw-bold mb-3">Información de Facturación</h5>
+                                            <label class="form-label">Nombre del Titular</label>
+                                            <input type="text" asp-for="MetodoPago.NombreTitular" class="form-control mb-3" placeholder="Nombre Completo" />
+
+                                            <label class="form-label">Dirección</label>
+                                            <input type="text" asp-for="MetodoPago.Direccion" class="form-control mb-3" placeholder="Ej: Calle 123, Ciudad" />
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Código Postal</label>
+                                                    <input type="text" asp-for="MetodoPago.CodigoPostal" class="form-control" placeholder="XXXXX" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">País</label>
+                                                    <input type="text" asp-for="MetodoPago.Pais" class="form-control" placeholder="Costa Rica" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @if (metodo.MetodoPagoId == 2)
+                                    {
+                                        <!-- SINPE -->
+                                        <div class="border rounded p-3 bg-light">
+                                            <h5 class="fw-bold mb-3">Detalles para el pago por SINPE</h5>
+                                            <ul class="list-unstyled">
+                                                <li><strong>Número de teléfono:</strong> <span class="text-primary">+506 8888-9999</span></li>
+                                                <li><strong>Nombre del destinatario:</strong> <span class="text-primary">Juan Pérez</span></li>
+                                                <li><strong>Monto a pagar:</strong> <span class="text-success fw-bold">₡@Model.Servicio.Precio IVAI</span></li>
+                                                <li><strong>Detalle recomendado:</strong> <span class="text-secondary">@Model.Servicio.NombreServicio - @Model.Usuario.Nombre</span></li>
+                                            </ul>
+                                            <div class="alert alert-warning mt-3">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <strong>Importante:</strong> En el detalle de la transferencia, solo escribe <strong>"@Model.Servicio.NombreServicio - @Model.Usuario.Nombre"</strong> para evitar problemas con la validación.
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 mt-1">
+                                            <div class="col-md-12">
+                                                <label for="formFile" class="form-label">Por favor, añada la imagen del comprobante</label>
+                                                <input class="form-control" type="file" id="Archivos" name="Archivos" accept="image/*,.pdf">
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <h5 class="fw-bold">Paso final: Validar el depósito</h5>
+                                            <p>Confirma que realizaste el depósito correctamente:</p>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="confirmDeposito" id="confirmDeposito" />
+                                                <label class="form-check-label" for="confirmDeposito">
+                                                    He realizado el pago y adjunté el comprobante correctamente.
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-5 d-flex justify-content-between">
+                        <a asp-controller="Citas" asp-action="SolicitarFechaHora" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left mr-2"></i> Regresar
+                        </a>
+                        <button class="btn btn-primary btn-lg" style="background-color:#321914; border-color: #1F283E;">
+                            <i class="fas fa-check-circle mr-2"></i> Confirmar Cita
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/solicitudcita/manejometodospago.js"></script>
+<script src="~/js/solicitudcita/simulacioncomprobante.js"></script>

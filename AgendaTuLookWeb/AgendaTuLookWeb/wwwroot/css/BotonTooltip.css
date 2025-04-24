@@ -1,0 +1,11 @@
+﻿.custom-position {
+    position: fixed;
+    bottom: 60px; /* Adjust this value to move the button up */
+    right: 20px; /* Adjust this value to move the button left or right */
+}
+
+.btn-xl {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+}

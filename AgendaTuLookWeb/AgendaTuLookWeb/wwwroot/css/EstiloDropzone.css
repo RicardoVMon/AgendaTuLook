@@ -1,0 +1,4 @@
+﻿/* Oculta la barra de carga de Dropzone */
+.dropzone .dz-preview .dz-progress {
+    display: none !important;
+}

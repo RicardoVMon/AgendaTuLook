@@ -1,32 +1,54 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using AgendaTuLookWeb.Models;
+using System.Text.Json;
+using System.Net.Http.Headers;
 
 namespace AgendaTuLookWeb.Controllers
 {
-    public class HomeController : Controller
-    {
-        private readonly ILogger<HomeController> _logger;
+	[FiltroSesion]
+	[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+	public class HomeController : Controller
+	{
+		private readonly HttpClient _httpClient;
+		private readonly IConfiguration _configuration;
 
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
+		public HomeController(IHttpClientFactory clientFactory, IConfiguration configuration)
+		{
+			_httpClient = clientFactory.CreateClient();
+			_configuration = configuration;
+		}
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+		[HttpGet]
+		public async Task<IActionResult> Index()
+		{
+			var token = HttpContext.Session.GetString("Token");
+			var userIdString = HttpContext.Session.GetString("UsuarioId");
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+			if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(userIdString))
+				return View(new IndexModel());
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-    }
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+			var baseUrl = _configuration.GetSection("Variables:urlWebApi").Value;
+
+			var model = new IndexModel
+			{
+				ReviewsDestacados = await ObtenerInfoAPI<List<ReviewsModel>>($"{baseUrl}Estadisticas/ReviewsDestacadas"),
+				ProximasCitas = await ObtenerInfoAPI<List<CitasModel>>($"{baseUrl}Calendario/ConsultarCitasCalendario?Id={userIdString}&c=2"),
+				Servicios = await ObtenerInfoAPI<List<ServicioModel>>($"{baseUrl}Servicios/GestionarServicios")
+			};
+			return View(model);
+		}
+
+		private async Task<T?> ObtenerInfoAPI<T>(string url)
+		{
+			var response = await _httpClient.GetAsync(url);
+			if (!response.IsSuccessStatusCode) return default;
+
+			var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+			if (result?.Indicador != true || result.Datos is not JsonElement jsonElement) return default;
+
+			return JsonSerializer.Deserialize<T>(jsonElement);
+		}
+	}
 }

@@ -1,8 +1,10 @@
-﻿@{
+﻿@model UsuarioModel;
+
+@{
     Layout = "~/Views/Shared/_LayoutExterno.cshtml";
 }
 <div class="d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-dark navbar-expand p-2" style="background-color: #1A2035;">
+    <nav class="navbar navbar-dark navbar-expand p-2" style="background-color: #291410;">
         <div class="container-fluid">
             <a class="navbar-brand fs-4 fw-bold" href="@Url.Action("Login", "Usuario")">
                 <i class="fa fa-heart mx-2"></i> Donde tu belleza encuentra su mejor versión.
@@ -11,20 +13,29 @@
     </nav>
     <section class="container-fluid d-flex flex-grow-1 px-0">
         <div class="col">
-            <img src="https://images.pexels.com/photos/29141596/pexels-photo-29141596/free-photo-of-retrato-creativo-con-afro-azul-y-unas-artisticas.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="img-fluid" style="object-fit: cover; height: 100%;" />
+            <img src="https://www.peluker.com/blog/wp-content/uploads/2024/07/image84mobiliario-de-barberia-rustico-anade-calidez-a-tu-barbershop.jpg" class="img-fluid" style="object-fit: cover; height: 100%;" />
         </div>
         <div class="col d-flex align-items-center">
             <div class="container-fluid d-flex flex-column">
-                <form class="pb-5 border-bottom px-5" asp-action="RecuperarCuenta" method="post">
-                    <div class="text-center fw-bold" style="font-size: 10vh; color: #1F283E;">AgendaTuLook</div>
-                    <h2 class="mb-3 text-center" style="color: #1F283E;">Recuperación de Contraseña</h2>
-                    <p class="mb-4 text-center">Ingresá tu usuario para iniciar el proceso de recuperación.</p>
+                <form class="pb-5 border-bottom px-5" asp-action="RecuperarContrasennia" asp-controller="Autenticacion" method="post">
+                    <div class="text-center fw-bold" style="font-size: 10vh; color: #321914;">AgendaTuLook</div>
+                    <h2 class="mb-3 text-center" style="color: #321914;">Recuperación de Contraseña</h2>
+                    <p class="mb-4 text-center">Ingresá tu correo electrónico asociado a tu cuenta para obtener un código de recuperación.</p>
+                    
+                    @if (TempData["Mensaje"] != null)
+                    {
+                        <div class="alert alert-warning text-center">
+                            @TempData["Mensaje"]
+                        </div>
+                    }
+                    
                     <div class="form-group form-floating mb-4">
-                        <label for="Cedula">Cédula</label>
-                        <input type="text" class="form-control" id="Cedula" required />
+                        <input asp-for="Correo" type="email" class="form-control" placeholder="Correo Electrónico" name="Correo" id="Correo" required />
+                        <label class="form-label">Correo Electrónico</label>
                     </div>
+
                     <div class="form-group text-center">
-                        <button type="submit" class="btn btn-primary btn-lg" style="background-color:#1F283E; border-color: #1F283E;">
+                        <button type="submit" class="btn btn-primary btn-lg" style="background-color:#321914; border-color: #321914;">
                             Recuperar
                         </button>
                     </div>

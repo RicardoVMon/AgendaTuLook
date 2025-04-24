@@ -1,0 +1,192 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var rolId = int.Parse(HttpContextAccessor.HttpContext!.Session.GetString("RolId")!);
+}
+
+@model List<CitasModel>
+<section>
+    <div class="row">
+        <div class="col-12">
+            <div class="row">
+                <div class="col-6">
+                    <div class="display-3 px-0">Historial de Citas</div>
+                    <div class="text-muted px-0">Seleccione una cita ocurrida para poder administrar su información</div>
+                </div>
+            </div>
+
+            <!-- Tabla de Pacientes Activos -->
+            <div class="row">
+                <div class="col-12 px-0">
+                    <div class="table-responsive">
+                        <table id="tablaGestionServicios" class="table table-bordered table-hover bg-white">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col">Hora de Atención</th>
+                                    <th scope="col">Nombre Servicio</th>
+                                    <th scope="col">Cliente</th>
+                                    <th scope="col">Estado</th>
+                                    <th scope="col">Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null)
+                                {
+                                    @foreach (var cita in Model)
+                                    {
+                                        <tr>
+                                            <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                                            <td>@cita.HoraInicio - @cita.HoraFin</td>
+                                            <td>@cita.NombreServicio</td>
+                                            <td class="text-center">@cita.NombreCliente</td>
+                                            <td class="text-center">
+                                                <span class="badge @(cita.Estado == "Cancelada" ? "bg-danger" : "bg-success")">
+                                                    @cita.Estado
+                                                </span>
+                                                @if (cita.CalificacionReview != 0)
+                                                {
+                                                    <span class="badge bg-warning">
+                                                        Calificada
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-outline-primary rounded" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" asp-action="DetalleCita" asp-controller="Citas" asp-route-id="@cita.CitaId"><i class="fas fa-eye"></i> Detalles</a></li>
+                                                        @if (cita.Estado == "Finalizada" && cita.CalificacionReview == 0)
+                                                        {
+                                                            <li>
+                                                                <button type="button"
+                                                                        class="dropdown-item btn-calificar"
+                                                                        data-citaid="@cita.CitaId"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#modalCalificarCita">
+                                                                    <i class="fas fa-star"></i> Calificar Servicio
+                                                                </button>
+                                                            </li>
+                                                        }
+
+                                                        @if (cita.CalificacionReview != 0)
+                                                        {
+                                                            <li>
+                                                                <button type="button"
+                                                                        class="dropdown-item btn-ver-calificacion"
+                                                                        data-calificacionreview="@cita.CalificacionReview"
+                                                                        data-comentarioreview="@cita.ComentarioReview"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#modalVerCalificacion">
+                                                                    <i class="fas fa-star"></i> Ver Calificación
+                                                                </button>
+                                                            </li>
+
+                                                        }
+                                                        
+                                                    </ul>
+                                                    
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal de Calificación -->
+<div class="modal fade" id="modalCalificarCita" tabindex="-1" aria-labelledby="modalCalificarCitaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="GuardarCalificacion" asp-controller="Citas" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCalificarCitaLabel">Calificar Cita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Hidden para el ID de la cita -->
+                    <input type="hidden" id="citaIdHidden" name="CitaId" />
+
+                    <div class="mb-3 text-center">
+                        <label class="form-label d-block">Calificación:</label>
+                        <!-- Este input oculto funcionará como un select -->
+                        <input type="hidden" id="CalificacionReview" name="CalificacionReview" value="4" required />
+
+                        <div class="star-rating" id="star-rating">
+                            <i class="fas fa-star" data-rating="1" data-bs-toggle="tooltip" title="Muy malo"></i>
+                            <i class="fas fa-star" data-rating="2" data-bs-toggle="tooltip" title="Malo"></i>
+                            <i class="fas fa-star" data-rating="3" data-bs-toggle="tooltip" title="Regular"></i>
+                            <i class="fas fa-star" data-rating="4" data-bs-toggle="tooltip" title="Bueno"></i>
+                            <i class="fas fa-star" data-rating="5" data-bs-toggle="tooltip" title="Excelente"></i>
+                        </div>
+                        <div class="rating-value" id="rating-value">Calificación: 4</div>
+                        <div class="rating-description" id="rating-description">Bueno</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comentarios" class="form-label">Comentarios adicionales</label>
+                        <textarea class="form-control" id="ComentarioReview" name="ComentarioReview" rows="3" placeholder="Escriba sus comentarios..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Calificación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ver Calificación -->
+<div class="modal fade" id="modalVerCalificacion" tabindex="-1" aria-labelledby="modalVerCalificacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalVerCalificacionLabel">Calificación Realizada</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 text-center">
+                    <label class="form-label d-block">Calificación:</label>
+                    <div class="star-rating" id="star-rating-view">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                    <div class="rating-value" id="rating-value-view"></div>
+                    <div class="rating-description" id="rating-description-view"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Comentarios adicionales</label>
+                    <textarea class="form-control" id="ComentarioReviewView" rows="3" disabled></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        var table = new DataTable('#tablaGestionServicios', {
+            responsive: true, // Habilita el modo responsive
+            language: {
+                url: '//cdn.datatables.net/plug-ins/2.2.2/i18n/es-ES.json',
+            },
+            columnDefs: [{
+                targets: '_all', className: 'dt-left'
+            }],
+        });
+    });
+</script>
+<script src="~/js/historialcitas/starrating.js"></script>
+<script src="~/js/historialcitas/verstarrating.js"></script>
