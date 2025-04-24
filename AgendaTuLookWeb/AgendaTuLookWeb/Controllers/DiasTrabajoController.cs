@@ -70,6 +70,11 @@ namespace AgendaTuLookWeb.Controllers
 			using (var http = _httpClient.CreateClient())
 			{
 
+				if (nuevaHoraFin < nuevaHoraInicio)
+				{
+					return Json(new { success = false, message = "La hora de inicio es menor a la hora de finalización, inténtelo nuevamente." });
+				}
+
 				DiasTrabajoModel model = new DiasTrabajoModel
 				{
 					DiaTrabajoId = diaTrabajoId,

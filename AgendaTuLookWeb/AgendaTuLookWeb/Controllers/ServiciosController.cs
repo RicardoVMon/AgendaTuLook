@@ -13,12 +13,14 @@ namespace AgendaTuLookWeb.Controllers
 	{
 		private readonly IHttpClientFactory _httpClient;
 		private readonly IConfiguration _configuration;
-		
+		private readonly IPictures _pictures;
 
-		public ServiciosController(IHttpClientFactory httpClient, IConfiguration configuration)
+
+		public ServiciosController(IHttpClientFactory httpClient, IConfiguration configuration, IPictures pictures)
 		{
 			_httpClient = httpClient;
 			_configuration = configuration;
+			_pictures = pictures;
 		}
 
 		[HttpGet]
@@ -51,34 +53,37 @@ namespace AgendaTuLookWeb.Controllers
 			return View();
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> CrearServicio(ServicioModel model, IFormFile Archivos)
-		{
-			using (var http = _httpClient.CreateClient())
-			{
+        [HttpPost]
+        public async Task<IActionResult> CrearServicio(ServicioModel model, IFormFile Archivos)
+        {
+            // Manejo de la imagen primero
+            if (Archivos != null && Archivos.Length > 0)
+            {
+                model.Imagen = await _pictures.GuardarImagen(Archivos, "Servicios");
+            }
 
-				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Servicios/CrearServicio";
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Servicios/CrearServicio";
 
-				// Pendiente trabajar con la imagen
-				var response = await http.PostAsJsonAsync(url, model);
+                var response = await http.PostAsJsonAsync(url, model);
 
-				if (response.IsSuccessStatusCode)
-				{
-					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    if (result != null && result.Indicador)
+                    {
+                        TempData["successMessage"] = "Servicio creado exitosamente";
+                        return RedirectToAction("GestionarServicios", "Servicios");
+                    }
+                    TempData["errorMessage"] = result!.Mensaje;
+                }
+            }
+            return View(model);
+        }
 
-					if (result != null && result.Indicador)
-					{
-						TempData["successMessage"] = "Servicio creado exitosamente";
-						return RedirectToAction("GestionarServicios", "Servicios");
-					}
-					TempData["errorMessage"] = result!.Mensaje;
-				}
-			}
-			return RedirectToAction("GestionarServicios");
-		}
-
-		[HttpGet]
+        [HttpGet]
 		public async Task<IActionResult> EditarServicio(long id)
 		{
 			using (var http = _httpClient.CreateClient())
@@ -102,36 +107,42 @@ namespace AgendaTuLookWeb.Controllers
 			return View();
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> EditarServicio(ServicioModel model, IFormFile Archivos)
-		{
-			using (var http = _httpClient.CreateClient())
-			{
-				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Servicios/EditarServicio";
+        [HttpPost]
+        public async Task<IActionResult> EditarServicio(ServicioModel model, IFormFile Archivos)
+        {
+            // Manejo de la imagen primero
+            if (Archivos != null && Archivos.Length > 0)
+            {
+                // Eliminar imagen anterior si existe
+                if (!string.IsNullOrEmpty(model.Imagen))
+                {
+                    _pictures.EliminarImagen(model.Imagen);
+                }
+                model.Imagen = await _pictures.GuardarImagen(Archivos, "Servicios");
+            }
 
-				if (Archivos != null)
-				{
-					model.Imagen = Archivos.FileName;
-				}
-				var response = await http.PutAsJsonAsync(url, model);
+            using (var http = _httpClient.CreateClient())
+            {
+                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Servicios/EditarServicio";
 
-				if (response.IsSuccessStatusCode)
-				{
-					var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                var response = await http.PutAsJsonAsync(url, model);
 
-					if (result != null && result.Indicador)
-					{
-						TempData["successMessage"] = "Servicio editado exitosamente";
-						return View(model);
-					}
-					TempData["errorMessage"] = result!.Mensaje;
-				}
-			}
-			return View();
-		}
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    if (result != null && result.Indicador)
+                    {
+                        TempData["successMessage"] = "Servicio actualizado exitosamente";
+                        return RedirectToAction("GestionarServicios", "Servicios");
+                    }
+                    TempData["errorMessage"] = result!.Mensaje;
+                }
+            }
+            return View(model);
+        }
 
-		[HttpGet]
+        [HttpGet]
 		public async Task<IActionResult> CambiarEstadoServicio(long id)
 		{
 			using (var http = _httpClient.CreateClient())
@@ -155,5 +166,6 @@ namespace AgendaTuLookWeb.Controllers
 			}
 			return View();
 		}
-	}
+
+    }
 }

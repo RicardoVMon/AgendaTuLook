@@ -21,5 +21,11 @@
         public decimal Precio { get; set; }
         public int Duracion { get; set; }
 
-    }
+        // Datos del metodo de pago
+
+        public DateTime FechaPago { get; set; }
+		public string? NombreMetodoPago { get; set; }
+        public string? Comprobante { get; set; }
+
+	}
 }

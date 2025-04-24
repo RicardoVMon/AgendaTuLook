@@ -9,6 +9,6 @@ namespace AgendaTuLookAPI.Models
         public string? Nombre { get; set; }
         public string? ComentarioReview { get; set; }
         public int? CalificacionReview { get; set; }
-        public DateTime? fecha { get; set; }
+        public DateTime? Fecha { get; set; }
     }
 }

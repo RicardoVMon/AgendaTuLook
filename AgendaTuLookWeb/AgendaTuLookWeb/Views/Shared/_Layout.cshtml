@@ -3,6 +3,7 @@
 @{
 	var nombreUsuario = HttpContextAccessor.HttpContext.Session.GetString("Nombre");
 	var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
+	var imagenUsuario = HttpContextAccessor.HttpContext.Session.GetString("ImagenPerfil");
 	var rolId = HttpContextAccessor.HttpContext.Session.GetString("RolId");
 }
 
@@ -17,15 +18,17 @@
 	<!-- CSS -->
 	<link href="~/css/app.css" rel="stylesheet" />
 	<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
-	<link href="https://cdn.datatables.net/2.2.2/css/dataTables.bootstrap5.css" rel="stylesheet" />
-	<link href="https://cdn.datatables.net/responsive/3.0.4/css/responsive.bootstrap5.css" rel="stylesheet" />
+    <link href="~/lib/datatables/datatables.bootstrap5.css" rel="stylesheet" />
+    <link href="~/lib/datatables/responsive.bootstrap5.css" rel="stylesheet" />
+    <link href="~/lib/fancybox/fancybox.css" rel="stylesheet" />
+    <script src="~/lib/fancybox/fancybox.umd.js"></script>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-	<script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.js"></script>
-	<link href="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.css" rel="stylesheet">
-	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <link href="~/lib/fontawesome/all.min.css" rel="stylesheet" />
+    <script src="~/lib/jquery/jquery-3.6.0.min.js"></script>
+    <script src="~/lib/sweetalert/sweetalert2@11.js"></script>
+    <script src="~/lib/dropzone/dropzone.min.js"></script>
+    <link href="~/lib/dropzone/dropzone.min.css" rel="stylesheet" />
+    <script src="~/lib/fullcalendar/index.global.min.js"></script>
     <link href="~/css/star rating/starrating.css" rel="stylesheet" />
 	<link href="~/css/overflowfix.css" rel="stylesheet" />
 </head>
@@ -144,77 +147,12 @@
 				<div class="navbar-collapse collapse">
 					<ul class="navbar-nav navbar-align">
 						<li class="nav-item dropdown">
-							<a class="nav-icon dropdown-toggle" href="#" id="alertsDropdown" data-bs-toggle="dropdown">
-								<div class="position-relative">
-									<i class="align-middle" data-feather="bell"></i>
-									<span class="indicator">4</span>
-								</div>
-							</a>
-							<div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0" aria-labelledby="alertsDropdown">
-								<div class="dropdown-menu-header">
-									4 New Notifications
-								</div>
-								<div class="list-group">
-									<a href="#" class="list-group-item">
-										<div class="row g-0 align-items-center">
-											<div class="col-2">
-												<i class="text-danger" data-feather="alert-circle"></i>
-											</div>
-											<div class="col-10">
-												<div class="text-dark">Update completed</div>
-												<div class="text-muted small mt-1">Restart server 12 to complete the update.</div>
-												<div class="text-muted small mt-1">30m ago</div>
-											</div>
-										</div>
-									</a>
-									<a href="#" class="list-group-item">
-										<div class="row g-0 align-items-center">
-											<div class="col-2">
-												<i class="text-warning" data-feather="bell"></i>
-											</div>
-											<div class="col-10">
-												<div class="text-dark">Lorem ipsum</div>
-												<div class="text-muted small mt-1">Aliquam ex eros, imperdiet vulputate hendrerit et.</div>
-												<div class="text-muted small mt-1">2h ago</div>
-											</div>
-										</div>
-									</a>
-									<a href="#" class="list-group-item">
-										<div class="row g-0 align-items-center">
-											<div class="col-2">
-												<i class="text-primary" data-feather="home"></i>
-											</div>
-											<div class="col-10">
-												<div class="text-dark">Login from 192.186.1.8</div>
-												<div class="text-muted small mt-1">5h ago</div>
-											</div>
-										</div>
-									</a>
-									<a href="#" class="list-group-item">
-										<div class="row g-0 align-items-center">
-											<div class="col-2">
-												<i class="text-success" data-feather="user-plus"></i>
-											</div>
-											<div class="col-10">
-												<div class="text-dark">New connection</div>
-												<div class="text-muted small mt-1">Christina accepted your request.</div>
-												<div class="text-muted small mt-1">14h ago</div>
-											</div>
-										</div>
-									</a>
-								</div>
-								<div class="dropdown-menu-footer">
-									<a href="#" class="text-muted">Show all notifications</a>
-								</div>
-							</div>
-						</li>
-						<li class="nav-item dropdown">
 							<a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
 								<i class="align-middle" data-feather="settings"></i>
 							</a>
 
 							<a class="nav-link d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
-                                <img src="https://st3.depositphotos.com/9998432/13335/v/450/depositphotos_133352010-stock-illustration-default-placeholder-man-and-woman.jpg" class="avatar img-fluid rounded me-1" /> 
+                                <img src="@imagenUsuario" class="avatar img-fluid rounded me-1" /> 
                                 <span class="text-dark">@nombreUsuario</span>
                                 <i class="align-middle fas fa-chevron-down"></i>
 							</a>
@@ -253,10 +191,10 @@
 	<!-- Bootstrap y librerías -->
 	<script src="~/js/app.js"></script>
 	<script src="~/js/alertas.js"></script>
-	<script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
-	<script src="https://cdn.datatables.net/2.2.2/js/dataTables.bootstrap5.js"></script>
-	<script src="https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.js"></script>
-	<script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script>
+    <script src="~/lib/datatables/datatables.js"></script>
+    <script src="~/lib/datatables/datatables.bootstrap5.js"></script>
+    <script src="~/lib/datatables/datatables.responsive.js"></script>
+    <script src="~/lib/datatables/responsive.bootstrap5.js"></script>
 	<div id="tempDataMessages"
 		 data-success="@TempData["successMessage"]"
 		 data-error="@TempData["errorMessage"]"

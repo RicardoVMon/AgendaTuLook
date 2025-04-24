@@ -16,8 +16,8 @@
 		public string? Token { get; set; }
         public DateTime? FechaVencimientoVerificacion { get; set; }
 		public string? CodigoVerificacion { get; set; }
-
 		public string? RecaptchaToken { get; set; }
+		public string? Imagen { get; set; }
 
-    }
+	}
 }

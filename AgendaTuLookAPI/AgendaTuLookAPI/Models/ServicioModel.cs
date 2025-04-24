@@ -10,5 +10,6 @@
 		public string? Imagen { get; set; }
 		public bool? Estado { get; set; }
 		public decimal Ingresos { get; set; }
+		public bool CambioServicio { get; set; }
 	}
 }

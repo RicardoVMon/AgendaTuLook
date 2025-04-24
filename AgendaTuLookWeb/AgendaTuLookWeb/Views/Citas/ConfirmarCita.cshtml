@@ -87,17 +87,19 @@
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Fecha:</label>
-                                <div class="form-control bg-light py-2">@Model.Fecha.ToString("dd/MM/yyyy")</div>
+                                <div class="form-control bg-light py-2">@Model.Fecha.ToString("dddd, dd 'de' MMMM 'del' yyyy", new System.Globalization.CultureInfo("es-ES"))</div>
                             </div>
 
                             <div class="col-md-6">
                                 <label asp-for="HoraInicio" class="form-label fw-bold">Hora de Inicio:</label>
-                                <input asp-for="HoraInicio" class="form-control bg-light py-2" readonly />
+                                <div class="form-control bg-light py-2">@DateTime.Today.Add(Model.HoraInicio).ToString("hh:mm tt")</div>
+                                <input asp-for="HoraInicio" class="form-control bg-light py-2" hidden />
                             </div>
 
                             <div class="col-md-6">
                                 <label asp-for="HoraFin" class="form-label fw-bold">Hora de Finalización (Con amortiguación):</label>
-                                <input asp-for="HoraFin" class="form-control bg-light py-2" readonly />
+                                <div class="form-control bg-light py-2">@DateTime.Today.Add(Model.HoraFin).ToString("hh:mm tt")</div>
+                                <input asp-for="HoraFin" class="form-control bg-light py-2" hidden />
                             </div>
                         </div>
                     </div>

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Win32;
 using AgendaTuLookWeb.Servicios;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,15 +27,19 @@ builder.Services.AddHttpContextAccessor();
 // Servicio de Seguridad
 builder.Services.AddScoped<ISeguridad, Seguridad>();
 
+// Servicio de Imágenes
+builder.Services.AddScoped<IPictures, Pictures>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-	app.UseExceptionHandler("/Error/CapturarError");
+	
 	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 	app.UseHsts();
 }
+//app.UseExceptionHandler("/Error/CapturarError");
 app.UseSession();
 app.UseHttpsRedirection();
 app.UseStaticFiles();

@@ -11,7 +11,6 @@ namespace AgendaTuLookAPI.Controllers
 	[Route("api/[controller]")]
 	[ApiController]
 	[Authorize]
-
 	public class EstadisticasController : Controller
 	{
 		private readonly IConfiguration _configuration;
@@ -74,15 +73,14 @@ namespace AgendaTuLookAPI.Controllers
 			}
 		}
 
-		[HttpGet("Reviews")]
-		public IActionResult GetReviews()
+		[HttpGet("ReviewsDestacadas")]
+		public IActionResult ReviewsDestacadas()
 		{
 			using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
 			{
-				var reviews = connection.Query<ReviewDestacadoModel>(
-					"ObtenerReviewsDestacados",
-					commandType: CommandType.StoredProcedure
-				).ToList();
+				var reviews = connection.Query<ReviewsModel>(
+					"ObtenerReviewsDestacados"
+				);
 
 				if (reviews.Any())
 				{

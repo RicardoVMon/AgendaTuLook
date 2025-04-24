@@ -24,23 +24,32 @@ namespace AgendaTuLookAPI.Servicios
 		}
 
 		// Función de correo para código de verificación
-		public void EnviarCorreoCodigoVerificacion(string correo, string codigoVerificacion, DateTime fechaVencimiento)
+		public bool EnviarCorreoCodigoVerificacion(string correo, string codigoVerificacion, DateTime fechaVencimiento)
 		{
-			string cuenta = _configuration["CorreoNotificaciones"]!;
-			string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+			try
+			{
+				string cuenta = _configuration["CorreoNotificaciones"]!;
+				string contrasenna = _configuration["ContrasennaNotificaciones"]!;
 
-			MailMessage message = new MailMessage();
-			message.From = new MailAddress(cuenta);
-			message.To.Add(new MailAddress(correo));
-			message.Subject = "Código de Verificación - Recuperación de Contraseña";
-			message.Body = GenerarContenidoCorreoCodigoVerificacion(codigoVerificacion, fechaVencimiento);
-			message.Priority = MailPriority.Normal;
-			message.IsBodyHtml = true;
+				MailMessage message = new MailMessage();
+				message.From = new MailAddress(cuenta);
+				message.To.Add(new MailAddress(correo));
+				message.Subject = "Código de Verificación - Recuperación de Contraseña";
+				message.Body = GenerarContenidoCorreoCodigoVerificacion(codigoVerificacion, fechaVencimiento);
+				message.Priority = MailPriority.Normal;
+				message.IsBodyHtml = true;
 
-			SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-			client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
-			client.EnableSsl = true;
-			client.Send(message);
+				SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+				client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+				client.EnableSsl = true;
+				client.Send(message);
+
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		public string GenerarCodigoVerificacion()
@@ -78,30 +87,40 @@ namespace AgendaTuLookAPI.Servicios
 		}
 
 		// Función de correo para confirmación de cita
-		public void EnviarCorreoFacturaCita(string correo, string nombreCliente, string nombreServicio, double precio, string metodoPago, string fecha, string horaInicio, string horaFin)
+		public bool EnviarCorreoFacturaCita(string correo, string nombreCliente, string nombreServicio, double precio, string metodoPago, string fecha, string horaInicio, string horaFin)
 		{
-			string cuenta = _configuration["CorreoNotificaciones"]!;
-			string contrasenna = _configuration["ContrasennaNotificaciones"]!;
-			MailMessage message = new MailMessage();
-			message.From = new MailAddress(cuenta);
-			message.To.Add(new MailAddress(correo));
-			message.Subject = "Confirmación de Cita - AgendaTuLook";
-			message.Body = GenerarContenidoCorreoFacturaCita(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
 
-			// Generar Meeting iCalendar
-			string calendarContent = GenerateICSInviteBody(nombreCliente, correo ,nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
-			message.Attachments.Add(new Attachment(new MemoryStream(Encoding.UTF8.GetBytes(calendarContent)), "cita.ics", "text/calendar"));
+			try
+			{
+				string cuenta = _configuration["CorreoNotificaciones"]!;
+				string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+				MailMessage message = new MailMessage();
+				message.From = new MailAddress(cuenta);
+				message.To.Add(new MailAddress(correo));
+				message.Subject = "Confirmación de Cita - AgendaTuLook";
+				message.Body = GenerarContenidoCorreoFacturaCita(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
 
-			// Adjunto factura PDF
-			var pdfFactura = GenerarFacturaPDF(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
-			message.Attachments.Add(new Attachment(pdfFactura, "Factura.pdf", "application/pdf"));
+				// Generar Meeting iCalendar
+				string calendarContent = GenerateICSInviteBody(nombreCliente, correo ,nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
+				message.Attachments.Add(new Attachment(new MemoryStream(Encoding.UTF8.GetBytes(calendarContent)), "cita.ics", "text/calendar"));
 
-			message.Priority = MailPriority.Normal;
-			message.IsBodyHtml = true;
-			SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-			client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
-			client.EnableSsl = true;
-			client.Send(message);
+				// Adjunto factura PDF
+				var pdfFactura = GenerarFacturaPDF(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
+				message.Attachments.Add(new Attachment(pdfFactura, "Factura.pdf", "application/pdf"));
+
+				message.Priority = MailPriority.Normal;
+				message.IsBodyHtml = true;
+				SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+				client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+				client.EnableSsl = true;
+				client.Send(message);
+				return true;
+
+			} catch
+			{
+				return false;
+			}
+
 		}
 
 		public string GenerarContenidoCorreoFacturaCita(string nombreCliente, string nombreServicio, double precio, string metodoPago, string fecha, string horaInicio, string horaFin)
@@ -221,13 +240,13 @@ namespace AgendaTuLookAPI.Servicios
 		}
 
 		public MemoryStream GenerarFacturaPDF(
-	string nombreCliente,
-	string nombreServicio,
-	double precio,
-	string metodoPago,
-	string fecha,
-	string horaInicio,
-	string horaFin)
+		string nombreCliente,
+		string nombreServicio,
+		double precio,
+		string metodoPago,
+		string fecha,
+		string horaInicio,
+		string horaFin)
 		{
 			var stream = new MemoryStream();
 			var writer = new PdfWriter(stream);
@@ -332,5 +351,263 @@ namespace AgendaTuLookAPI.Servicios
 			return random.Next(10000000, 99999999).ToString();
 		}
 
-	}
+        public bool EnviarCorreoCancelacion(string correo, string nombreCliente, string nombreServicio, string fecha, 
+			string horaInicio, string horaFin, string metodoPago, decimal precio, bool aplicaReembolso)
+        {
+
+			try
+			{
+				string cuenta = _configuration["CorreoNotificaciones"]!;
+				string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+				MailMessage message = new MailMessage();
+				message.From = new MailAddress(cuenta);
+				message.To.Add(new MailAddress(correo));
+				message.Subject = "Cancelación de Cita - AgendaTuLook";
+				message.Body = GenerarContenidoCorreoCancelacion(nombreCliente, nombreServicio, fecha, horaInicio, horaFin,
+																	metodoPago, precio, aplicaReembolso);
+				message.Priority = MailPriority.Normal;
+				message.IsBodyHtml = true;
+				SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+				client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+				client.EnableSsl = true;
+				client.Send(message);
+				return true;
+			} catch
+			{
+				return false;
+			}
+
+        }
+        public string GenerarContenidoCorreoCancelacion(string nombreCliente, string nombreServicio, string fecha, string horaInicio, 
+			string horaFin, string metodoPago, decimal precio, bool aplicaReembolso)
+        {
+            string mensajeReembolso = aplicaReembolso
+                ? "La cancelación se realizó con al menos 24 horas de anticipación, por lo que se aplicará un reembolso dentro de los próximos 2 días hábiles al método de pago utilizado."
+                : "La cancelación se realizó con menos de 24 horas de anticipación, por lo que no aplicará reembolso.";
+
+            return $@"
+			<div style='font-family: ""Segoe UI"", Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: auto; padding: 0; color: #333; background-color: #f9f9f9;'>
+				<div style='background-color: #2c3e50; padding: 25px; border-top-left-radius: 8px; border-top-right-radius: 8px; text-align: center;'>
+					<h1 style='color: #ffffff; margin: 0; font-size: 26px; font-weight: 600;'>AgendaTuLook</h1>
+					<p style='color: #e7e7e7; margin: 5px 0 0 0; font-size: 16px;'>Cancelación de Cita</p>
+				</div>
+
+				<div style='background-color: #ffffff; padding: 30px; border-left: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0;'>
+					<p style='margin-top: 0; font-size: 16px; line-height: 24px;'>Estimado/a <strong>{nombreCliente}</strong>,</p>
+					<p style='font-size: 16px; line-height: 24px;'>Te informamos que tu cita ha sido cancelada. {mensajeReembolso}</p>
+
+					<div style='margin: 25px 0; padding: 20px; background-color: #f5f7fa; border-left: 4px solid #3498db; border-radius: 4px;'>
+						<h3 style='margin-top: 0; color: #2c3e50; font-size: 18px;'>Detalles del Servicio</h3>
+						<table style='width: 100%; border-collapse: collapse; font-size: 15px;'>
+							<tr>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0; width: 40%;'><strong>Servicio cancelado</strong></td>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>{nombreServicio}</td>
+							</tr>
+							<tr>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'><strong>Fecha de la cita</strong></td>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>{fecha}</td>
+							</tr>
+							<tr>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'><strong>Horario</strong></td>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>{horaInicio} - {horaFin}</td>
+							</tr>
+						</table>
+					</div>
+
+					<div style='margin: 25px 0; padding: 20px; background-color: #f9f4e8; border-left: 4px solid #f39c12; border-radius: 4px;'>
+						<h3 style='margin-top: 0; color: #2c3e50; font-size: 18px;'>Información de Pago</h3>
+						<table style='width: 100%; border-collapse: collapse; font-size: 15px;'>
+							<tr>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0; width: 40%;'><strong>Método de pago</strong></td>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>{metodoPago}</td>
+							</tr>
+							<tr>
+								<td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'><strong>Monto cobrado</strong></td>
+								<td style='padding: 12px 15px; font-weight: bold; color: #16a085;'>{precio.ToString("C2", new System.Globalization.CultureInfo("es-CR"))}</td>
+							</tr>
+							<tr>
+								<td style='padding: 12px 15px;'><strong>Aplica reembolso</strong></td>
+								<td style='padding: 12px 15px;'>{(aplicaReembolso ? "Sí" : "No")}</td>
+							</tr>
+						</table>
+					</div>
+
+					<div style='margin-top: 30px; text-align: center;'>
+						<a href='https://localhost:7258/Citas/GestionarCitas' style='display: inline-block; padding: 12px 25px; background-color: #3498db; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 4px;'>Gestionar mis citas</a>
+					</div>
+				</div>
+
+				<div style='background-color: #f2f2f2; padding: 20px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; border: 1px solid #e0e0e0; border-top: none;'>
+					<p style='text-align: center; margin: 0 0 10px 0; font-size: 14px;'>¡Gracias por elegirnos! Te esperamos pronto.</p>
+					<div style='text-align: center; margin-bottom: 15px;'>
+						<a href='#' style='display: inline-block; margin: 0 10px; color: #3498db; text-decoration: none;'>Facebook</a>
+						<a href='#' style='display: inline-block; margin: 0 10px; color: #3498db; text-decoration: none;'>Instagram</a>
+						<a href='#' style='display: inline-block; margin: 0 10px; color: #3498db; text-decoration: none;'>WhatsApp</a>
+					</div>
+					<p style='text-align: center; margin: 15px 0 0 0; font-size: 12px; color: #777;'>Este correo ha sido generado automáticamente. Por favor, no respondas a este mensaje.</p>
+					<p style='text-align: center; margin: 5px 0 0 0; font-size: 12px; color: #777;'>© 2025 AgendaTuLook. Todos los derechos reservados.</p>
+				</div>
+			</div>";
+        }
+
+        public bool EnviarCorreoFacturaCitaEdicion(
+            string correo,
+            string nombreCliente,
+            string nombreServicio,
+            double precio,
+            string metodoPago,
+            string fecha,
+            string horaInicio,
+            string horaFin,
+            bool servicioCambiado)
+        {
+			try
+			{
+				string cuenta = _configuration["CorreoNotificaciones"]!;
+				string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+
+				MailMessage message = new MailMessage();
+				message.From = new MailAddress(cuenta);
+				message.To.Add(new MailAddress(correo));
+				message.Subject = servicioCambiado ?
+					"Confirmación de Cambios en Cita - Nueva Factura" :
+					"Confirmación de Cambios en Cita";
+
+				message.Body = GenerarContenidoCorreoCitaEdicion(
+					nombreCliente, nombreServicio, precio, metodoPago,
+					fecha, horaInicio, horaFin, servicioCambiado);
+
+				// Generar Meeting iCalendar (siempre se envía)
+				string calendarContent = GenerateICSInviteBody(
+					nombreCliente, correo, nombreServicio, precio,
+					metodoPago, fecha, horaInicio, horaFin);
+
+				message.Attachments.Add(new Attachment(
+					new MemoryStream(Encoding.UTF8.GetBytes(calendarContent)),
+					"cita.ics", "text/calendar"));
+
+				// Solo adjuntar factura PDF si el servicio cambió
+				if (servicioCambiado)
+				{
+					var pdfFactura = GenerarFacturaPDF(
+						nombreCliente, nombreServicio, precio,
+						metodoPago, fecha, horaInicio, horaFin);
+
+					message.Attachments.Add(new Attachment(
+						pdfFactura, "Factura.pdf", "application/pdf"));
+				}
+
+				message.Priority = MailPriority.Normal;
+				message.IsBodyHtml = true;
+
+				SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+				client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+				client.EnableSsl = true;
+				client.Send(message);
+				return true;
+			} catch
+			{
+				return false;
+			}
+
+        }
+
+        // Método para generar contenido de correo con información de cambios
+        public string GenerarContenidoCorreoCitaEdicion(
+			string nombreCliente,
+			string nombreServicio,
+			double precio,
+			string metodoPago,
+			string fecha,
+			string horaInicio,
+			string horaFin,
+			bool servicioCambiado)
+        {
+            string mensajeCambioServicio = servicioCambiado
+                ? @"<div style='background-color: #fff8e1; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #ffc107;'>
+              <h4 style='margin-top: 0; color: #ff8f00;'>¡Importante! - Servicio Cambiado</h4>
+              <p>Has modificado el servicio de tu cita. La factura anterior ha sido anulada y se ha generado una nueva factura con los detalles actualizados.</p>
+              <p>El importe total del servicio anterior ha sido reembolsado íntegramente al método de pago utilizado en la transacción original.</p>
+           </div>"
+				: @"<div style='background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #2196f3;'>
+              <h4 style='margin-top: 0; color: #1565c0;'>Cambios Confirmados</h4>
+              <p>Has actualizado los detalles de tu cita sin cambiar el servicio. Solo se han modificado la fecha y/o hora.</p>
+           </div>";
+
+            string contenido = $@"
+    <div style='font-family: ""Segoe UI"", Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: auto; padding: 0; color: #333; background-color: #f9f9f9;'>
+        <!-- Header Section -->
+        <div style='background-color: #2c3e50; padding: 25px; border-top-left-radius: 8px; border-top-right-radius: 8px; text-align: center;'>
+            <h1 style='color: #ffffff; margin: 0; font-size: 26px; font-weight: 600;'>AgendaTuLook</h1>
+            <p style='color: #e7e7e7; margin: 5px 0 0 0; font-size: 16px;'>Confirmación de Cambios en Cita</p>
+        </div>
+    
+        <!-- Main Content -->
+        <div style='background-color: #ffffff; padding: 30px; border-left: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0;'>
+            <p style='margin-top: 0; font-size: 16px; line-height: 24px;'>Estimado/a <strong>{nombreCliente}</strong>,</p>
+            <p style='font-size: 16px; line-height: 24px;'>Los cambios en tu cita han sido confirmados. A continuación encontrarás el detalle actualizado:</p>
+            
+            {mensajeCambioServicio}
+            
+            <!-- Service Details Box -->
+            <div style='margin: 25px 0; padding: 20px; background-color: #f5f7fa; border-left: 4px solid #3498db; border-radius: 4px;'>
+                <h3 style='margin-top: 0; color: #2c3e50; font-size: 18px;'>Detalles Actualizados del Servicio</h3>
+                <table style='width: 100%; border-collapse: collapse; font-size: 15px;'>
+                    <tr>
+                        <td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0; width: 40%;'><strong>Servicio</strong></td>
+                        <td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>{nombreServicio}</td>
+                    </tr>
+                    <tr>
+                        <td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'><strong>Fecha de la cita</strong></td>
+                        <td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>{fecha}</td>
+                    </tr>
+                    <tr>
+                        <td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'><strong>Horario</strong></td>
+                        <td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>{horaInicio} - {horaFin}</td>
+                    </tr>
+                    <tr>
+                        <td style='padding: 12px 15px;'><strong>Precio total</strong></td>
+                        <td style='padding: 12px 15px; font-weight: bold; color: #16a085;'>₡{precio.ToString("N2")}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            {(servicioCambiado ? $@"
+            <div style='margin: 25px 0; padding: 20px; background-color: #f9f4e8; border-left: 4px solid #f39c12; border-radius: 4px;'>
+                <h3 style='margin-top: 0; color: #2c3e50; font-size: 18px;'>Información de Pago</h3>
+                <table style='width: 100%; border-collapse: collapse; font-size: 15px;'>
+                    <tr>
+                        <td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0; width: 40%;'><strong>Método de pago</strong></td>
+                        <td style='padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>{metodoPago}</td>
+                    </tr>
+                    <tr>
+                        <td style='padding: 12px 15px;'><strong>Total pagado</strong></td>
+                        <td style='padding: 12px 15px; font-weight: bold; color: #16a085;'>₡{precio.ToString("N2")}</td>
+                    </tr>
+                </table>
+            </div>" : "")}
+            
+            <p style='font-size: 16px; line-height: 24px;'>Si necesitas realizar más cambios o cancelar tu cita, contáctanos a través de nuestra plataforma o vía telefónica.</p>
+            
+            <div style='margin-top: 30px; text-align: center;'>
+                <a href='https://localhost:7258/Citas/GestionarCitas' style='display: inline-block; padding: 12px 25px; background-color: #3498db; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 4px;'>Gestionar mis citas</a>
+            </div>
+        </div>
+    
+        <!-- Footer Section -->
+        <div style='background-color: #f2f2f2; padding: 20px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; border: 1px solid #e0e0e0; border-top: none;'>
+            <p style='text-align: center; margin: 0 0 10px 0; font-size: 14px;'>¡Gracias por elegirnos! Te esperamos pronto.</p>
+            <div style='text-align: center; margin-bottom: 15px;'>
+                <a href='#' style='display: inline-block; margin: 0 10px; color: #3498db; text-decoration: none;'>Facebook</a>
+                <a href='#' style='display: inline-block; margin: 0 10px; color: #3498db; text-decoration: none;'>Instagram</a>
+                <a href='#' style='display: inline-block; margin: 0 10px; color: #3498db; text-decoration: none;'>WhatsApp</a>
+            </div>
+            <p style='text-align: center; margin: 15px 0 0 0; font-size: 12px; color: #777;'>Este correo ha sido generado automáticamente. Por favor, no respondas a este mensaje.</p>
+            <p style='text-align: center; margin: 5px 0 0 0; font-size: 12px; color: #777;'>© 2025 AgendaTuLook. Todos los derechos reservados.</p>
+        </div>
+    </div>";
+
+            return contenido;
+        }
+    }
 }

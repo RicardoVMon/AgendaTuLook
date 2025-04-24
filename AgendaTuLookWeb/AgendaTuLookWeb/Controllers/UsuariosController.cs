@@ -18,13 +18,15 @@ namespace AgendaTuLookWeb.Controllers
 		private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
 		private readonly ISeguridad _seguridad;
+		private readonly IPictures _pictures;
 
-		public UsuariosController(IHttpClientFactory httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ISeguridad seguridad)
+		public UsuariosController(IHttpClientFactory httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ISeguridad seguridad, IPictures pictures)
         {
             _httpClient = httpClient;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
 			_seguridad = seguridad;
+			_pictures = pictures;
 		}
 		// Este metodo y el de abajo se podrían meter en una interfaz
         [HttpGet]
@@ -79,9 +81,20 @@ namespace AgendaTuLookWeb.Controllers
         }
 
 		[HttpPost]
-		public async Task<IActionResult> EditarPerfilUsuario(UsuarioModel model)
+		public async Task<IActionResult> EditarPerfilUsuario(UsuarioModel model, IFormFile FotoPerfil)
 		{
-            using (var http = _httpClient.CreateClient())
+
+			if (FotoPerfil != null && FotoPerfil.Length > 0)
+			{
+
+				if (!string.IsNullOrEmpty(model.Imagen))
+				{
+					_pictures.EliminarImagen(model.Imagen);
+				}
+				model.Imagen = await _pictures.GuardarImagen(FotoPerfil, "Usuarios");
+			}
+
+			using (var http = _httpClient.CreateClient())
 			{
 
 				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
@@ -93,6 +106,7 @@ namespace AgendaTuLookWeb.Controllers
 				{
 
 					HttpContext.Session.SetString("Nombre", model.Nombre!);
+					HttpContext.Session.SetString("ImagenPerfil", model.Imagen!);
 					TempData["SuccessMessage"] = "Perfil actualizado con éxito";
 					return RedirectToAction("PerfilUsuario", "Usuarios", new { Id = model.UsuarioId});
 				}

@@ -298,3 +298,16 @@
 <script src="~/js/estadisticas/graficos.js"></script>
 <script src="~/js/botontooltip.js"></script>
 <link href="~/css/botontooltip.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        var table = new DataTable('#reviewsTable', {
+            responsive: true, // Habilita el modo responsive
+            language: {
+                url: '//cdn.datatables.net/plug-ins/2.2.2/i18n/es-ES.json',
+            },
+            columnDefs: [{
+                targets: '_all', className: 'dt-left'
+            }],
+        });
+    });
+</script>

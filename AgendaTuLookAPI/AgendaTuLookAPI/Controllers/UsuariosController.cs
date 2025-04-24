@@ -58,7 +58,8 @@ namespace AgendaTuLookAPI.Controllers
                     model.UsuarioId,
                     model.Nombre,
                     model.Telefono,
-                    model.Correo
+                    model.Correo,
+					model.Imagen
                 }).FirstOrDefault();
 
 				if (result == "1")
