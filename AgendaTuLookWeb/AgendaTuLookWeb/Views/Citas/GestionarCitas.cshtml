@@ -1,5 +1,9 @@
 ﻿@model List<CitasModel>
-
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var rolId = HttpContextAccessor.HttpContext.Session.GetString("RolId");
+    var esAdmin = long.Parse(rolId!) == 1;
+}
 <section>
     <div class="row">
         <div class="col-12">
@@ -53,10 +57,20 @@
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li><a class="dropdown-item" asp-controller="Citas" asp-action="DetalleCita" asp-route-id="@cita.CitaId"><i class="fas fa-eye"></i> Detalles</a></li>
+                                                        @if (!esAdmin) {
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><a class="dropdown-item" asp-controller="Citas" asp-action="EditarCitaServicio" asp-route-id="@cita.CitaId"><i class="fas fa-edit"></i> Editar</a></li>
+                                                        }
                                                         <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item" asp-controller="Citas" asp-action="EditarCitaServicio" asp-route-id="@cita.CitaId"><i class="fas fa-edit"></i> Editar</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item cancelar-cita" href="#" data-id="@cita.CitaId"><i class="fas fa-times-circle"></i> Cancelar</a></li>
+                                                        <li>
+                                                            <a class="dropdown-item cancelar-cita" href="#"
+                                                               data-id="@cita.CitaId"
+                                                               data-mensaje="@(esAdmin
+                                                                       ? "Esta acción reembolsará automáticamente el importe pagado por el cliente. Considere que este tipo de cancelaciones pueden afectar la reputación del negocio."
+                                                                       : "¿Deseas cancelar esta cita?<br><small>Las citas canceladas con menos de 24 horas de anticipación no son reembolsables.</small>")">
+                                                                <i class="fas fa-times-circle"></i> Cancelar
+                                                            </a>
+                                                        </li>
                                                     </ul>
                                                 </div>
                                             </td>
