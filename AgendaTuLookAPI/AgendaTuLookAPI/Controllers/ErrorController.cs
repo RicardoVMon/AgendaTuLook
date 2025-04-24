@@ -18,9 +18,10 @@ namespace AgendaTuLookAPI.Controllers
         }
 
         [Route("CapturarError")]
-		public async Task<IActionResult> CapturarError()
+		public IActionResult CapturarError()
 		{
             var ex = HttpContext.Features.Get<IExceptionHandlerFeature>();
+
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value)) 
             {
                 var UsuarioId = ObtenerUsuarioFromToken();
@@ -28,18 +29,19 @@ namespace AgendaTuLookAPI.Controllers
                 var Origen = ex.Path;
 
 			    var respuesta = new RespuestaModel();
-                await context.OpenAsync();
-                //Se registra en la base de datos el error
-                await context.ExecuteAsync("RegistrarError", new  { UsuarioId, Mensaje,Origen});
+                var resultado = context.Execute("RegistrarError", new  { UsuarioId, Mensaje,Origen});
+
+                if (resultado > 0)
+                {
+					respuesta.Indicador = true;
+					return Ok(respuesta);
+                }
 
                 respuesta.Indicador = false;
 			    respuesta.Mensaje = "Se presentó un problema en el sistema.";
-            
-
                 return Ok(respuesta);
-            }
+			}
         }
-
 
         public long ObtenerUsuarioFromToken() {
 

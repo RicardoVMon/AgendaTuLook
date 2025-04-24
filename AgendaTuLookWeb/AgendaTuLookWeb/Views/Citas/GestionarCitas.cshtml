@@ -1,7 +1,7 @@
 ﻿@model List<CitasModel>
 
 <section>
-    <div class="row px-5">
+    <div class="row">
         <div class="col-12">
             <div class="row">
                 <div class="col-6">
@@ -37,8 +37,8 @@
                                     @foreach (var cita in Model)
                                     {
                                         <tr>
-                                            <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
-                                            <td>@cita.HoraInicio - @cita.HoraFin</td>
+                                            <td>@cita.Fecha.ToString("dddd, dd 'de' MMMM 'del' yyyy", new System.Globalization.CultureInfo("es-ES"))</td>
+                                            <td> @DateTime.Today.Add(cita.HoraInicio).ToString("hh:mm tt") - @DateTime.Today.Add(cita.HoraFin).ToString("hh:mm tt")</td>
                                             <td>@cita.NombreServicio</td>
                                             <td class="text-center">@cita.NombreCliente</td>
                                             <td class="text-center">

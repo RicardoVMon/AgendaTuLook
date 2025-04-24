@@ -87,9 +87,16 @@
     });
     
     function mostrarHorasDisponibles(horas) {
-        const horasDisponiblesHtml = horas.map(hora =>
-            `<button class="btn btn-outline-primary m-2" onclick="seleccionarHora(this,'${hora.hora}')">${hora.hora}</button>`
-        ).join('');
+        const horasDisponiblesHtml = horas.map(hora => {
+            const horaDate = new Date(`1970-01-01T${hora.hora}`);
+            const horaFormateada = horaDate.toLocaleTimeString('es-ES', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+
+            return `<button class="btn btn-outline-primary m-2" onclick="seleccionarHora(this,'${hora.hora}')">${horaFormateada}</button>`;
+        }).join('');
         document.getElementById('selectorHoras').innerHTML = horasDisponiblesHtml;
     }
 

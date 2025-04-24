@@ -1,236 +1,578 @@
-﻿@inject IHttpContextAccessor HttpContextAccessor
+﻿@model IndexModel
+@inject IHttpContextAccessor HttpContextAccessor
 
 @{
     var nombreUsuario = HttpContextAccessor.HttpContext.Session.GetString("Nombre");
     var usuarioId = HttpContextAccessor.HttpContext.Session.GetString("UsuarioId");
     var rolId = HttpContextAccessor.HttpContext.Session.GetString("RolId");
-}@{
     var esAdmin = long.Parse(rolId!) == 1;
-    var accion = esAdmin ? "GestionarCitas" : "SolicitarServiciosCita";
-    var controlador = "Citas";
-    var titulo = esAdmin ? "Gestionar Citas" : "Agendar Cita";
 }
 
-@model List<ReviewDestacadoModel>
+<!-- HERO SECTION -->
+<div class="container-fluid bg-dark text-white p-0">
+    <div class="row g-0">
+        <div class="col-lg-6">
+            <img src="https://images.squarespace-cdn.com/content/v1/5fd787d32a8a4a2604b22b5d/a1a982a2-8886-4017-a735-3fde5aeab145/msbs-barbershop-perspective-22000.jpg" 
+            class="img-fluid w-100" style="height: 500px; object-fit: cover;" alt="Barbershop">
+        </div>
+        <div class="col-lg-6 d-flex align-items-center p-5" style="background-color: #212529;">
+            <div class="p-4">
+                <h1 class="fw-bold display-4 mb-4 text-white">@(esAdmin ? "Portal de Administración" : "Estilo y Calidad para Caballeros")</h1>
+                <p class="lead mb-4">@(esAdmin ? "Gestiona citas, personal y servicios de la barbería desde tu panel de administración." : "Una experiencia única en manos de los mejores barberos profesionales. Reserva tu cita y luce impecable.")</p>
 
-<div id="carouselExampleControls" class="carousel slide mb-3" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        <div class="carousel-item active position-relative">
-            <a asp-action="@accion" asp-controller="@controlador" class="d-block w-100 position-relative">
-                <img src="https://images.squarespace-cdn.com/content/v1/5fd787d32a8a4a2604b22b5d/a1a982a2-8886-4017-a735-3fde5aeab145/msbs-barbershop-perspective-22000.jpg"
-                     class="d-block w-100" height="300px" style="object-fit: cover">
-                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
-                    <h2 class="text-white">@titulo</h2>
-                </div>
-            </a>
-        </div>
-        <div class="carousel-item position-relative">
-            <a asp-action="@accion" asp-controller="@controlador" class="d-block w-100 position-relative">
-                <img src="https://images.squarespace-cdn.com/content/v1/59a04de337c581c5e1bcd854/1710998377547-DWXDZA5WIX8Q9VKFF0WC/AAA01567.jpg?format=1500w"
-                     class="d-block w-100" height="300px" style="object-fit: cover">
-                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
-                    <h2 class="text-white">@titulo</h2>
-                </div>
-            </a>
-        </div>
-        <div class="carousel-item position-relative">
-            <a asp-action="@accion" asp-controller="@controlador" class="d-block w-100 position-relative">
-                <img src="https://cdn.prod.website-files.com/644a9d9ce529ef8812f82a28/647fb85c69e95444243ef9bd_Henley%27s%20Gentlemen%27s%20Grooming%20-%20Barbershop%20and%20Mens%20Grooming.webp"
-                     class="d-block w-100" height="300px" style="object-fit: cover">
-                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">
-                    <h2 class="text-white">@titulo</h2>
-                </div>
-            </a>
+                @if (esAdmin)
+                {
+                    <div class="d-grid gap-3 d-sm-flex">
+                        <a asp-action="GestionarCitas" asp-controller="Citas" class="btn btn-warning btn-lg px-4 py-3 fw-semibold">
+                            <i class="fas fa-calendar-check me-2"></i>Gestionar Citas
+                        </a>
+                        <a href="@Url.Action("Estadisticas", "Estadisticas",
+							new { fechaInicio = DateTime.Now,
+							fechaFinal = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month))})" class="btn btn-outline-light btn-lg px-4 py-3">
+                            <i class="fas fa-chart-line me-2"></i>Dashboard
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-grid gap-3 d-sm-flex">
+                        <a asp-action="SolicitarServiciosCita" asp-controller="Citas" class="btn btn-warning btn-lg px-4 py-3 fw-semibold">
+                            <i class="fas fa-calendar-plus me-2"></i>Reservar mi Cita
+                        </a>
+                        <a href="#servicios" class="btn btn-outline-light btn-lg px-4 py-3">
+                            <i class="fas fa-scissors me-2"></i>Nuestros Servicios
+                        </a>
+                    </div>
+                }
+            </div>
         </div>
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-    </button>
 </div>
 
-
-
-<!-- Reseñas de Clientes -->
-<section class="reviews-section py-5 bg-white">
+<!-- PRÓXIMAS CITAS SECTION (VISIBLE PARA AMBOS ROLES) -->
+<section class="py-5 bg-light">
     <div class="container">
-        <h2 class="text-center mb-5 position-relative">
-            <span class="border-bottom border-brown border-3 pb-2">Nuestros Clientes</span>
-        </h2>
-        
-        @if (Model != null && Model.Any())
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="border-bottom border-3 border-warning pb-2 mb-4 fw-bold">
+                    @(esAdmin ? "Próximas Citas" : "Tus Próximas Citas")
+                </h2>
+            </div>
+        </div>
+
+        @if (esAdmin)
         {
-            <div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-                <div class="carousel-inner">
-                    @{
-                        // Mostrar 3 tarjetas a la vez en pantallas grandes
-                        for (int i = 0; i < Model.Count; i += 3)
-                        {
-                            <div class="carousel-item @(i == 0 ? "active" : "")">
-                                <div class="row justify-content-center">
-                                    @for (int j = i; j < Math.Min(i + 3, Model.Count); j++)
-                                    {
-                                        var review = Model[j];
-                                        <div class="col-md-4 mb-4 mb-md-0">
-                                            <div class="card review-card h-100 border-0 shadow-sm">
-                                                <div class="card-body p-4">
-                                                    <div class="text-warning mb-3">
-                                                        @for (int star = 0; star < review.CalificacionReview; star++)
-                                                        {
-                                                            <i class="fas fa-star"></i>
-                                                        }
-                                                        @for (int star = review.CalificacionReview; star < 5; star++)
-                                                        {
-                                                            <i class="far fa-star"></i>
-                                                        }
-                                                    </div>
-                                                    <p class="card-text mb-4">"@review.ComentarioReview"</p>
-                                                    <div class="d-flex align-items-center mt-auto">
-                                                        <div class="review-avatar bg-brown text-white rounded-circle">
-                                                            @review.Nombre.Substring(0, 1)
-                                                        </div>
-                                                        <div class="ms-3">
-                                                            <h5 class="mb-0 fw-bold">@review.Nombre</h5>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    }
-                </div>
-                
-                <!-- Indicadores -->
-                <div class="carousel-indicators position-relative mt-4">
-                    @for (int i = 0; i < Math.Ceiling((double)Model.Count / 3); i++)
-                    {
-                        <button type="button" data-bs-target="#reviewsCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" 
-                                aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i+1)"></button>
-                    }
-                </div>
-                
-                <!-- Botones de navegación -->
-                <div class="d-flex justify-content-center mt-3">
-                    <button class="btn btn-brown rounded-circle mx-2 nav-btn" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="btn btn-brown rounded-circle mx-2 nav-btn" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Servicio</th>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var cita in Model.ProximasCitas!)
+                                {
+                                    <tr>
+                                        <td>@cita.NombreCliente</td>
+                                        <td>@cita.NombreServicio</td>
+                                        <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                                        <td>@cita.HoraInicio</td>
+
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <a asp-action="GestionarCitas" asp-controller="Citas" class="btn btn-warning">
+                            <i class="fas fa-calendar me-2"></i>Ver todas las citas
+                        </a>
+                    </div>
                 </div>
             </div>
         }
         else
         {
-            <div class="alert alert-info text-center py-4 shadow-sm" style="background-color: #f8f1e9; color: #7d5a44; border-color: #d9bea3;">
-                <i class="fas fa-info-circle me-2"></i> No hay reseñas disponibles en este momento.
+            <div class="row">
+                @if (Model.ProximasCitas != null) 
+                {
+
+                    foreach (var cita in Model.ProximasCitas!.OrderByDescending(r => r.Fecha).Take(2))
+                    {
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm hover-shadow">
+                                <!-- Encabezado con fecha destacada -->
+                                <div class="bg-warning p-3 rounded-top d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 fw-bold text-dark">@cita.NombreServicio</h5>
+                                </div>
+
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3 border-bottom pb-3">
+                                        <div class="bg-light rounded-circle p-2 me-3">
+                                            <i class="far fa-clock text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Dia de Atención</small>
+                                            <td>
+                                                <span class="fw-semibold">
+                                                    @cita.Fecha.ToString("dddd, dd 'de' MMMM 'del' yyyy", new System.Globalization.CultureInfo("es-ES"))
+                                                </span>
+                                            </td>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3 border-bottom pb-3">
+                                        <div class="bg-light rounded-circle p-2 me-3">
+                                            <i class="far fa-clock text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Horario</small>
+                                            <td><span class="fw-semibold">De @DateTime.Today.Add(cita.HoraInicio).ToString("hh:mm tt") 
+                                                a @DateTime.Today.Add(cita.HoraFin).ToString("hh:mm tt")</span></td>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex gap-2 mt-auto">
+                                        <a asp-action="DetalleCita" asp-controller="Citas" asp-route-id="@cita.CitaId" class="btn btn-outline-secondary flex-grow-1 py-2">
+                                            <i class="fas fa-eye me-1"></i>Ver detalles
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border-0 shadow-sm bg-light">
+                            <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-5">
+                                <i class="fas fa-calendar-plus fa-3x mb-3 text-warning"></i>
+                                <h5 class="card-title fw-bold">¿Nueva reserva?</h5>
+                                <p class="card-text mb-4">Programa tu próxima cita y luce impecable</p>
+                                <a asp-action="SolicitarServiciosCita" asp-controller="Citas" class="btn btn-warning">
+                                    Reservar Ahora
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                } else {
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-calendar-day fa-4x mb-3 text-secondary"></i>
+                        <h4>No tienes citas programadas</h4>
+                        <p class="text-muted mb-4">¿Qué tal si reservas tu primera experiencia con nosotros?</p>
+                        <a asp-action="SolicitarServiciosCita" asp-controller="Citas" class="btn btn-warning btn-lg">
+                            <i class="fas fa-calendar-plus me-2"></i>Agendar mi primera cita
+                        </a>
+                    </div>
+                }
             </div>
         }
     </div>
+    <div class="text-end mt-3">
+        <a asp-action="GestionarCitas" asp-controller="Citas" class="btn btn-warning">
+            <i class="fas fa-calendar me-2"></i>Ver todas las citas
+        </a>
+    </div>
 </section>
 
-<style>
-    :root {
-        --brown-primary: #7d5a44;
-        --brown-secondary: #a67c52;
-        --brown-light: #d9bea3;
-        --brown-very-light: #f8f1e9;
-        --brown-dark: #5c4030;
-    }
-    
-    .border-brown {
-        border-color: var(--brown-primary) !important;
-    }
-    
-    .bg-brown {
-        background-color: var(--brown-primary) !important;
-    }
-    
-    .btn-brown {
-        background-color: var(--brown-primary);
-        border-color: var(--brown-primary);
-        color: white;
-    }
-    
-    .btn-brown:hover, .btn-brown:focus {
-        background-color: var(--brown-dark);
-        border-color: var(--brown-dark);
-        color: white;
-    }
-    
-    .reviews-section {
-        background-color: white;
-    }
-    
-    .review-card {
-        border-radius: 15px;
-        transition: all 0.3s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        background-color: white;
-    }
-    
-    .review-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(125, 90, 68, 0.15) !important;
-    }
-    
-    .review-avatar {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 1.2rem;
-    }
-    
-    .text-warning {
-        color: #daa520 !important; /* Dorado más cálido para combinar con el café */
-    }
-    
-    .text-warning i {
-        margin-right: 2px;
-    }
-    
-    .carousel-indicators {
-        bottom: -10px;
-    }
-    
-    .carousel-indicators button {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background-color: var(--brown-light);
-        border: none;
-        margin: 0 5px;
-    }
-    
-    .carousel-indicators button.active {
-        background-color: var(--brown-primary);
-    }
-    
-    .nav-btn {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-    }
-    
-    /* Estilos responsivos */
-    media (max-width: 767.98px) {
-        .review-card {
-            margin-bottom: 20px;
-        }
-    }
-</style></style>
+@if (!esAdmin)
+{
+    <!-- SERVICIOS SECTION (SOLO VISIBLE PARA CLIENTES) -->
+    <section class="py-5" id="servicios">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="display-5 fw-bold mb-3">Nuestros Servicios</h2>
+                    <p class="lead text-muted">Descubre nuestro catálogo de servicios premium para caballeros</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div id="serviciosCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @{
+                                var serviciosLista = Model.Servicios!.Where(s => s.Estado ?? false).ToList();
+                                var totalServicios = serviciosLista.Count;
+                                var serviciosPorPagina = 3;
+                                var totalPaginas = (int)Math.Ceiling((double)totalServicios / serviciosPorPagina);
+
+                                for (int pagina = 0; pagina < totalPaginas; pagina++)
+                                {
+                                    var esActivo = pagina == 0 ? "active" : "";
+                                    <div class="carousel-item @esActivo">
+                                        <div class="row">
+                                            @{
+                                                var inicio = pagina * serviciosPorPagina;
+                                                var fin = Math.Min(inicio + serviciosPorPagina, totalServicios);
+
+                                                for (int i = inicio; i < fin; i++)
+                                                {
+                                                    var servicio = serviciosLista[i];
+                                                    <div class="col-md-4 mb-4">
+                                                        <div class="card border-0 shadow h-100">
+                                                            <div class="img-container" style="height: 200px; overflow: hidden;">
+                                                                <img src="@servicio.Imagen" class="card-img-top" style="width: 100%; height: 200px; object-fit: cover;" alt="@servicio.NombreServicio">
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <h5 class="card-title fs-5 fw-bold">@servicio.NombreServicio</h5>
+                                                                <p class="card-text">@servicio.Descripcion!.Substring(0, Math.Min(200, servicio.Descripcion.Length))...</p>
+                                                                <p class="fw-bold fs-5 mb-0">Precio: ₡@servicio.Precio IVAI</p>
+                                                                <a asp-action="SolicitarFechaHora" asp-controller="Citas" asp-route-s="@servicio.ServicioId" class="btn btn-warning w-100 mt-3">Reservar</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <div class="d-flex justify-content-center mt-4">
+                            <button class="btn btn-dark rounded-circle mx-2" type="button" data-bs-target="#serviciosCarousel" data-bs-slide="prev" style="width: 50px; height: 50px;">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-dark rounded-circle mx-2" type="button" data-bs-target="#serviciosCarousel" data-bs-slide="next" style="width: 50px; height: 50px;">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN DE EXPERIENCIA (SOLO PARA CLIENTES) -->
+    <section class="py-5 bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mb-4 mb-lg-0 ps-5">
+                    <h2 class="display-5 fw-bold mb-4 text-white">La Experiencia AgendaTuLook</h2>
+                    <p class="lead">Más que un corte de cabello, ofrecemos una experiencia completa en un ambiente exclusivo para caballeros.</p>
+                    
+                    <div class="mt-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-warning p-3 rounded-circle me-3">
+                                <i class="fas fa-cut text-dark"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-white">Barberos Profesionales</h5>
+                                <p class="mb-0 text-light">Maestros en su arte con años de experiencia.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-warning p-3 rounded-circle me-3">
+                                <i class="fas fa-glass-whiskey text-dark"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-white">Bar Exclusivo</h5>
+                                <p class="mb-0 text-light">Disfruta de una bebida mientras esperas.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning p-3 rounded-circle me-3">
+                                <i class="fas fa-wifi text-dark"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 text-white">Zona de Espera Premium</h5>
+                                <p class="mb-0 text-light">Con WIFI gratis, TV y revistas actualizadas.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 pe-5">
+                    <div class="ratio ratio-16x9 h-100 rounded overflow-hidden shadow">
+                        <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70" class="img-fluid" style="object-fit: cover;" alt="Barbershop interior">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESEÑAS DE CLIENTES (SIMPLIFICADO) -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="display-5 fw-bold mb-3">Lo Que Dicen Nuestros Clientes</h2>
+                    <p class="lead text-muted">La satisfacción de nuestros clientes es nuestra mejor carta de presentación</p>
+                </div>
+            </div>
+            
+            @if (Model != null && Model.ReviewsDestacados!.Any())
+            {
+                <div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                    <div class="carousel-inner">
+                        @{
+                            for (int i = 0; i < Model.ReviewsDestacados!.Count; i += 3)
+                            {
+                                <div class="carousel-item @(i == 0 ? "active" : "")">
+                                    <div class="row">
+                                        @foreach (var review in Model.ReviewsDestacados!.Skip(i).Take(3))
+                                        {
+                                            <div class="col-md-4 mb-4">
+                                                <div class="card border-0 shadow-sm h-100">
+                                                    <div class="card-body p-4">
+                                                        <div class="mb-3">
+                                                            @for (int star = 0; star < review.CalificacionReview; star++)
+                                                            {
+                                                                <i class="fas fa-star text-warning"></i>
+                                                            }
+                                                            @for (int? star = review.CalificacionReview; star < 5; star++)
+                                                            {
+                                                                <i class="far fa-star text-warning"></i>
+                                                            }
+                                                        </div>
+                                                        <p class="card-text mb-4">"@review.ComentarioReview"</p>
+                                                        <div class="d-flex align-items-center mt-auto">
+                                                            <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                                                @review.Nombre!.Substring(0, 1)
+                                                            </div>
+                                                            <div class="ms-3">
+                                                                <h5 class="mb-0 fw-bold">@review.Nombre</h5>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    
+                    <div class="d-flex justify-content-center mt-4">
+                        <button class="btn btn-dark rounded-circle mx-2" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev" style="width: 50px; height: 50px;">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-dark rounded-circle mx-2" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next" style="width: 50px; height: 50px;">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center py-4 shadow-sm">
+                    <i class="fas fa-info-circle me-2"></i> No hay reseñas disponibles en este momento.
+                </div>
+            }
+            
+            <div class="row mt-5">
+                <div class="col-12 text-center">
+                    <a asp-action="HistorialCitas" asp-controller="Citas" class="btn btn-outline-dark btn-lg">
+                        <i class="fas fa-pen me-2"></i>Dejar una Reseña
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MARCAS ASOCIADAS -->
+    <section class="py-5 bg-white">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <h2 class="display-6 fw-bold mb-3">Trabajamos con las Mejores Marcas</h2>
+                    <p class="text-muted">Productos premium para resultados excepcionales</p>
+                </div>
+            </div>
+            
+            <div class="row justify-content-center align-items-center">
+                <div class="col-6 col-md-2 mb-4 mb-md-0 text-center">
+                    <img src="https://mma.prnewswire.com/media/2656977/American_Crew_Logo.jpg?p=publish" alt="Marca 1" class="img-fluid" style="max-height: 80px;">
+                </div>
+                <div class="col-6 col-md-2 mb-4 mb-md-0 text-center">
+                    <img src="https://www.xperteasy.pe/cdn/shop/collections/reuzellogo.png?v=1696093779" alt="Marca 2" class="img-fluid" style="max-height: 80px;">
+                </div>
+                <div class="col-6 col-md-2 mb-4 mb-md-0 text-center">
+                    <img src="https://paseodelasflores.com/wp-content/uploads/2023/12/SUPER-SALON-1-500x500.png" alt="Marca 3" class="img-fluid" style="max-height: 80px;">
+                </div>
+                <div class="col-6 col-md-2 mb-4 mb-md-0 text-center">
+                    <img src="https://images.seeklogo.com/logo-png/20/1/babyliss-pro-logo-png_seeklogo-203099.png" alt="Marca 4" class="img-fluid" style="max-height: 80px;">
+                </div>
+                <div class="col-6 col-md-2 mb-4 mb-md-0 text-center">
+                    <img src="https://recamier.com/wp-content/uploads/2022/07/R1-Salon-IN.png" alt="Marca 5" class="img-fluid" style="max-height: 80px;">
+                </div>
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    <!-- PANEL DE ADMINISTRACIÓN (VISIBLE SOLO PARA ADMIN) -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="border-bottom border-3 border-warning pb-2 mb-4 fw-bold">Panel de Administración</h2>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-warning rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-calendar-alt fa-2x text-dark"></i>
+                            </div>
+                            <h4 class="card-title mb-3">Gestión de Citas</h4>
+                            <p class="card-text mb-4">Programa, modifica y cancela citas desde el panel administrativo.</p>
+                            <a asp-action="GestionarCitas" asp-controller="Citas" class="btn btn-dark">Gestionar Citas</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-warning rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-clock fa-2x text-dark"></i>
+                            </div>
+                            <h4 class="card-title mb-3">
+                                <h4 class="card-title mb-3">Gestión de Horarios Laborales</h4>
+                                <p class="card-text mb-4">Administra el horario de atención que pueden ver tus clientes </p>
+                                <a asp-action="GestionarDiasTrabajo" asp-controller="DiasTrabajo" class="btn btn-dark">Gestionar Horarios</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-warning rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-scissors fa-2x text-dark"></i>
+                            </div>
+                            <h4 class="card-title mb-3">Gestión de Servicios</h4>
+                            <p class="card-text mb-4">Actualiza el catálogo de servicios, precios y promociones.</p>
+                            <a asp-action="GestionarServicios" asp-controller="Servicios" class="btn btn-dark">Gestionar Servicios</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESEÑAS RECIENTES (PARA ADMIN, VERSIÓN SIMPLIFICADA) -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-12 d-flex justify-content-between align-items-center">
+                    <h2 class="border-bottom border-3 border-warning pb-2 mb-0 fw-bold">Reseñas Recientes</h2>
+                    <a href="@Url.Action("Estadisticas", "Estadisticas",
+							new { fechaInicio = DateTime.Now,
+							fechaFinal = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month))})" class="btn btn-outline-dark">Ver Todas</a>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Calificación</th>
+                                    <th>Comentario</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.ReviewsDestacados!.Any())
+                                {
+                                    @foreach (var review in Model.ReviewsDestacados!.OrderByDescending(r => r.Fecha).Take(3))
+                                    {
+                                        <tr>
+                                            <td>@review.Nombre</td>
+                                            <td>
+                                                @for (int i = 0; i < review.CalificacionReview; i++)
+                                                {
+                                                    <i class="fas fa-star text-warning"></i>
+                                                }
+                                                @for (int? i = review.CalificacionReview; i < 5; i++)
+                                                {
+                                                    <i class="far fa-star text-warning"></i>
+                                                }
+                                            </td>
+                                            <td>@review.ComentarioReview!.Substring(0, Math.Min(review.ComentarioReview.Length, 50))@(review.ComentarioReview.Length > 50 ? "..." : "")</td>
+                                            <td>@review.Fecha?.ToString("dd/MM/yyyy")</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3">No hay reseñas disponibles</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- FOOTER PARA AMBOS ROLES -->
+<footer class="bg-dark text-white py-5">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-lg-4 mb-4 mb-lg-0 ps-5">
+                <h5 class="fw-bold mb-3 text-white">AgendaTuLook</h5>
+                <p class="mb-4">Un espacio exclusivo para el caballero moderno. Tradición y calidad en cada corte.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="#" class="text-white fs-5"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-white fs-5"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white fs-5"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4 mb-lg-0">
+                <h5 class="fw-bold mb-3 text-white">Nuestra Filosofía</h5>
+                <p class="mb-0">Experiencia personalizada en cada visita</p>
+                <p class="mb-0">Productos de calidad premium</p>
+                <p class="mb-0">Atención detallada y profesional</p>
+                <p class="mb-0">Ambiente exclusivo para caballeros</p>
+            </div>
+            <div class="col-lg-4">
+                <h5 class="fw-bold mb-3 text-white">Contacto</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> Av. Principal #123, Ciudad</li>
+                    <li class="mb-2"><i class="fas fa-phone me-2"></i> (123) 456-7890</li>
+                    <li><i class="fas fa-envelope me-2"></i> info@thebarbershop.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row mt-4 pt-4 border-top border-secondary">
+            <div class="col-12 text-center">
+                <p class="mb-0">&copy; @DateTime.Now.Year AgendaTuLook. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Inicializar todos los carruseles
+    document.addEventListener('DOMContentLoaded', function() {
+        var carousels = document.querySelectorAll('.carousel');
+        carousels.forEach(function(carousel) {
+            new bootstrap.Carousel(carousel, {
+                interval: 5000
+            });
+        });
+
+        // Inicializar tooltips de Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>

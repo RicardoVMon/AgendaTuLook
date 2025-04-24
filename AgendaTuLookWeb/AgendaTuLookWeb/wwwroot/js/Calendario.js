@@ -20,6 +20,19 @@
             listWeek: 'Lista Semanal'
         },
         allDayText: 'Hora',
+
+        // Aquí se define el formato 12 horas con AM/PM
+        slotLabelFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        },
+        eventTimeFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        },
+
         events: function (fetchInfo, successCallback, failureCallback) {
             $.ajax({
                 url: '/Calendario/ConsultarCitasCalendario',
@@ -43,5 +56,6 @@
             window.location.href = '/Citas/DetalleCita?id=' + info.event.id;
         },
     });
+
     calendar.render();
 });

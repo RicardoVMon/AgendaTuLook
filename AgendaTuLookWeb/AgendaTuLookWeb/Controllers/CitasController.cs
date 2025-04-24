@@ -47,11 +47,6 @@ namespace AgendaTuLookWeb.Controllers
 			}
 		}
 
-		public IActionResult CuponesCitas()
-		{
-			return View();
-		}
-
 		[HttpGet]
 		public async Task<IActionResult> SolicitarServiciosCita()
 		{
@@ -165,8 +160,8 @@ namespace AgendaTuLookWeb.Controllers
 				};
 
 				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ConsultarDatosConfirmar";
-				
+				string url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ConsultarDatosConfirmar?e=0";
+
 				var response = await http.PostAsJsonAsync(url, model);
 
 				if (response.IsSuccessStatusCode)
@@ -308,7 +303,27 @@ namespace AgendaTuLookWeb.Controllers
             return RedirectToAction("Calendario", "Calendario");
         }
 
-        [HttpPost]
+		[HttpGet]
+		public async Task<IActionResult> DescargarFactura(long id)
+		{
+			var client = _httpClient.CreateClient();
+			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
+			var url = _configuration.GetSection("Variables:urlWebApi").Value + $"Citas/GenerarFacturaDescargableCita?id={id}";
+			var response = await client.GetAsync(url);
+
+			if (!response.IsSuccessStatusCode)
+			{
+				TempData["Error"] = "No se pudo descargar la factura.";
+				return RedirectToAction("DetalleCita", "Citas", new {id});
+			}
+
+			var stream = await response.Content.ReadAsStreamAsync();
+			return File(stream, "application/pdf", $"Factura_{id}.pdf");
+		}
+
+
+		[HttpPost]
         public async Task<IActionResult> CancelarCita([FromForm] long citaId)
         {
             using var http = _httpClient.CreateClient();
@@ -320,92 +335,73 @@ namespace AgendaTuLookWeb.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
-                if (result != null)
+                
+                if (result!.Indicador && result != null)
                 {
-                    if (result.Indicador)
-                    {
-                        TempData["SuccessMessage"] = result.Mensaje ?? "Cita cancelada exitosamente.";
-                        return RedirectToAction("GestionarCitas");
-                    }
-                    else
-                    {
-                        TempData["errorMessage"] = result.Mensaje ?? "Ocurrió un error al cancelar la cita.";
-                        return RedirectToAction("GestionarCitas");
-                    }
+                    TempData["SuccessMessage"] = "Cita cancelada exitosamente";
+                    return RedirectToAction("GestionarCitas");
                 }
             }
 
-            TempData["errorMessage"] = "Ocurrió un error al comunicarse con el servidor.";
+            TempData["errorMessage"] = "Ocurrió un al cancelar la cita";
             return RedirectToAction("GestionarCitas");
         }
 
-        //-----------------------------------------------
+		[HttpGet]
+		public async Task<IActionResult> EditarCitaServicio(long id)
+		{
+			using (var http = _httpClient.CreateClient())
+			{
+				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
 
-        [HttpGet]
-        public async Task<IActionResult> EditarCitaServicio(long id)
-        {
-            using (var http = _httpClient.CreateClient())
-            {
-                // Verificar si la cita es editable
-                http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-                var editableUrl = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/VerificarCitaEditable";
+				var editableUrl = _configuration["Variables:urlWebApi"] + "Citas/VerificarCitaEditable";
+				var response = await http.PostAsJsonAsync(editableUrl, new { CitaId = id });
+				var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
 
-                var editableResponse = await http.PostAsJsonAsync(editableUrl, new { CitaId = id });
+				if (!response.IsSuccessStatusCode || result == null || !result.Indicador)
+				{
+					TempData["errorMessage"] = !response.IsSuccessStatusCode
+						? "Se presentó un error al solicitar editar la cita."
+						: "Lo sentimos. No se puede editar citas con menos de 24 horas de anticipación.";
 
-                if (!editableResponse.IsSuccessStatusCode)
-                {
-                    TempData["errorMessage"] = "Se presentó un error al solicitar editar la cita.";
-                    return RedirectToAction("GestionarCitas");
-                }
+					return RedirectToAction("GestionarCitas");
+				}
 
-                var editableResult = await editableResponse.Content.ReadFromJsonAsync<RespuestaModel>();
-                if (editableResult == null || !editableResult.Indicador)
-                {
-                    TempData["errorMessage"] = "Lo sentimos. No se puede editar citas con menos de 24 horas de anticipación.";
-                    return RedirectToAction("GestionarCitas");
-                }
+				// Obtener info de cita
+				var url = _configuration["Variables:urlWebApi"] + "Citas/ObtenerCitaParaEditar";
+				response = await http.PostAsJsonAsync(url, new { CitaId = id });
 
-                // Obtener información de la cita
-                var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ObtenerCitaParaEditar";
-                var response = await http.PostAsJsonAsync(url, new { CitaId = id });
+				if (response.IsSuccessStatusCode)
+				{
+					result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
+					if (result?.Indicador == true && result.Datos != null)
+					{
+						var cita = JsonSerializer.Deserialize<CitasModel>((JsonElement)result.Datos!);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<RespuestaModel>();
-                    if (result != null && result.Indicador && result.Datos != null)
-                    {
-                        var cita = JsonSerializer.Deserialize<CitasModel>((JsonElement)result.Datos!);
+						// Guardar info clave en ViewBag
+						ViewBag.CitaId = cita.CitaId;
+						ViewBag.ServicioActual = cita.Servicio;
 
-                        if (cita == null || cita.Servicio == null)
-                        {
-                            TempData["errorMessage"] = "No se pudo cargar la información para editar la cita";
-                            return RedirectToAction("GestionarCitas");
-                        }
+						var serviciosResponse = await http.GetAsync(_configuration["Variables:urlWebApi"] + "Servicios/GestionarServicios");
+						if (serviciosResponse.IsSuccessStatusCode)
+						{
+							var serviciosResult = await serviciosResponse.Content.ReadFromJsonAsync<RespuestaModel>();
+							if (serviciosResult?.Indicador == true && serviciosResult.Datos != null)
+							{
+								var servicios = JsonSerializer.Deserialize<List<ServicioModel>>((JsonElement)serviciosResult.Datos!);
+								return View(servicios);
+							}
+						}
+					}
+				}
 
-                        // Guardar el precio original
-                        cita.PrecioOriginal = cita.Servicio.Precio;
+				TempData["errorMessage"] = "No se pudo cargar la información para editar la cita";
+				return RedirectToAction("GestionarCitas");
+			}
+		}
 
-                        // Obtener lista de servicios
-                        var serviciosResponse = await http.GetAsync(_configuration.GetSection("Variables:urlWebApi").Value + "Servicios/GestionarServicios");
-                        if (serviciosResponse.IsSuccessStatusCode)
-                        {
-                            var serviciosResult = await serviciosResponse.Content.ReadFromJsonAsync<RespuestaModel>();
-                            if (serviciosResult != null && serviciosResult.Indicador && serviciosResult.Datos != null)
-                            {
-                                var servicios = JsonSerializer.Deserialize<List<ServicioModel>>((JsonElement)serviciosResult.Datos!);
-                                ViewBag.Servicios = servicios ?? new List<ServicioModel>();
-                                return View(cita);
-                            }
-                        }
-                    }
-                }
 
-                TempData["errorMessage"] = "No se pudo cargar la información para editar la cita";
-                return RedirectToAction("GestionarCitas");
-            }
-        }
-
-        [HttpGet]
+		[HttpGet]
         public async Task<IActionResult> EditarFechaHora(long id, long sn, long sa)
         {
             using (var http = _httpClient.CreateClient())
@@ -434,12 +430,6 @@ namespace AgendaTuLookWeb.Controllers
                             if (servicioResult != null && servicioResult.Indicador)
                             {
                                 var servicioActual = JsonSerializer.Deserialize<ServicioModel>((JsonElement)servicioResult.Datos!);
-
-                                // Guardar el precio original del servicio antes de cualquier cambio
-                                if (cita.PrecioOriginal == 0)
-                                {
-                                    cita.PrecioOriginal = cita.Servicio.Precio;
-                                }
 
                                 // Actualizar el servicio en la cita
                                 cita.Servicio = servicioActual;
@@ -478,7 +468,7 @@ namespace AgendaTuLookWeb.Controllers
 				};
 
 				http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-				var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ConsultarDatosConfirmar";
+				string url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/ConsultarDatosConfirmar?e=1";
 
 				var response = await http.PostAsJsonAsync(url, model);
 
@@ -507,7 +497,7 @@ namespace AgendaTuLookWeb.Controllers
 				if (Archivos != null && Archivos.Length > 0)
 				{
 					// Eliminar imagen anterior si existe
-					if (!string.IsNullOrEmpty(model.MetodoPago.Comprobante)) // Esto no va a llegar porque no lo hemos traido, por si ya tiene
+					if (!string.IsNullOrEmpty(model.MetodoPago.Comprobante))
 					{
 						_pictures.EliminarImagen(model.MetodoPago.Comprobante);
 					}

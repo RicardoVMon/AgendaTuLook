@@ -12,16 +12,9 @@
                 <h1 class="display-4">Editar fecha y hora de la cita</h1>
                 <p class="text-muted">Seleccione un nuevo día y horario para el servicio.</p>
                 <div class="alert alert-info">
-                    <strong>Servicio seleccionado:</strong> @Model.Servicio.NombreServicio:  ₡@Model.Servicio.Precio
-                    @if (Model.Servicio.Precio != Model.PrecioOriginal)
-                    {
-                        <br />
-                        <span class="@(Model.Servicio.Precio > Model.PrecioOriginal ? "text-danger" : "text-success")"></span>
-                    }
-                </div>
-                <div class="alert alert-warning">
-                    <strong>Fecha Actual de la Cita:</strong> @Model.Fecha.ToString("dd/MM/yyyy")
-                    <strong>Hora Actual de la Cita:</strong> @Model.HoraInicio
+                    <strong>Servicio seleccionado:</strong> @Model.Servicio.NombreServicio:  ₡@Model.Servicio.Precio <br />
+                    <strong>Fecha Actual de la Cita:</strong> @Model.Fecha.ToString("dddd, dd 'de' MMMM 'del' yyyy", new System.Globalization.CultureInfo("es-ES")) <br />
+                    <strong>Hora Actual de la Cita:</strong> @DateTime.Today.Add(Model.HoraInicio).ToString("hh:mm tt")
                 </div>
             </div>
         </div>

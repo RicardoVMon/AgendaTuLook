@@ -7,92 +7,126 @@
 
 <div class="pb-4">
     <div class="row">
-        <div class="col-12">
-            <h1 class="display-4">Detalle cita</h1>
+        <div class="col-12 mb-4">
+            <h1 class="display-4">Detalle de cita</h1>
+            <div class="text-muted px-0">A continuación se muestra la información relevante de la cita agendada.</div>
         </div>
     </div>
 
     <div class="row">
         <div class="col-12">
             <div class="bg-white rounded rounded-1 p-3 mb-3">
-                <form method="post">
-                    <!-- Info del Cliente -->
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4 class="mb-0">
-                                <i class="fas fa-user-circle mr-2" style="color:#321914"></i> Información Personal
-                            </h4>
-
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Nombre:</label>
-                                <input class="form-control bg-light py-2" value="@Model.NombreUsuario" readonly />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Correo electrónico:</label>
-                                <input class="form-control bg-light py-2" value="@Model.Correo" readonly />
-                            </div>
-                            @if (!string.IsNullOrEmpty(Model.Telefono))
-                            {
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">Teléfono:</label>
-                                    <div class="form-control bg-light py-2" readonly>@Model.Telefono</div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- Detalles cita -->
-                    <div class="mb-4">
-                        <h4 class="mb-3">
-                            <i class="fas fa-calendar-alt mr-2" style="color:#321914"></i> Detalles de la Cita
-                        </h4>
-                        <div class="row">
-                            <input type="hidden" name="ServicioId" value="@Model.ServicioId" />
-                            <input type="hidden" name="UsuarioId" value="@Model.UsuarioId" />
-                            <input type="hidden" name="DiaTrabajoId" value="@Model.DiaTrabajoId" />
-                            <input type="hidden" name="Fecha" value="@Model.Fecha.ToString("yyyy-MM-dd")" />
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Servicio:</label>
-                                <input class="form-control bg-light py-2" value="@Model.NombreServicio" readonly />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Precio (IVAI):</label>
-                                <input class="form-control bg-light py-2" value="@Model.Precio.ToString("C0")" readonly />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Duración (minutos):</label>
-                                <div class="form-control bg-light py-2" readonly>@Model.Duracion</div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Fecha:</label>
-                                <div class="form-control bg-light py-2">@Model.Fecha.ToString("dd/MM/yyyy")</div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Hora de Inicio:</label>
-                                <input class="form-control bg-light py-2" value="@Model.HoraInicio" readonly />
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Hora de Finalización:</label>
-                                <input class="form-control bg-light py-2" value="@Model.HoraFin" readonly />
-                            </div>
-                        </div>
-                    </div>
-                </form>
-                <div class="text-end mt-3">
-                    <a asp-action="Calendario" asp-controller="Calendario" class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-left me-1"></i> Regresar al Calendario
+                <div class="text-end">
+                    <a asp-controller="Citas" asp-action="DescargarFactura" asp-route-id="@Model.CitaId" class="btn btn-dark ">
+                        Descargar Factura PDF
                     </a>
                 </div>
 
+                <!-- Info del Cliente -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">
+                            <i class="fas fa-user-circle mr-2" style="color:#321914"></i> Información Personal
+                        </h4>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Nombre:</label>
+                            <input class="form-control bg-light py-2" value="@Model.NombreUsuario" readonly />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Correo electrónico:</label>
+                            <input class="form-control bg-light py-2" value="@Model.Correo" readonly />
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Telefono))
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Teléfono:</label>
+                                <div class="form-control bg-light py-2" readonly>@Model.Telefono</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Detalles cita -->
+                <div class="mb-4">
+                    <h4 class="mb-3">
+                        <i class="fas fa-calendar-alt mr-2" style="color:#321914"></i> Detalles de la Cita
+                    </h4>
+                    <div class="row">
+                        <input type="hidden" name="ServicioId" value="@Model.ServicioId" />
+                        <input type="hidden" name="UsuarioId" value="@Model.UsuarioId" />
+                        <input type="hidden" name="DiaTrabajoId" value="@Model.DiaTrabajoId" />
+                        <input type="hidden" name="Fecha" value="@Model.Fecha.ToString("yyyy-MM-dd")" />
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Servicio:</label>
+                            <input class="form-control bg-light py-2" value="@Model.NombreServicio" readonly />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Precio (IVAI):</label>
+                            <input class="form-control bg-light py-2" value="@Model.Precio.ToString("C0", new System.Globalization.CultureInfo("es-CR"))" readonly />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Duración (minutos):</label>
+                            <div class="form-control bg-light py-2" readonly>@Model.Duracion</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Fecha:</label>
+                            <div class="form-control bg-light py-2">@Model.Fecha.ToString("dddd, dd 'de' MMMM 'del' yyyy", new System.Globalization.CultureInfo("es-ES"))</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Hora de Inicio:</label>
+                            <input class="form-control bg-light py-2" value="@DateTime.Today.Add(Model.HoraInicio).ToString("hh:mm tt")" readonly />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Hora de Finalización (Con Amortiguación):</label>
+                            <input class="form-control bg-light py-2" value="@DateTime.Today.Add(Model.HoraFin).ToString("hh:mm tt")" readonly />
+                        </div>
+                    </div>
+                </div>
+                <!-- Sección de Pago -->
+                <div class="mb-4">
+                    <h4 class="mb-3">
+                        <i class="fas fa-credit-card mr-2" style="color:#321914"></i> Información de Pago
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Fecha de Pago:</label>
+                            <div class="form-control bg-light py-2">
+                                @(Model.FechaPago != DateTime.MinValue ? Model.FechaPago.ToString("dd/MM/yyyy hh:mm tt") : "No registrado")
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Método de Pago:</label>
+                            <div class="form-control bg-light py-2">
+                                @(!string.IsNullOrEmpty(Model.NombreMetodoPago) ? Model.NombreMetodoPago : "No registrado")
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Comprobante:</label>
+                            <div class="bg-light p-3 rounded text-center">
+                                @if (!string.IsNullOrEmpty(Model.Comprobante))
+                                {
+                                    <img src="@Model.Comprobante" alt="Comprobante de pago" class="img-fluid rounded shadow-sm" style="max-height: 300px;" />
+                                }
+                                else
+                                {
+                                    <p class="mb-0 text-muted">No registrado</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

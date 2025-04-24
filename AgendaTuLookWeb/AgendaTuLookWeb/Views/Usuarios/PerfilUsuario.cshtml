@@ -22,22 +22,19 @@
                         <div class="position-absolute" style="top: -75px; left: 50%; transform: translateX(-50%);">
                             <div class="rounded-circle bg-white p-2 shadow-sm d-inline-block">
                                 <div style="width: 150px; height: 150px; overflow: hidden; border-radius: 50%;">
-                                    <img src="https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
+                                    <img src="@Model.Imagen"
                                          class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
                                 </div>
                             </div>
                         </div>
                         <!-- Profile info with proper spacing from the profile picture -->
                         <div class="mt-5 pt-4">
-                            <h4 class="card-title mb-1">@Model.Nombre</h4>
+                            <h4 class="card-title mb-1 mt-3">@Model.Nombre</h4>
                             <p class="text-muted mb-3">@Model.Correo</p>
                             <div class="d-flex justify-content-center gap-2">
-                                <a class="btn btn-outline-warning" asp-action="EditarPerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">
+                                <a class="btn btn-primary" asp-action="EditarPerfilUsuario" asp-controller="Usuarios" asp-route-Id="@usuarioId">
                                     <i data-feather="edit-2" class="feather-sm me-1"></i> Editar Perfil
                                 </a>
-                                <button class="btn btn-outline-primary" type="button" id="changePhotoBtn">
-                                    <i data-feather="camera" class="feather-sm me-1"></i> Cambiar Foto
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -98,38 +95,3 @@
         </div>
     </div>
 </section>
-
-<!-- Input file hidden for profile picture upload -->
-<input type="file" id="profilePictureInput" style="display: none;" accept="image/*">
-
-<!-- Add JavaScript for functionality -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Profile picture upload
-        const changePhotoBtn = document.getElementById('changePhotoBtn');
-        const profilePictureInput = document.getElementById('profilePictureInput');
-
-        if (changePhotoBtn && profilePictureInput) {
-            changePhotoBtn.addEventListener('click', function () {
-                profilePictureInput.click();
-            });
-
-            // Handle file selection - in a real app, you would upload the file to your server
-            profilePictureInput.addEventListener('change', function (e) {
-                if (e.target.files.length > 0) {
-                    // This is just a preview, in a real application you would upload the file
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        document.querySelector('.card-body .rounded-circle img').src = e.target.result;
-                    }
-                    reader.readAsDataURL(e.target.files[0]);
-                }
-            });
-        }
-
-        // Initialize Feather icons if available
-        if (typeof feather !== 'undefined') {
-            feather.replace();
-        }
-    });
-</script>

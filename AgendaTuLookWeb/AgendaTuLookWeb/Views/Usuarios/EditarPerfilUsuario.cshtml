@@ -18,14 +18,21 @@
                     <div class="card-header">
                         <h5 class="card-title mb-0">Detalles de Perfil</h5>
                     </div>
-                    <form asp-action="EditarPerfilUsuario" asp-controller="Usuarios" method="post">
+                    <form asp-action="EditarPerfilUsuario" asp-controller="Usuarios" method="post" enctype="multipart/form-data">
                         <input type="hidden" class="form-control input-lg" asp-for="UsuarioId" value="@usuarioId">
+                        <input type="hidden" class="form-control input-lg" asp-for="Imagen">
+
+                        <input type="file" id="fotoPerfil" name="FotoPerfil" accept="image/*" style="display: none;">
+                        <input type="hidden" id="ImagenHiddenAux">
                         <div class="card-body text-center">
                             <!-- Contenedor centrado -->
                             <div style="width: 160px; height: 160px; margin: auto;" class="mb-2">
-                                <img src="https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
-                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                <img id="fotoPreview" src="@(!string.IsNullOrEmpty(Model.Imagen) ? Model.Imagen : "https://st3.depositphotos.com/9998432/13335/v/450/depositphotos_133352010-stock-illustration-default-placeholder-man-and-woman.jpg")"  
+                                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                             </div>
+                            <button class="btn btn-primary" type="button" id="cambiarFoto">
+                                <i data-feather="camera" class="feather-sm me-1"></i> Cambiar Foto
+                            </button>
                             <h5 class="card-title mb-2 text-start">
                                 <label asp-for="Nombre" class="form-label">Nombre:</label>
                                 <input type="text" class="form-control input-lg" asp-for="Nombre" placeholder="Nombre">
@@ -36,8 +43,8 @@
                             <h5 class="h6 card-title">Contacto</h5>
                             <ul class="list-unstyled mb-0">
                                 <li class="mb-1">
-                                    <label asp-for="Correo" class="form-label">Correo:</label>
-                                    <input type="email" class="form-control input-lg" asp-for="Correo" placeholder="Correo" readonly>
+                                    <label class="form-label">Correo:</label>
+                                    <input type="email" class="form-control input-lg" value="@Model.Correo" placeholder="Correo" readonly>
                                 </li>
                                 <li class="mb-1">
                                     <label asp-for="Telefono" class="form-label">Teléfono:</label>
@@ -67,7 +74,7 @@
                             <!-- Restablecer Contraseña -->
                             <div class="alert alert-warning" role="alert">
                                 <p class="text-center mb-0">
-                                    Actualmente No Cuentas Con Una Contraseña Establecida Debido a Tu Método de Login Principal (Google)
+                                    Actualmente No Cuentas Con Una Contraseña Establecida Debido a Tu Método de Login Principal (Google), Por lo que no podrás desvincular tu cuenta de este método
                                     <br />
                                     Para Establecer Una Contraseña
                                     <a href="javascript:void(0);" onclick="confirmarRecuperacionContrasennia()">Accede a Nuestro Proceso de Recuperación de Contraseña</a>
@@ -76,45 +83,49 @@
                             <hr />
                         }
 
-                        <!-- Restablecer Contraseña -->
-                        <h5 class="card-title">Restablecer Contraseña</h5>
-                        <form asp-action="EditarContrasenniaUsuario" asp-controller="Usuarios" method="post">
-                            <input type="hidden" class="form-control input-lg" asp-for="UsuarioId" value="@usuarioId">
-                            <input type="hidden" class="form-control input-lg" asp-for="Correo" value="@correoUsuario">
-                            <div class="mb-3">
-                                <label for="ContrasenniaActual" class="form-label">Contraseña Actual</label>
-                                <input type="password" class="form-control" id="Contrasennia" name="Contrasennia" asp-for="Contrasennia" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="NuevaContrasennia" class="form-label">Nueva Contraseña</label>
-                                <input type="password" class="form-control" id="NuevaContrasennia" name="NuevaContrasennia" required>
-                                <span asp-validation-for="NuevaContrasennia" class="text-danger"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label for="ConfirmarContrasennia" class="form-label">Confirmar Nueva Contraseña</label>
-                                <input type="password" class="form-control" id="ConfirmarContrasennia" name="ConfirmarContrasennia" required>
-                            </div>
-                            <button type="submit" class="btn btn-outline-primary">Cambiar Contraseña</button>
-                        </form>
-                        <hr />
+                        @if (Model.Contrasennia != null)
+                        {
+                            <!-- Restablecer Contraseña -->
+                            <h5 class="card-title">Restablecer Contraseña</h5>
+                            <form asp-action="EditarContrasenniaUsuario" asp-controller="Usuarios" method="post">
+                                <input type="hidden" class="form-control input-lg" asp-for="UsuarioId" value="@usuarioId">
+                                <input type="hidden" class="form-control input-lg" asp-for="Correo" value="@correoUsuario">
+                                <div class="mb-3">
+                                    <label for="ContrasenniaActual" class="form-label">Contraseña Actual</label>
+                                    <input type="password" class="form-control" id="Contrasennia" name="Contrasennia" asp-for="Contrasennia" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="NuevaContrasennia" class="form-label">Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="NuevaContrasennia" name="NuevaContrasennia" required>
+                                    <span asp-validation-for="NuevaContrasennia" class="text-danger"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="ConfirmarContrasennia" class="form-label">Confirmar Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="ConfirmarContrasennia" name="ConfirmarContrasennia" required>
+                                </div>
+                                <button type="submit" class="btn btn-outline-primary">Cambiar Contraseña</button>
+                            </form>
+                            <hr />
+                        }
+
                         
                         <!-- Vinculación con Google -->
                         @if (proveedorAuth == "Google")
                         {
                             <h5 class="card-title">Vinculación con Google</h5>
                             <div class="d-grid">
-                            
-                                @* Faltan validaciones con respecto a esto *@
-                                <a href="javascript:void(0);" class="btn btn-outline-danger" onclick="confirmarDesvinculacion('@correoUsuario')">
+                                @if (Model.Contrasennia != null)
+                                {
+                                    <a href="javascript:void(0);" class="btn btn-outline-danger" onclick="confirmarDesvinculacion('@correoUsuario')">
                                         <i class="fab fa-google me-2"></i> Desvincular de @correoUsuario
                                     </a>
-                            
-                                @* else *@
-                                @* { *@
-                                @*     <a asp-controller="Autenticacion" asp-action="LoginGoogle" class="btn btn-danger"> *@
-                                @*         <i class="fab fa-google me-2"></i> Vincular Cuenta de Google *@
-                                @*     </a> *@
-                                @* } *@
+                                }
+                                else
+                                {
+                                    <button class="btn btn-outline-danger" disabled>
+                                        <i class="fab fa-google me-2"></i> No puedes desvincular sin una contraseña
+                                    </button>
+                                }
                             </div>
                         }
                     </div>
@@ -161,4 +172,30 @@
             }
         });
     }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const cambiarFotoBtn = document.getElementById("cambiarFoto");
+        const inputFile = document.getElementById("fotoPerfil"); // input file oculto
+        const inputImagenHidden = document.getElementById("ImagenHiddenAux"); // input hidden
+        const imagenPreview = document.getElementById("fotoPreview"); // imagen visible
+
+        cambiarFotoBtn.addEventListener("click", function () {
+            inputFile.click();
+        });
+
+        inputFile.addEventListener("change", function () {
+            const file = inputFile.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    // Actualizar preview y valor oculto
+                    imagenPreview.src = e.target.result;
+                    inputImagenHidden.value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
 </script>

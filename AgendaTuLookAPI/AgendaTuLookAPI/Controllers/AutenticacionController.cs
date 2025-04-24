@@ -94,7 +94,7 @@ namespace AgendaTuLookAPI.Controllers
 				if (result != null)
 				{
                     result.Token = GenerarToken(result.UsuarioId, result.Correo!, result.Nombre!);
-
+					result.Imagen = result.Imagen != null ? result.Imagen : "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
 					respuesta.Indicador = true;
 					respuesta.Datos = result;
 				}
@@ -157,6 +157,7 @@ namespace AgendaTuLookAPI.Controllers
 					model.UsuarioId = result!.UsuarioId;
                     model.Nombre = result.Nombre;
 					model.RolId = result.RolId;
+					model.Imagen = result.Imagen != null ? result.Imagen : "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
 					model.Token = GenerarToken(result.UsuarioId, model.Correo!, model.Nombre!);
 					respuesta.Indicador = true;
 					respuesta.Datos = model;

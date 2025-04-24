@@ -24,23 +24,32 @@ namespace AgendaTuLookAPI.Servicios
 		}
 
 		// Función de correo para código de verificación
-		public void EnviarCorreoCodigoVerificacion(string correo, string codigoVerificacion, DateTime fechaVencimiento)
+		public bool EnviarCorreoCodigoVerificacion(string correo, string codigoVerificacion, DateTime fechaVencimiento)
 		{
-			string cuenta = _configuration["CorreoNotificaciones"]!;
-			string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+			try
+			{
+				string cuenta = _configuration["CorreoNotificaciones"]!;
+				string contrasenna = _configuration["ContrasennaNotificaciones"]!;
 
-			MailMessage message = new MailMessage();
-			message.From = new MailAddress(cuenta);
-			message.To.Add(new MailAddress(correo));
-			message.Subject = "Código de Verificación - Recuperación de Contraseña";
-			message.Body = GenerarContenidoCorreoCodigoVerificacion(codigoVerificacion, fechaVencimiento);
-			message.Priority = MailPriority.Normal;
-			message.IsBodyHtml = true;
+				MailMessage message = new MailMessage();
+				message.From = new MailAddress(cuenta);
+				message.To.Add(new MailAddress(correo));
+				message.Subject = "Código de Verificación - Recuperación de Contraseña";
+				message.Body = GenerarContenidoCorreoCodigoVerificacion(codigoVerificacion, fechaVencimiento);
+				message.Priority = MailPriority.Normal;
+				message.IsBodyHtml = true;
 
-			SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-			client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
-			client.EnableSsl = true;
-			client.Send(message);
+				SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+				client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+				client.EnableSsl = true;
+				client.Send(message);
+
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		public string GenerarCodigoVerificacion()
@@ -78,30 +87,40 @@ namespace AgendaTuLookAPI.Servicios
 		}
 
 		// Función de correo para confirmación de cita
-		public void EnviarCorreoFacturaCita(string correo, string nombreCliente, string nombreServicio, double precio, string metodoPago, string fecha, string horaInicio, string horaFin)
+		public bool EnviarCorreoFacturaCita(string correo, string nombreCliente, string nombreServicio, double precio, string metodoPago, string fecha, string horaInicio, string horaFin)
 		{
-			string cuenta = _configuration["CorreoNotificaciones"]!;
-			string contrasenna = _configuration["ContrasennaNotificaciones"]!;
-			MailMessage message = new MailMessage();
-			message.From = new MailAddress(cuenta);
-			message.To.Add(new MailAddress(correo));
-			message.Subject = "Confirmación de Cita - AgendaTuLook";
-			message.Body = GenerarContenidoCorreoFacturaCita(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
 
-			// Generar Meeting iCalendar
-			string calendarContent = GenerateICSInviteBody(nombreCliente, correo ,nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
-			message.Attachments.Add(new Attachment(new MemoryStream(Encoding.UTF8.GetBytes(calendarContent)), "cita.ics", "text/calendar"));
+			try
+			{
+				string cuenta = _configuration["CorreoNotificaciones"]!;
+				string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+				MailMessage message = new MailMessage();
+				message.From = new MailAddress(cuenta);
+				message.To.Add(new MailAddress(correo));
+				message.Subject = "Confirmación de Cita - AgendaTuLook";
+				message.Body = GenerarContenidoCorreoFacturaCita(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
 
-			// Adjunto factura PDF
-			var pdfFactura = GenerarFacturaPDF(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
-			message.Attachments.Add(new Attachment(pdfFactura, "Factura.pdf", "application/pdf"));
+				// Generar Meeting iCalendar
+				string calendarContent = GenerateICSInviteBody(nombreCliente, correo ,nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
+				message.Attachments.Add(new Attachment(new MemoryStream(Encoding.UTF8.GetBytes(calendarContent)), "cita.ics", "text/calendar"));
 
-			message.Priority = MailPriority.Normal;
-			message.IsBodyHtml = true;
-			SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-			client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
-			client.EnableSsl = true;
-			client.Send(message);
+				// Adjunto factura PDF
+				var pdfFactura = GenerarFacturaPDF(nombreCliente, nombreServicio, precio, metodoPago, fecha, horaInicio, horaFin);
+				message.Attachments.Add(new Attachment(pdfFactura, "Factura.pdf", "application/pdf"));
+
+				message.Priority = MailPriority.Normal;
+				message.IsBodyHtml = true;
+				SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+				client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+				client.EnableSsl = true;
+				client.Send(message);
+				return true;
+
+			} catch
+			{
+				return false;
+			}
+
 		}
 
 		public string GenerarContenidoCorreoFacturaCita(string nombreCliente, string nombreServicio, double precio, string metodoPago, string fecha, string horaInicio, string horaFin)
@@ -332,24 +351,32 @@ namespace AgendaTuLookAPI.Servicios
 			return random.Next(10000000, 99999999).ToString();
 		}
 
-        public void EnviarCorreoCancelacion(string correo, string nombreCliente, string nombreServicio, string fecha, 
+        public bool EnviarCorreoCancelacion(string correo, string nombreCliente, string nombreServicio, string fecha, 
 			string horaInicio, string horaFin, string metodoPago, decimal precio, bool aplicaReembolso)
         {
 
-            string cuenta = _configuration["CorreoNotificaciones"]!;
-            string contrasenna = _configuration["ContrasennaNotificaciones"]!;
-            MailMessage message = new MailMessage();
-            message.From = new MailAddress(cuenta);
-            message.To.Add(new MailAddress(correo));
-            message.Subject = "Cancelación de Cita - AgendaTuLook";
-            message.Body = GenerarContenidoCorreoCancelacion(nombreCliente, nombreServicio, fecha, horaInicio, horaFin,
-                                                                metodoPago, precio, aplicaReembolso);
-            message.Priority = MailPriority.Normal;
-            message.IsBodyHtml = true;
-            SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-            client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
-            client.EnableSsl = true;
-            client.Send(message);
+			try
+			{
+				string cuenta = _configuration["CorreoNotificaciones"]!;
+				string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+				MailMessage message = new MailMessage();
+				message.From = new MailAddress(cuenta);
+				message.To.Add(new MailAddress(correo));
+				message.Subject = "Cancelación de Cita - AgendaTuLook";
+				message.Body = GenerarContenidoCorreoCancelacion(nombreCliente, nombreServicio, fecha, horaInicio, horaFin,
+																	metodoPago, precio, aplicaReembolso);
+				message.Priority = MailPriority.Normal;
+				message.IsBodyHtml = true;
+				SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+				client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+				client.EnableSsl = true;
+				client.Send(message);
+				return true;
+			} catch
+			{
+				return false;
+			}
+
         }
         public string GenerarContenidoCorreoCancelacion(string nombreCliente, string nombreServicio, string fecha, string horaInicio, 
 			string horaFin, string metodoPago, decimal precio, bool aplicaReembolso)
@@ -423,7 +450,7 @@ namespace AgendaTuLookAPI.Servicios
 			</div>";
         }
 
-        public void EnviarCorreoFacturaCitaEdicion(
+        public bool EnviarCorreoFacturaCitaEdicion(
             string correo,
             string nombreCliente,
             string nombreServicio,
@@ -434,47 +461,55 @@ namespace AgendaTuLookAPI.Servicios
             string horaFin,
             bool servicioCambiado)
         {
-            string cuenta = _configuration["CorreoNotificaciones"]!;
-            string contrasenna = _configuration["ContrasennaNotificaciones"]!;
+			try
+			{
+				string cuenta = _configuration["CorreoNotificaciones"]!;
+				string contrasenna = _configuration["ContrasennaNotificaciones"]!;
 
-            MailMessage message = new MailMessage();
-            message.From = new MailAddress(cuenta);
-            message.To.Add(new MailAddress(correo));
-            message.Subject = servicioCambiado ?
-                "Confirmación de Cambios en Cita - Nueva Factura" :
-                "Confirmación de Cambios en Cita";
+				MailMessage message = new MailMessage();
+				message.From = new MailAddress(cuenta);
+				message.To.Add(new MailAddress(correo));
+				message.Subject = servicioCambiado ?
+					"Confirmación de Cambios en Cita - Nueva Factura" :
+					"Confirmación de Cambios en Cita";
 
-            message.Body = GenerarContenidoCorreoCitaEdicion(
-                nombreCliente, nombreServicio, precio, metodoPago,
-                fecha, horaInicio, horaFin, servicioCambiado);
+				message.Body = GenerarContenidoCorreoCitaEdicion(
+					nombreCliente, nombreServicio, precio, metodoPago,
+					fecha, horaInicio, horaFin, servicioCambiado);
 
-            // Generar Meeting iCalendar (siempre se envía)
-            string calendarContent = GenerateICSInviteBody(
-                nombreCliente, correo, nombreServicio, precio,
-                metodoPago, fecha, horaInicio, horaFin);
+				// Generar Meeting iCalendar (siempre se envía)
+				string calendarContent = GenerateICSInviteBody(
+					nombreCliente, correo, nombreServicio, precio,
+					metodoPago, fecha, horaInicio, horaFin);
 
-            message.Attachments.Add(new Attachment(
-                new MemoryStream(Encoding.UTF8.GetBytes(calendarContent)),
-                "cita.ics", "text/calendar"));
+				message.Attachments.Add(new Attachment(
+					new MemoryStream(Encoding.UTF8.GetBytes(calendarContent)),
+					"cita.ics", "text/calendar"));
 
-            // Solo adjuntar factura PDF si el servicio cambió
-            if (servicioCambiado)
-            {
-                var pdfFactura = GenerarFacturaPDF(
-                    nombreCliente, nombreServicio, precio,
-                    metodoPago, fecha, horaInicio, horaFin);
+				// Solo adjuntar factura PDF si el servicio cambió
+				if (servicioCambiado)
+				{
+					var pdfFactura = GenerarFacturaPDF(
+						nombreCliente, nombreServicio, precio,
+						metodoPago, fecha, horaInicio, horaFin);
 
-                message.Attachments.Add(new Attachment(
-                    pdfFactura, "Factura.pdf", "application/pdf"));
-            }
+					message.Attachments.Add(new Attachment(
+						pdfFactura, "Factura.pdf", "application/pdf"));
+				}
 
-            message.Priority = MailPriority.Normal;
-            message.IsBodyHtml = true;
+				message.Priority = MailPriority.Normal;
+				message.IsBodyHtml = true;
 
-            SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-            client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
-            client.EnableSsl = true;
-            client.Send(message);
+				SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+				client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+				client.EnableSsl = true;
+				client.Send(message);
+				return true;
+			} catch
+			{
+				return false;
+			}
+
         }
 
         // Método para generar contenido de correo con información de cambios
@@ -574,7 +609,5 @@ namespace AgendaTuLookAPI.Servicios
 
             return contenido;
         }
-
-
     }
 }

@@ -53,7 +53,7 @@ namespace AgendaTuLookAPI.Controllers
 
 		[HttpPost]
 		[Route("ConsultarDatosConfirmar")]
-		public IActionResult ConsultarDatosConfirmar(CitaModel model)
+		public IActionResult ConsultarDatosConfirmar([FromBody] CitaModel model, [FromQuery] int e)
 		{
 
 			using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
@@ -65,6 +65,12 @@ namespace AgendaTuLookAPI.Controllers
 				{
 					// Proceso para obtener los metodos de pago
 					var metodosPago = context.Query<MetodoPagoModel>("ObtenerMetodosPago");
+
+					var comprobante = "";
+					if (e == 1)
+					{
+						comprobante = context.QueryFirstOrDefault<string>("ObtenerFacturaCita", new { model.CitaId });
+					}
 
 					// Proceso para redondear siguiente hora
 					var firstInfo = informacionConfirmar.First();
@@ -92,10 +98,14 @@ namespace AgendaTuLookAPI.Controllers
 							NombreServicio = firstInfo.NombreServicio,
 							Precio = (double)firstInfo.Precio,
 							Duracion = firstInfo.Duracion,
-                            CambioServicio = model.Servicio.CambioServicio
+                            CambioServicio = model.Servicio.CambioServicio,
 						},
 						DiaTrabajoId = firstInfo.DiaTrabajoId,
 						MetodosPago = metodosPago.ToList(),
+						MetodoPago = new MetodoPagoModel
+						{
+							Comprobante = comprobante
+						},
 					};
 
 					respuesta.Indicador = true;
@@ -131,16 +141,16 @@ namespace AgendaTuLookAPI.Controllers
 					});
 
 				// Enviar correo
-				_correos.EnviarCorreoFacturaCita(model.Usuario.Correo!, model.Usuario.Nombre!, model.Servicio.NombreServicio!, model.Servicio.Precio!, model.MetodoPago.Nombre!, model.Fecha.ToString("dd/MM/yyyy"), model.HoraInicio.ToString(@"hh\:mm"), model.HoraFin.ToString(@"hh\:mm"));
+				bool respuestaCorreo = _correos.EnviarCorreoFacturaCita(model.Usuario.Correo!, model.Usuario.Nombre!, model.Servicio.NombreServicio!, model.Servicio.Precio!, model.MetodoPago.Nombre!, model.Fecha.ToString("dd/MM/yyyy"), model.HoraInicio.ToString(@"hh\:mm"), model.HoraFin.ToString(@"hh\:mm"));
 
-				if (resultado > 0)
+				if (resultado > 0 && respuestaCorreo)
 				{
 					respuesta.Indicador = true;
 					return Ok(respuesta);
 				}
 
 				respuesta.Indicador = false;
-				respuesta.Mensaje = "No se pudieron obtener los datos de confirmación";
+				respuesta.Mensaje = "Ha ocurrido un error en el proceso de confirmación de cita, por favor contácte al equipo de soporte si sigue ocurriendo";
 				return Ok(respuesta);
 			}
 
@@ -204,7 +214,36 @@ namespace AgendaTuLookAPI.Controllers
             }
         }
 
-        [HttpPost]
+		[HttpGet]
+		[Route("GenerarFacturaDescargableCita")]
+		public IActionResult GenerarFacturaDescargableCita(long id)
+		{
+			using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+			{
+				var cita = connection.QueryFirstOrDefault<CitaDetalleModel>("ObtenerDetalleCita", new { CitaId = id }, commandType: CommandType.StoredProcedure);
+
+				if (cita == null)
+				{
+					return NotFound("No se encontró la cita.");
+				}
+
+				var pdfStream = _correos.GenerarFacturaPDF(
+					cita.NombreUsuario,
+					cita.NombreServicio,
+					(double)cita.Precio,
+					cita.NombreMetodoPago,
+					cita.Fecha.ToString("dd/MM/yyyy"),
+					DateTime.Today.Add(cita.HoraInicio).ToString("hh:mm tt"),
+					DateTime.Today.Add(cita.HoraFin).ToString("hh:mm tt")
+				);
+
+				pdfStream.Position = 0;
+				return File(pdfStream, "application/pdf", $"Factura_{id}.pdf");
+			}
+		}
+
+
+		[HttpPost]
         [Route("Cancelar")]
         public IActionResult CancelarCita(long citaId)
         {
@@ -212,26 +251,34 @@ namespace AgendaTuLookAPI.Controllers
             {
 
                 var datosCita = context.QueryFirstOrDefault("ObtenerCitaParaEditar", new { CitaId = citaId });
-                var aplicaReembolso = datosCita.Fecha.AddDays(-1) >= DateTime.Now;
+                var aplicaReembolso = datosCita!.Fecha.AddDays(-1) >= DateTime.Now;
 
                 var resultado = context.Execute("CancelarCita", new { CitaId = citaId });
                 
-                _correos.EnviarCorreoCancelacion(datosCita.UsuarioCorreo, datosCita.UsuarioNombre, datosCita.NombreServicio,
+                bool resultadoCorreo = _correos.EnviarCorreoCancelacion(datosCita.UsuarioCorreo, datosCita.UsuarioNombre, datosCita.NombreServicio,
                                                 datosCita.Fecha.ToString("dd/MM/yyyy"),
                                                 ((TimeSpan)datosCita.HoraInicio).ToString(@"hh\:mm"),
                                                 ((TimeSpan)datosCita.HoraFin).ToString(@"hh\:mm"),
                                                 datosCita.MetodoPagoNombre ?? "No especificado",
                                                 Convert.ToDecimal(datosCita.Precio),
                                                 aplicaReembolso);
-                return Ok(new RespuestaModel
+
+				if (resultado > 0 && resultadoCorreo)
+				{
+					return Ok(new RespuestaModel
+					{
+						Indicador = true,
+						Mensaje = "Cita cancelada exitosamente"
+					});
+				}
+
+				return Ok(new RespuestaModel
                 {
-                    Indicador = true,
-                    Mensaje = "Cita cancelada exitosamente"
+                    Indicador = false,
+                    Mensaje = "Ha ocurrido un error al cancelar la cita"
                 });
             }
         }
-
-        //------------------------------------------------
 
         [HttpPost]
         [Route("ObtenerCitaParaEditar")]
