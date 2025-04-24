@@ -299,7 +299,7 @@ namespace AgendaTuLookWeb.Controllers
                 }
             }
 
-            TempData["Error"] = "No se pudo cargar el detalle de la cita.";
+            TempData["errorMessage"] = "No se pudo cargar el detalle de la cita.";
             return RedirectToAction("Calendario", "Calendario");
         }
 
@@ -314,7 +314,7 @@ namespace AgendaTuLookWeb.Controllers
 
 			if (!response.IsSuccessStatusCode)
 			{
-				TempData["Error"] = "No se pudo descargar la factura.";
+				TempData["errorMessage"] = "No se pudo descargar la factura.";
 				return RedirectToAction("DetalleCita", "Citas", new {id});
 			}
 
@@ -324,13 +324,13 @@ namespace AgendaTuLookWeb.Controllers
 
 
 		[HttpPost]
-        public async Task<IActionResult> CancelarCita([FromForm] long citaId)
+        public async Task<IActionResult> CancelarCita(long citaId)
         {
             using var http = _httpClient.CreateClient();
             http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
 
-            var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/Cancelar";
-            var response = await http.PostAsJsonAsync(url, citaId);
+            var url = _configuration.GetSection("Variables:urlWebApi").Value + "Citas/Cancelar?id=" + citaId;
+            var response = await http.GetAsync(url);
 
             if (response.IsSuccessStatusCode)
             {

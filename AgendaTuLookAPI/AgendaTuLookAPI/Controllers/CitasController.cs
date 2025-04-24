@@ -231,7 +231,7 @@ namespace AgendaTuLookAPI.Controllers
 					cita.NombreUsuario,
 					cita.NombreServicio,
 					(double)cita.Precio,
-					cita.NombreMetodoPago,
+					cita.NombreMetodoPago != null ? cita.NombreMetodoPago : "No disponible (Cita Cancelada)",
 					cita.Fecha.ToString("dd/MM/yyyy"),
 					DateTime.Today.Add(cita.HoraInicio).ToString("hh:mm tt"),
 					DateTime.Today.Add(cita.HoraFin).ToString("hh:mm tt")
@@ -243,25 +243,26 @@ namespace AgendaTuLookAPI.Controllers
 		}
 
 
-		[HttpPost]
+		[HttpGet]
         [Route("Cancelar")]
-        public IActionResult CancelarCita(long citaId)
+        public IActionResult CancelarCita(long id)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
 
-                var datosCita = context.QueryFirstOrDefault("ObtenerCitaParaEditar", new { CitaId = citaId });
+                var datosCita = context.QueryFirstOrDefault("ObtenerCitaParaEditar", new { CitaId = id });
                 var aplicaReembolso = datosCita!.Fecha.AddDays(-1) >= DateTime.Now;
 
-                var resultado = context.Execute("CancelarCita", new { CitaId = citaId });
-                
-                bool resultadoCorreo = _correos.EnviarCorreoCancelacion(datosCita.UsuarioCorreo, datosCita.UsuarioNombre, datosCita.NombreServicio,
-                                                datosCita.Fecha.ToString("dd/MM/yyyy"),
-                                                ((TimeSpan)datosCita.HoraInicio).ToString(@"hh\:mm"),
-                                                ((TimeSpan)datosCita.HoraFin).ToString(@"hh\:mm"),
-                                                datosCita.MetodoPagoNombre ?? "No especificado",
-                                                Convert.ToDecimal(datosCita.Precio),
-                                                aplicaReembolso);
+                var resultado = context.Execute("CancelarCita", new { CitaId = id });
+
+				bool resultadoCorreo = _correos.EnviarCorreoCancelacion(datosCita.UsuarioCorreo, datosCita.UsuarioNombre, datosCita.NombreServicio,
+												datosCita.Fecha.ToString("dd/MM/yyyy"),
+												((TimeSpan)datosCita.HoraInicio).ToString(@"hh\:mm"),
+												((TimeSpan)datosCita.HoraFin).ToString(@"hh\:mm"),
+												datosCita.MetodoPagoNombre ?? "No especificado",
+												Convert.ToDecimal(datosCita.Precio),
+												aplicaReembolso);
+
 
 				if (resultado > 0 && resultadoCorreo)
 				{

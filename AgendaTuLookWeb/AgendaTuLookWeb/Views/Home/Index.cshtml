@@ -75,23 +75,27 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var cita in Model.ProximasCitas!)
-                                {
-                                    <tr>
-                                        <td>@cita.NombreCliente</td>
-                                        <td>@cita.NombreServicio</td>
-                                        <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
-                                        <td>@cita.HoraInicio</td>
 
-                                    </tr>
+                                @if (Model.ProximasCitas != null) {
+                                    @foreach (var cita in Model.ProximasCitas!)
+                                    {
+                                        <tr>
+                                            <td>@cita.NombreCliente</td>
+                                            <td>@cita.NombreServicio</td>
+                                            <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                                            <td>@cita.HoraInicio</td>
+
+                                        </tr>
+                                    }
+                                } else {
+
+                                    <tr>  
+                                        <td colspan="4" class="text-center py-3">No hay citas agendadas.</td>  
+                                    </tr>  
                                 }
+
                             </tbody>
                         </table>
-                    </div>
-                    <div class="text-end mt-3">
-                        <a asp-action="GestionarCitas" asp-controller="Citas" class="btn btn-warning">
-                            <i class="fas fa-calendar me-2"></i>Ver todas las citas
-                        </a>
                     </div>
                 </div>
             </div>
@@ -170,11 +174,11 @@
                 }
             </div>
         }
-    </div>
-    <div class="text-end mt-3">
-        <a asp-action="GestionarCitas" asp-controller="Citas" class="btn btn-warning">
-            <i class="fas fa-calendar me-2"></i>Ver todas las citas
-        </a>
+        <div class="text-end mt-3">
+            <a asp-action="GestionarCitas" asp-controller="Citas" class="btn btn-warning">
+                <i class="fas fa-calendar me-2"></i>Ver todas las citas
+            </a>
+        </div>
     </div>
 </section>
 

@@ -18,8 +18,10 @@ function actualizarHoras(diaId, nuevaHoraInicio, nuevaHoraFin) {
             } else {
                 Swal.fire({
                     title: "Error",
-                    text: "No se pudo actualizar las horas.",
+                    text: response.message,
                     icon: "error"
+                }).then(() => {
+                    location.reload();
                 });
             }
         },
